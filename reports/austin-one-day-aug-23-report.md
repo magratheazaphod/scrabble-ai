@@ -8,10 +8,10 @@
 | Average Mistakes Score | 1.98 |
 | Average Score | 471.5 |
 | Average Opponent Score | 388.2 |
-| Total Bingos | 12 (2.0/game) |
+| Total Bingos | 12 (2.00/game) |
 | Bingo Find Rate | 12/14 (85.7%) |
 | Opponent Total Bingos | 13 (2.17/game) |
-| Total Blanks Drawn | 6 (1.0/game) |
+| Total Blanks Drawn | 6 (1.00/game) |
 | Avg Endgame Spread Lost | 16.7 |
 | Avg Win% Lost | 12.5% |
 | Total Phonies Played | 1 |
@@ -24,11 +24,11 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | [↗](https://woogles.io/game/hfaeKGQyoiBihz3EmX3JQe) | Michael Donegan | W | 482 | 296 | +186 | 0.6 | 2 | 0 | 1 | 0 | 0 | 1.5% | very clean |
 | 2 | [↗](https://woogles.io/game/3bqJ9CQ5vfyxnzra2efNZD) | Anuj Shetty | W | 547 | 362 | +185 | 1.7 | 3 | 0 | 1 | 1 | 12 | 1.8% | +185 dominant |
-| 3 | [↗](https://woogles.io/game/RXjof385YpJwDEPZeX2kgy) | James Curley | W | 395 | 359 | +36 | 3.4 | 2 | 2 | 2 | 2 | 19 | 29.0% | 1 phony; 2 missed bingos |
+| 3 | [↗](https://woogles.io/game/RXjof385YpJwDEPZeX2kgy) | James Curley | W | 395 | 359 | +36 | 3.4 | 2 | 2 | 2 | 2 | 19 | 29.0% | 1 phony; missed bingos #1–#2 |
 | 4 | [↗](https://woogles.io/game/FT7z7zHdXmMXxgtgRKSWpH) | Becky Dyer | W | 524 | 452 | +72 | 3.1 | 2 | 0 | 3 | 1 | 62 | 5.1% | 62-pt endgame |
-| 5 | [↗](https://woogles.io/game/SjBZWqeRda545PuojvRAUM) | Chris Canik | L | 384 | 437 | −53 | 2.3 | 1 | 0 | 3 | 1 | 0 | 35.2% | opp 3 bingos |
+| 5 | [↗](https://woogles.io/game/SjBZWqeRda545PuojvRAUM) | Chris Canik | L | 384 | 437 | −53 | 2.3 | 1 | 0 | 3 | 1 | 0 | 35.2% | competitive |
 | 6 | [↗](https://woogles.io/game/4CEbb26JnESdQQCSDSaggG) | Becky Dyer | W | 497 | 423 | +74 | 0.8 | 2 | 0 | 3 | 1 | 7 | 2.4% | very clean |
-| **Avg** | | | | **471.5** | **388.2** | **+83.3** | **1.98** | **2.0** | **0.33** | **2.17** | **1.0** | **16.7** | **12.5%** | |
+| **Avg** | | | | **471.5** | **388.2** | **+83.3** | **1.98** | **2.00** | **0.33** | **2.17** | **1.00** | **16.7** | **12.5%** | |
 
 ## Missed Bingos
 
