@@ -12,7 +12,7 @@ Jesse Day (woogles.io username `magrathean`, in-game display names vary: "Jesse 
 Use the `X-Api-Key` header directly — no browser needed.
 
 ```
-API_KEY = ***REMOVED***
+API_KEY = $WOOGLES_API_KEY   # stored in .env at project root (gitignored)
 Base URL: https://woogles.io/api/<package>.<service>/<RpcName>
 Every call is POST with Content-Type: application/json
 ```
@@ -81,10 +81,10 @@ Use the Bash tool with Python throughout. Use `requests` (not `urllib.request` �
 ### Helper — put this at the top of every Python snippet
 
 ```python
-import json, re, requests
+import json, os, re, requests
 from concurrent.futures import ThreadPoolExecutor
 
-API_KEY = '***REMOVED***'
+API_KEY = os.environ['WOOGLES_API_KEY']  # load from .env at project root (gitignored)
 BASE    = 'https://woogles.io/api'
 HDRS    = {'Content-Type': 'application/json', 'X-Api-Key': API_KEY}
 
