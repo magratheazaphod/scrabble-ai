@@ -1,0 +1,34 @@
+name: Woogles snapshot
+
+on:
+  schedule:
+    - cron: "0 12-18 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - run: python scripts/fetch_woogles_snapshot.py
+        env:
+          WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
+
+      - name: Publish snapshot to woogles-data branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B woogles-data
+          git add -f data/woogles-snapshot.json
+          git commit -m "Update Woogles snapshot ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          git push --force origin woogles-data

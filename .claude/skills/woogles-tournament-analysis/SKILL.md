@@ -19,6 +19,18 @@ Every call is POST with Content-Type: application/json
 
 Full schema reference: `https://buf.build/domino14/liwords/docs`.
 
+### Automated/cloud runs without woogles.io egress
+
+Some cloud agent environments (e.g. the CCR scheduled routine) can't reach `woogles.io` directly. For those, a GitHub Action (`.github/workflows/woogles-snapshot.yml`) polls the live API on a schedule and publishes a snapshot to:
+
+```
+https://raw.githubusercontent.com/magratheazaphod/scrabble-ai/woogles-data/data/woogles-snapshot.json
+```
+
+Shape: `{"collections": [{"uuid", "title", "games": [{"meta", "analysis", "history"}]}], "pending": [{"title", "done", "total"}]}` — `meta`/`analysis`/`history` are exactly the `GetCollection` game entry, `GetAnalysisResult`, and `GetGameHistory` response bodies described below. `collections` only includes collections where every included game is analysis-complete (or skip-eligible); anything still pending analysis shows up in `pending` instead, with no per-game data.
+
+When running somewhere without `woogles.io` access, fetch this snapshot instead of calling the live API (skip Steps 1–4 below) and start directly at Step 5 using its `collections`/`pending` arrays in place of `results`/deferred collections. Steps 5–8 (stats computation, aggregation, report template) apply identically regardless of data source.
+
 ---
 
 ## Verified API response structure (confirmed June 2026)
