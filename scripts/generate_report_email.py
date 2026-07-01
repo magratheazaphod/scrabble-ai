@@ -65,20 +65,6 @@ def save_state(state):
         f.write("\n")
 
 
-def split_changed_collections(snapshot, state):
-    """Collections whose game count hasn't moved since their last report are
-    already fully covered by an existing report — regenerating them would
-    just burn API credits to reproduce the same content."""
-    changed, unchanged_titles = [], []
-    for col in snapshot.get("collections", []):
-        prior = state.get(col["uuid"])
-        if prior and prior.get("game_count") == len(col["games"]):
-            unchanged_titles.append(col["title"])
-        else:
-            changed.append(col)
-    return changed, unchanged_titles
-
-
 def already_sent_today(today_str):
     if not os.path.exists(SENT_MARKER_PATH):
         return False
@@ -100,7 +86,11 @@ def upload_snapshot(client, snapshot):
     return uploaded.id
 
 
-def generate_report(client, skill_md, file_id, subject=None):
+def generate_collection_report(client, skill_md, file_id, subject=None):
+    """Generate the markdown report for exactly one collection (the snapshot behind
+    file_id has a single entry in "collections" and an empty "pending"). Regenerating
+    one collection at a time — rather than batching all of them into one Claude call —
+    is what lets each collection's report be cached and reused independently."""
     subject_clause = ""
     audience = "Jesse"
     if subject:
@@ -117,21 +107,11 @@ IMPORTANT — this run is NOT about Jesse Day. Wherever SKILL.md's stats-computa
 </skill_md>
 {subject_clause}
 
-A data snapshot (woogles-snapshot.json) is attached to this message via the code execution container. It has the shape: {{"collections": [{{"uuid", "title", "games": [{{"meta", "analysis", "history"}}]}}], "pending": [{{"title", "done", "total"}}]}}. Each game's "meta"/"analysis"/"history" are exactly the GetCollection game entry / GetAnalysisResult / GetGameHistory response bodies that SKILL.md's Workflow steps expect.
+A data snapshot (woogles-snapshot.json) is attached to this message via the code execution container. It has the shape: {{"collections": [{{"uuid", "title", "games": [{{"meta", "analysis", "history"}}]}}], "pending": []}} — exactly one collection, already confirmed to have complete game data. Each game's "meta"/"analysis"/"history" are exactly the GetCollection game entry / GetAnalysisResult / GetGameHistory response bodies that SKILL.md's Workflow steps expect.
 
-Using the code execution tool, write and run actual Python to:
-1. Load the snapshot file from the container filesystem.
-2. For each collection in `collections`, follow SKILL.md's Steps 5 through 8 exactly: compute per-game stats and aggregates, generate per-game notes, and build the report using SKILL.md's current report template and aggregation rules. Do the arithmetic in code, not by reasoning.
-3. Collections in `pending` have no game data — list them as deferred with their done/total counts.
+Using the code execution tool, write and run actual Python to load the snapshot and follow SKILL.md's Steps 5 through 8 exactly for this one collection: compute per-game stats and aggregates, generate per-game notes, and build the report using SKILL.md's current report template and aggregation rules. Do the arithmetic in code, not by reasoning.
 
-Then write your final answer as plain text (not a tool call) containing ONLY the report content itself:
-- A one-line summary, e.g. "Woogles report: 2 collections analyzed, 1 pending."
-- All completed reports concatenated with `---` separators, using SKILL.md's exact markdown template.
-- A closing note listing any deferred collections and their pending game counts.
-
-Do not mention SKILL.md, "steps", your methodology, or the code execution process anywhere in this final answer — it's an email to {audience}, not a description of how you produced it. Start directly with the one-line summary.
-
-If there are zero collections with game data (everything pending, nothing ready), your final answer should be exactly: "NO_REPORT_READY" and nothing else."""
+Then write your final answer as plain text (not a tool call) containing ONLY that collection's markdown report, using SKILL.md's exact template — nothing else. Do not add a summary line, do not mention other collections, do not mention SKILL.md, "steps", your methodology, or the code execution process anywhere in this final answer — it's one section of an email to {audience}, not a description of how you produced it."""
 
     response = client.messages.create(
         model=MODEL,
@@ -155,6 +135,13 @@ If there are zero collections with game data (everything pending, nothing ready)
     # text block is the actual final answer we asked for.
     text_blocks = [b.text for b in response.content if b.type == "text"]
     return text_blocks[-1].strip() if text_blocks else ""
+
+
+def build_pending_note(pending):
+    if not pending:
+        return ""
+    lines = "\n".join(f"- {p['title']}: {p['done']}/{p['total']} games analyzed" for p in pending)
+    return f"\n\n---\n\n**Still being analyzed:**\n{lines}"
 
 
 def send_email(body, recipient, subject):
@@ -188,43 +175,71 @@ def main():
     with open("data/woogles-snapshot.json") as f:
         full_snapshot = json.load(f)
 
+    collections = full_snapshot.get("collections", [])
+    pending = full_snapshot.get("pending", [])
+
+    subject_identity = None
     if one_off:
-        # A one-off request should always report current state in full — the
-        # already-reported skip logic only applies to the recurring daily run.
-        changed = full_snapshot.get("collections", [])
+        # A one-off request always reports current state in full — the cached-report
+        # reuse below only applies to the recurring daily run.
         state = {}
         subject_identity = full_snapshot.get("target")
-        if changed and not subject_identity:
+        if collections and not subject_identity:
             print("Could not resolve subject identity from game data — aborting.", file=sys.stderr)
             return
     else:
         state = load_state()
-        changed, unchanged_titles = split_changed_collections(full_snapshot, state)
-        if unchanged_titles:
-            print(f"Skipping (already reported, unchanged): {', '.join(unchanged_titles)}", file=sys.stderr)
 
-    if not changed:
-        print("Nothing new to report — skipping Claude call and email entirely.", file=sys.stderr)
+    if not collections and not pending:
+        print("Nothing to report — skipping entirely.", file=sys.stderr)
         return
 
-    snapshot = {"collections": changed, "pending": full_snapshot.get("pending", [])}
+    client = None
+    skill_md = None
+    report_sections = []
+    updated_state = dict(state)
 
-    client = anthropic.Anthropic()
-    skill_md = read_skill_md()
+    for col in collections:
+        prior = state.get(col["uuid"]) if not one_off else None
+        if prior and prior.get("game_count") == len(col["games"]) and prior.get("report_md"):
+            print(f"Reusing cached report for '{col['title']}' (unchanged)", file=sys.stderr)
+            report_sections.append(prior["report_md"])
+            continue
 
-    print("Uploading snapshot...", file=sys.stderr)
-    file_id = upload_snapshot(client, snapshot)
+        if client is None:
+            client = anthropic.Anthropic()
+            skill_md = read_skill_md()
 
-    print("Generating report via Claude (code execution)...", file=sys.stderr)
-    report = generate_report(client, skill_md, file_id, subject=subject_identity if one_off else None)
+        print(f"Generating report for '{col['title']}' via Claude (code execution)...", file=sys.stderr)
+        file_id = upload_snapshot(client, {"collections": [col], "pending": []})
+        report_md = generate_collection_report(client, skill_md, file_id, subject=subject_identity)
 
-    if report.strip() == "NO_REPORT_READY":
-        print("No collections ready this run — not sending an email.", file=sys.stderr)
+        if not report_md or report_md.strip() == "NO_REPORT_READY":
+            print(f"Failed to generate report for '{col['title']}' — skipping it this run", file=sys.stderr)
+            continue
+
+        report_sections.append(report_md)
+        if not one_off:
+            updated_state[col["uuid"]] = {
+                "title": col["title"],
+                "game_count": len(col["games"]),
+                "reported_at": today_str,
+                "report_md": report_md,
+            }
+
+    if not report_sections and not pending:
+        print("No reportable collections this run — not sending an email.", file=sys.stderr)
         return
+
+    summary = f"Woogles report: {len(report_sections)} collection{'s' if len(report_sections) != 1 else ''}"
+    if pending:
+        summary += f", {len(pending)} pending"
+    summary += "."
+    body = summary + "\n\n" + "\n\n---\n\n".join(report_sections) + build_pending_note(pending)
 
     now = datetime.now(CENTRAL)
     date_str = f"{now.strftime('%A %B')} {now.day} {now.year}"
-    display_name = subject_identity["real_name"] if one_off else None
+    display_name = subject_identity["real_name"] if one_off and subject_identity else None
     email_subject = (
         f"{display_name}'s Woogles report - {date_str}"
         if one_off
@@ -232,20 +247,14 @@ def main():
     )
 
     print(f"Sending email to {recipient}...", file=sys.stderr)
-    send_email(report, recipient, email_subject)
+    send_email(body, recipient, email_subject)
 
     if one_off:
         print("Done.", file=sys.stderr)
         return
 
     mark_sent(today_str)
-    for col in changed:
-        state[col["uuid"]] = {
-            "title": col["title"],
-            "game_count": len(col["games"]),
-            "reported_at": today_str,
-        }
-    save_state(state)
+    save_state(updated_state)
     print("Done.", file=sys.stderr)
 
 
