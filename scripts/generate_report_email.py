@@ -100,14 +100,15 @@ def upload_snapshot(client, snapshot):
     return uploaded.id
 
 
-def generate_report(client, skill_md, file_id, subject_username=None):
+def generate_report(client, skill_md, file_id, subject=None):
     subject_clause = ""
     audience = "Jesse"
-    if subject_username:
+    if subject:
+        nickname, real_name = subject["nickname"], subject.get("real_name") or subject["nickname"]
         subject_clause = f"""
 
-IMPORTANT — this run is NOT about Jesse Day. Wherever SKILL.md's stats-computation logic identifies "Jesse" as the subject player (the is_jesse()/is_jesse_summary() matchers, report titles, column headers like "Jesse Score"/"Jesse Bingos"), instead identify the subject player as the Woogles user with username "{subject_username}". Match players by nickname/real_name containing that username (case-insensitive, ignoring spaces/underscores/parentheses) rather than Jesse's nickname list ("JD", "JesseD", etc). Use that player's real name (from GameHistory's real_name field) in place of "Jesse Day" everywhere a report title, section header, or column header would otherwise reference Jesse — e.g. "Aggregate Stats (Jesse Day)" becomes "Aggregate Stats (<Real Name>)"."""
-        audience = f"the recipient (not Jesse — this is a one-off report about Woogles user {subject_username})"
+IMPORTANT — this run is NOT about Jesse Day. Wherever SKILL.md's stats-computation logic identifies "Jesse" as the subject player (the is_jesse()/is_jesse_summary() matchers, report titles, column headers like "Jesse Score"/"Jesse Bingos"), instead identify the subject player by normalizing each player's nickname (GameHistory players[].nickname: lowercase it, strip everything except a-z) and checking whether it equals "{nickname}" — this handles per-game spelling variants like suffixes ("(MYS)") or inconsistent casing. Do NOT try to match on their Woogles login username, which does not appear anywhere in game data. Use their real name, "{real_name}" (from GameHistory's real_name field), in place of "Jesse Day" everywhere a report title, section header, or column header would otherwise reference Jesse — e.g. "Aggregate Stats (Jesse Day)" becomes "Aggregate Stats ({real_name})"."""
+        audience = f"the recipient (not Jesse — this is a one-off report about Woogles player {real_name})"
 
     prompt = f"""Here is the current SKILL.md for Woogles tournament analysis (the authoritative spec for stats computation, aggregation, and report format):
 
@@ -192,6 +193,10 @@ def main():
         # already-reported skip logic only applies to the recurring daily run.
         changed = full_snapshot.get("collections", [])
         state = {}
+        subject_identity = full_snapshot.get("target")
+        if changed and not subject_identity:
+            print("Could not resolve subject identity from game data — aborting.", file=sys.stderr)
+            return
     else:
         state = load_state()
         changed, unchanged_titles = split_changed_collections(full_snapshot, state)
@@ -211,7 +216,7 @@ def main():
     file_id = upload_snapshot(client, snapshot)
 
     print("Generating report via Claude (code execution)...", file=sys.stderr)
-    report = generate_report(client, skill_md, file_id, subject_username=target_username or None)
+    report = generate_report(client, skill_md, file_id, subject=subject_identity if one_off else None)
 
     if report.strip() == "NO_REPORT_READY":
         print("No collections ready this run — not sending an email.", file=sys.stderr)
@@ -219,14 +224,15 @@ def main():
 
     now = datetime.now(CENTRAL)
     date_str = f"{now.strftime('%A %B')} {now.day} {now.year}"
-    subject = (
-        f"{target_username}'s Woogles report - {date_str}"
+    display_name = subject_identity["real_name"] if one_off else None
+    email_subject = (
+        f"{display_name}'s Woogles report - {date_str}"
         if one_off
         else f"Magrathean's Woogles daily report - {date_str}"
     )
 
     print(f"Sending email to {recipient}...", file=sys.stderr)
-    send_email(report, recipient, subject)
+    send_email(report, recipient, email_subject)
 
     if one_off:
         print("Done.", file=sys.stderr)

@@ -8,6 +8,7 @@ consumer of this snapshot, so report-format changes only ever need to happen in 
 """
 import json
 import os
+import re
 import sys
 
 import requests
@@ -29,6 +30,40 @@ def post(endpoint, body):
 def resolve_user_uuid(username):
     profile = post("user_service.ProfileService/GetProfile", {"username": username})
     return profile["user_id"]
+
+
+def resolve_subject_identity(results):
+    """The Woogles login username (e.g. "budak") often doesn't appear anywhere in
+    game data — only the in-game nickname ("CedricLewis") and real_name ("Cedric
+    Lewis") do, and even those vary slightly game to game (suffixes like "(MYS)",
+    inconsistent spacing). Since a one-off snapshot is built from the target's own
+    collections, the subject is whichever normalized nickname appears most across
+    all games — normalizing first so spelling variants of the same player don't
+    split their count across multiple opponents' single-appearance tallies."""
+
+    def normalize(nick):
+        return re.sub(r"[^a-z]", "", nick.lower())
+
+    buckets = {}
+    total_games = 0
+    for col in results:
+        for entry in col["games"]:
+            total_games += 1
+            for p in entry["history"]["history"]["players"]:
+                nick = p.get("nickname") or ""
+                key = normalize(nick)
+                if not key:
+                    continue
+                bucket = buckets.setdefault(key, {"count": 0, "real_names": {}})
+                bucket["count"] += 1
+                real_name = p.get("real_name") or ""
+                if real_name:
+                    bucket["real_names"][real_name] = bucket["real_names"].get(real_name, 0) + 1
+    if not buckets or total_games == 0:
+        return None
+    key, info = max(buckets.items(), key=lambda kv: kv[1]["count"])
+    real_name = max(info["real_names"].items(), key=lambda kv: kv[1])[0] if info["real_names"] else key
+    return {"nickname": key, "real_name": real_name}
 
 
 def main():
@@ -118,9 +153,18 @@ def main():
         results.append({"uuid": col_uuid, "title": col_title, "games": game_entries})
         print(f"  Snapshot ready: {len(game_entries)} games", file=sys.stderr)
 
+    output = {"collections": results, "pending": pending}
+    if target_username:
+        subject = resolve_subject_identity(results)
+        if subject:
+            output["target"] = {"username": target_username, **subject}
+            print(f"Resolved subject identity: {subject}", file=sys.stderr)
+        else:
+            print("Could not resolve subject identity from game data (no completed games yet)", file=sys.stderr)
+
     os.makedirs("data", exist_ok=True)
     with open("data/woogles-snapshot.json", "w") as f:
-        json.dump({"collections": results, "pending": pending}, f)
+        json.dump(output, f)
 
     print(f"Done. {len(results)} collections ready, {len(pending)} deferred.", file=sys.stderr)
 
