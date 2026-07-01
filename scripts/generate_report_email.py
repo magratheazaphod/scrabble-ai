@@ -9,6 +9,7 @@ execution tool, so arithmetic is actually executed, not reasoned about.
 import os
 import smtplib
 import sys
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -68,10 +69,12 @@ Using the code execution tool, write and run actual Python to:
 2. For each collection in `collections`, follow SKILL.md's Steps 5 through 8 exactly: compute per-game stats and aggregates, generate per-game notes, and build the report using SKILL.md's current report template and aggregation rules. Do the arithmetic in code, not by reasoning.
 3. Collections in `pending` have no game data — list them as deferred with their done/total counts.
 
-Then write your final answer as plain text (not a tool call) containing:
+Then write your final answer as plain text (not a tool call) containing ONLY the report content itself:
 - A one-line summary, e.g. "Woogles report: 2 collections analyzed, 1 pending."
 - All completed reports concatenated with `---` separators, using SKILL.md's exact markdown template.
 - A closing note listing any deferred collections and their pending game counts.
+
+Do not mention SKILL.md, "steps", your methodology, or the code execution process anywhere in this final answer — it's an email to Jesse, not a description of how you produced it. Start directly with the one-line summary.
 
 If there are zero collections with game data (everything pending, nothing ready), your final answer should be exactly: "NO_REPORT_READY" and nothing else."""
 
@@ -101,11 +104,12 @@ def send_email(body):
     sender = os.environ["GMAIL_ADDRESS"]
     password = os.environ["GMAIL_APP_PASSWORD"]
 
-    first_line = body.split("\n", 1)[0].strip("# ").strip()
+    now = datetime.now()
+    date_str = f"{now.strftime('%A %B')} {now.day} {now.year}"
     html_body = markdown.markdown(body, extensions=["tables", "nl2br"])
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"Woogles Daily Report: {first_line}"[:200]
+    msg["Subject"] = f"Woogles Daily Report: {date_str}"
     msg["From"] = sender
     msg["To"] = RECIPIENT
     msg.attach(MIMEText(body, "plain", "utf-8"))
