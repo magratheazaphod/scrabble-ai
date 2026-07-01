@@ -73,6 +73,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B woogles-data
+          git fetch origin woogles-data
+          git checkout -B woogles-data origin/woogles-data
           git add -f data/last-report-sent.txt
-          git diff --cached --quiet && echo "No report sent this run — nothing to record." || (git commit -m "Record report sent ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push --force origin woogles-data)
+          git diff --cached --quiet && echo "No report sent this run — nothing to record." || (git commit -m "Record report sent ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
