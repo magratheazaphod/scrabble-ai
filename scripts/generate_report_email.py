@@ -96,8 +96,10 @@ If there are zero collections with game data (everything pending, nothing ready)
         ],
     )
 
+    # Claude narrates between tool calls (progress commentary); only the last
+    # text block is the actual final answer we asked for.
     text_blocks = [b.text for b in response.content if b.type == "text"]
-    return "\n".join(text_blocks).strip()
+    return text_blocks[-1].strip() if text_blocks else ""
 
 
 def send_email(body):
