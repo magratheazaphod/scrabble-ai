@@ -12,9 +12,13 @@ import sys
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from zoneinfo import ZoneInfo
 
 import anthropic
 import markdown
+
+CENTRAL = ZoneInfo("America/Chicago")
+SENT_MARKER_PATH = "data/last-report-sent.txt"
 
 HTML_TEMPLATE = """\
 <html>
@@ -102,11 +106,23 @@ If there are zero collections with game data (everything pending, nothing ready)
     return text_blocks[-1].strip() if text_blocks else ""
 
 
+def already_sent_today(today_str):
+    if not os.path.exists(SENT_MARKER_PATH):
+        return False
+    with open(SENT_MARKER_PATH) as f:
+        return f.read().strip() == today_str
+
+
+def mark_sent(today_str):
+    with open(SENT_MARKER_PATH, "w") as f:
+        f.write(today_str)
+
+
 def send_email(body):
     sender = os.environ["GMAIL_ADDRESS"]
     password = os.environ["GMAIL_APP_PASSWORD"]
 
-    now = datetime.now()
+    now = datetime.now(CENTRAL)
     date_str = f"{now.strftime('%A %B')} {now.day} {now.year}"
     html_body = markdown.markdown(body, extensions=["tables", "nl2br"])
 
@@ -123,6 +139,11 @@ def send_email(body):
 
 
 def main():
+    today_str = datetime.now(CENTRAL).strftime("%Y-%m-%d")
+    if already_sent_today(today_str):
+        print(f"Already sent today's report ({today_str}) — skipping.", file=sys.stderr)
+        return
+
     client = anthropic.Anthropic()
     skill_md = read_skill_md()
 
@@ -138,6 +159,7 @@ def main():
 
     print("Sending email...", file=sys.stderr)
     send_email(report)
+    mark_sent(today_str)
     print("Done.", file=sys.stderr)
 
 
