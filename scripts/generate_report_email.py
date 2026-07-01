@@ -9,9 +9,32 @@ execution tool, so arithmetic is actually executed, not reasoned about.
 import os
 import smtplib
 import sys
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import anthropic
+import markdown
+
+HTML_TEMPLATE = """\
+<html>
+<head>
+<style>
+  body {{ font-family: -apple-system, Helvetica, Arial, sans-serif; color: #1a1a1a; line-height: 1.5; max-width: 700px; }}
+  h1 {{ font-size: 20px; border-bottom: 2px solid #333; padding-bottom: 6px; }}
+  h2 {{ font-size: 16px; margin-top: 28px; color: #333; }}
+  table {{ border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }}
+  th, td {{ border: 1px solid #ddd; padding: 6px 10px; text-align: left; }}
+  th {{ background: #f4f4f4; }}
+  tr:nth-child(even) {{ background: #fafafa; }}
+  strong {{ color: #000; }}
+  hr {{ border: none; border-top: 1px solid #ccc; margin: 32px 0; }}
+</style>
+</head>
+<body>
+{body}
+</body>
+</html>
+"""
 
 MODEL = "claude-opus-4-8"
 RECIPIENT = "magratheazaphod@gmail.com"
@@ -79,10 +102,14 @@ def send_email(body):
     password = os.environ["GMAIL_APP_PASSWORD"]
 
     first_line = body.split("\n", 1)[0].strip("# ").strip()
-    msg = MIMEText(body, "plain", "utf-8")
+    html_body = markdown.markdown(body, extensions=["tables", "nl2br"])
+
+    msg = MIMEMultipart("alternative")
     msg["Subject"] = f"Woogles Daily Report: {first_line}"[:200]
     msg["From"] = sender
     msg["To"] = RECIPIENT
+    msg.attach(MIMEText(body, "plain", "utf-8"))
+    msg.attach(MIMEText(HTML_TEMPLATE.format(body=html_body), "html", "utf-8"))
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(sender, password)
