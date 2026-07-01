@@ -13,7 +13,7 @@ import sys
 import requests
 
 API_KEY = os.environ["WOOGLES_API_KEY"]
-USER_UUID = "7WyqZfyQuB6SwNa2XjuZUG"
+DEFAULT_USER_UUID = "7WyqZfyQuB6SwNa2XjuZUG"  # magrathean (Jesse's own account)
 BASE = "https://woogles.io/api"
 HDRS = {"Content-Type": "application/json", "X-Api-Key": API_KEY}
 
@@ -26,13 +26,23 @@ def post(endpoint, body):
     return r.json()
 
 
+def resolve_user_uuid(username):
+    profile = post("user_service.ProfileService/GetProfile", {"username": username})
+    return profile["user_id"]
+
+
 def main():
+    target_username = os.environ.get("TARGET_USERNAME", "").strip()
+    user_uuid = resolve_user_uuid(target_username) if target_username else DEFAULT_USER_UUID
+    if target_username:
+        print(f"One-off snapshot for username: {target_username} ({user_uuid})", file=sys.stderr)
+
     collections = []
     offset = 0
     while True:
         resp = post(
             "collections_service.CollectionsService/GetUserCollections",
-            {"user_uuid": USER_UUID, "limit": 50, "offset": offset},
+            {"user_uuid": user_uuid, "limit": 50, "offset": offset},
         )
         batch = resp.get("collections", [])
         collections.extend(batch)

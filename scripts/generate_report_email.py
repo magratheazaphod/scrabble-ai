@@ -6,6 +6,7 @@ logic and report format — this script never reimplements it; it hands SKILL.md
 data snapshot to Claude and lets the model run the Python it describes via the code
 execution tool, so arithmetic is actually executed, not reasoned about.
 """
+import json
 import os
 import smtplib
 import sys
@@ -42,7 +43,8 @@ HTML_TEMPLATE = """\
 """
 
 MODEL = "claude-opus-4-8"
-RECIPIENT = "magratheazaphod@gmail.com"
+DEFAULT_RECIPIENT = "magratheazaphod@gmail.com"
+STATE_PATH = ".github/report-state.json"
 
 
 def read_skill_md():
@@ -50,21 +52,69 @@ def read_skill_md():
         return f.read()
 
 
-def upload_snapshot(client):
-    with open("data/woogles-snapshot.json", "rb") as f:
-        uploaded = client.beta.files.upload(
-            file=("woogles-snapshot.json", f, "application/json"),
-            betas=["files-api-2025-04-14"],
-        )
+def load_state():
+    if not os.path.exists(STATE_PATH):
+        return {}
+    with open(STATE_PATH) as f:
+        return json.load(f)
+
+
+def save_state(state):
+    with open(STATE_PATH, "w") as f:
+        json.dump(state, f, indent=2, sort_keys=True)
+        f.write("\n")
+
+
+def split_changed_collections(snapshot, state):
+    """Collections whose game count hasn't moved since their last report are
+    already fully covered by an existing report — regenerating them would
+    just burn API credits to reproduce the same content."""
+    changed, unchanged_titles = [], []
+    for col in snapshot.get("collections", []):
+        prior = state.get(col["uuid"])
+        if prior and prior.get("game_count") == len(col["games"]):
+            unchanged_titles.append(col["title"])
+        else:
+            changed.append(col)
+    return changed, unchanged_titles
+
+
+def already_sent_today(today_str):
+    if not os.path.exists(SENT_MARKER_PATH):
+        return False
+    with open(SENT_MARKER_PATH) as f:
+        return f.read().strip() == today_str
+
+
+def mark_sent(today_str):
+    with open(SENT_MARKER_PATH, "w") as f:
+        f.write(today_str)
+
+
+def upload_snapshot(client, snapshot):
+    payload = json.dumps(snapshot).encode("utf-8")
+    uploaded = client.beta.files.upload(
+        file=("woogles-snapshot.json", payload, "application/json"),
+        betas=["files-api-2025-04-14"],
+    )
     return uploaded.id
 
 
-def generate_report(client, skill_md, file_id):
+def generate_report(client, skill_md, file_id, subject_username=None):
+    subject_clause = ""
+    audience = "Jesse"
+    if subject_username:
+        subject_clause = f"""
+
+IMPORTANT — this run is NOT about Jesse Day. Wherever SKILL.md's stats-computation logic identifies "Jesse" as the subject player (the is_jesse()/is_jesse_summary() matchers, report titles, column headers like "Jesse Score"/"Jesse Bingos"), instead identify the subject player as the Woogles user with username "{subject_username}". Match players by nickname/real_name containing that username (case-insensitive, ignoring spaces/underscores/parentheses) rather than Jesse's nickname list ("JD", "JesseD", etc). Use that player's real name (from GameHistory's real_name field) in place of "Jesse Day" everywhere a report title, section header, or column header would otherwise reference Jesse — e.g. "Aggregate Stats (Jesse Day)" becomes "Aggregate Stats (<Real Name>)"."""
+        audience = f"the recipient (not Jesse — this is a one-off report about Woogles user {subject_username})"
+
     prompt = f"""Here is the current SKILL.md for Woogles tournament analysis (the authoritative spec for stats computation, aggregation, and report format):
 
 <skill_md>
 {skill_md}
 </skill_md>
+{subject_clause}
 
 A data snapshot (woogles-snapshot.json) is attached to this message via the code execution container. It has the shape: {{"collections": [{{"uuid", "title", "games": [{{"meta", "analysis", "history"}}]}}], "pending": [{{"title", "done", "total"}}]}}. Each game's "meta"/"analysis"/"history" are exactly the GetCollection game entry / GetAnalysisResult / GetGameHistory response bodies that SKILL.md's Workflow steps expect.
 
@@ -78,7 +128,7 @@ Then write your final answer as plain text (not a tool call) containing ONLY the
 - All completed reports concatenated with `---` separators, using SKILL.md's exact markdown template.
 - A closing note listing any deferred collections and their pending game counts.
 
-Do not mention SKILL.md, "steps", your methodology, or the code execution process anywhere in this final answer — it's an email to Jesse, not a description of how you produced it. Start directly with the one-line summary.
+Do not mention SKILL.md, "steps", your methodology, or the code execution process anywhere in this final answer — it's an email to {audience}, not a description of how you produced it. Start directly with the one-line summary.
 
 If there are zero collections with game data (everything pending, nothing ready), your final answer should be exactly: "NO_REPORT_READY" and nothing else."""
 
@@ -106,30 +156,16 @@ If there are zero collections with game data (everything pending, nothing ready)
     return text_blocks[-1].strip() if text_blocks else ""
 
 
-def already_sent_today(today_str):
-    if not os.path.exists(SENT_MARKER_PATH):
-        return False
-    with open(SENT_MARKER_PATH) as f:
-        return f.read().strip() == today_str
-
-
-def mark_sent(today_str):
-    with open(SENT_MARKER_PATH, "w") as f:
-        f.write(today_str)
-
-
-def send_email(body):
+def send_email(body, recipient, subject):
     sender = os.environ["GMAIL_ADDRESS"]
     password = os.environ["GMAIL_APP_PASSWORD"]
 
-    now = datetime.now(CENTRAL)
-    date_str = f"{now.strftime('%A %B')} {now.day} {now.year}"
     html_body = markdown.markdown(body, extensions=["tables", "nl2br"])
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"Magrathean's Woogles daily report - {date_str}"
+    msg["Subject"] = subject
     msg["From"] = sender
-    msg["To"] = RECIPIENT
+    msg["To"] = recipient
     msg.attach(MIMEText(body, "plain", "utf-8"))
     msg.attach(MIMEText(HTML_TEMPLATE.format(body=html_body), "html", "utf-8"))
 
@@ -139,27 +175,71 @@ def send_email(body):
 
 
 def main():
+    target_username = os.environ.get("TARGET_USERNAME", "").strip()
+    recipient = os.environ.get("RECIPIENT_EMAIL", "").strip() or DEFAULT_RECIPIENT
+    one_off = bool(target_username)
+
     today_str = datetime.now(CENTRAL).strftime("%Y-%m-%d")
-    if already_sent_today(today_str):
+    if not one_off and already_sent_today(today_str):
         print(f"Already sent today's report ({today_str}) — skipping.", file=sys.stderr)
         return
+
+    with open("data/woogles-snapshot.json") as f:
+        full_snapshot = json.load(f)
+
+    if one_off:
+        # A one-off request should always report current state in full — the
+        # already-reported skip logic only applies to the recurring daily run.
+        changed = full_snapshot.get("collections", [])
+        state = {}
+    else:
+        state = load_state()
+        changed, unchanged_titles = split_changed_collections(full_snapshot, state)
+        if unchanged_titles:
+            print(f"Skipping (already reported, unchanged): {', '.join(unchanged_titles)}", file=sys.stderr)
+
+    if not changed:
+        print("Nothing new to report — skipping Claude call and email entirely.", file=sys.stderr)
+        return
+
+    snapshot = {"collections": changed, "pending": full_snapshot.get("pending", [])}
 
     client = anthropic.Anthropic()
     skill_md = read_skill_md()
 
     print("Uploading snapshot...", file=sys.stderr)
-    file_id = upload_snapshot(client)
+    file_id = upload_snapshot(client, snapshot)
 
     print("Generating report via Claude (code execution)...", file=sys.stderr)
-    report = generate_report(client, skill_md, file_id)
+    report = generate_report(client, skill_md, file_id, subject_username=target_username or None)
 
     if report.strip() == "NO_REPORT_READY":
         print("No collections ready this run — not sending an email.", file=sys.stderr)
         return
 
-    print("Sending email...", file=sys.stderr)
-    send_email(report)
+    now = datetime.now(CENTRAL)
+    date_str = f"{now.strftime('%A %B')} {now.day} {now.year}"
+    subject = (
+        f"{target_username}'s Woogles report - {date_str}"
+        if one_off
+        else f"Magrathean's Woogles daily report - {date_str}"
+    )
+
+    print(f"Sending email to {recipient}...", file=sys.stderr)
+    send_email(report, recipient, subject)
+
+    if one_off:
+        print("Done.", file=sys.stderr)
+        return
+
     mark_sent(today_str)
+    for col in changed:
+        state[col["uuid"]] = {
+            "title": col["title"],
+            "game_count": len(col["games"]),
+            "reported_at": today_str,
+        }
+    save_state(state)
     print("Done.", file=sys.stderr)
 
 

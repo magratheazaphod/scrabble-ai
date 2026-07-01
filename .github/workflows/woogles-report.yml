@@ -10,7 +10,16 @@ name: Woogles report email
 on:
   schedule:
     - cron: "5,35 13-23 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      target_username:
+        description: "Woogles username to report on for a one-off send (leave blank for Jesse's daily report)"
+        required: false
+        default: ""
+      recipient_email:
+        description: "Email address to send a one-off report to (leave blank to use the default recipient)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -28,19 +37,39 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Fetch latest data snapshot and send-status marker from woogles-data branch
+        if: ${{ github.event.inputs.target_username == '' }}
         run: |
           mkdir -p data
           git fetch origin woogles-data
           git show origin/woogles-data:data/woogles-snapshot.json > data/woogles-snapshot.json
           git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
 
+      - name: Fetch fresh snapshot for one-off target user
+        if: ${{ github.event.inputs.target_username != '' }}
+        run: python scripts/fetch_woogles_snapshot.py
+        env:
+          WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
+          TARGET_USERNAME: ${{ github.event.inputs.target_username }}
+
       - run: python scripts/generate_report_email.py
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TARGET_USERNAME: ${{ github.event.inputs.target_username }}
+          RECIPIENT_EMAIL: ${{ github.event.inputs.recipient_email }}
+
+      - name: Commit updated report state
+        if: ${{ github.event.inputs.target_username == '' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/report-state.json
+          git diff --cached --quiet || git commit -m "Update report state ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          git push origin HEAD:master
 
       - name: Record send-status marker if a report was sent
+        if: ${{ github.event.inputs.target_username == '' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
