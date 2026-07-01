@@ -77,9 +77,11 @@ jobs:
       - name: Record send-status marker if a report was sent
         if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
         run: |
+          cp data/last-report-sent.txt /tmp/last-report-sent.txt
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin woogles-data
           git checkout -B woogles-data origin/woogles-data
+          cp /tmp/last-report-sent.txt data/last-report-sent.txt
           git add -f data/last-report-sent.txt
           git diff --cached --quiet && echo "No report sent this run — nothing to record." || (git commit -m "Record report sent ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)

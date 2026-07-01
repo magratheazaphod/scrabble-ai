@@ -26,9 +26,11 @@ jobs:
 
       - name: Publish snapshot to woogles-data branch
         run: |
+          cp data/woogles-snapshot.json /tmp/woogles-snapshot.json
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin woogles-data
           git checkout -B woogles-data origin/woogles-data
+          cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
           git add -f data/woogles-snapshot.json
           git diff --cached --quiet && echo "No snapshot changes — nothing to commit." || (git commit -m "Update Woogles snapshot ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
