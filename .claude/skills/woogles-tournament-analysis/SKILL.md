@@ -309,6 +309,41 @@ def resolve_bingo_word(optimal_move, board):
         r += dr; c += dc
     return result
 
+def build_played_words(events):
+    """Resolve the actual word played on each turn (same index-skip trick as
+    build_snapshots_and_racks, so index i lines up with analysis['turns'][i]).
+
+    `challenged` is True only when the event log shows the play was challenged off
+    (PHONY_TILES_RETURNED). It is NOT the same as "is this a phony" — an unchallenged
+    phony stands on the board and is_phony must come from analysis['turns'][i]['is_phony'].
+
+    Returns a list of {'word': str|None, 'challenged': bool, 'player_index': int}.
+    word is None for EXCHANGE/PASS turns.
+    """
+    board = [['' for _ in range(15)] for _ in range(15)]
+    moves = []
+    i = 0
+    while i < len(events):
+        ev = events[i]
+        et = ev.get('type', '')
+        if et == 'TILE_PLACEMENT_MOVE':
+            challenged = i + 1 < len(events) and events[i+1].get('type') == 'PHONY_TILES_RETURNED'
+            word = resolve_bingo_word(f"{ev['position']} {ev.get('played_tiles') or ''}", board)
+            moves.append({'word': word, 'challenged': challenged, 'player_index': ev['player_index']})
+            if challenged:
+                i += 2; continue
+            dr = 1 if ev['direction'] == 'VERTICAL' else 0
+            dc = 0 if ev['direction'] == 'VERTICAL' else 1
+            r2, c2 = ev['row'], ev['column']
+            for ch in (ev.get('played_tiles') or ''):
+                if ch != '.':
+                    board[r2][c2] = ch.upper()
+                r2 += dr; c2 += dc
+        elif et in ('EXCHANGE', 'PASS'):
+            moves.append({'word': None, 'challenged': False, 'player_index': ev.get('player_index')})
+        i += 1
+    return moves
+
 def compute_game(r):
     meta     = r['meta']
     history  = r['history']['history']
@@ -345,10 +380,31 @@ def compute_game(r):
         jesse_blanks += last_racks[jesse_idx].count('?')
 
     snapshots, racks = build_snapshots_and_racks(events)
+    played_words = build_played_words(events)
 
     endgame_spread_lost = win_prob_lost = phonies_played = missed_bingos = 0
     missed_bingo_words = []
+    opp_missed_bingo_words = []
+    jesse_phonies = []   # [{'word', 'challenged'}]
+    opp_phonies = []     # [{'word', 'challenged'}]
     for turn_idx, t in enumerate(analysis['turns']):
+        # is_phony/missed_bingo are evaluated for BOTH players — mention them either way
+        if t.get('is_phony'):
+            mv = played_words[turn_idx] if turn_idx < len(played_words) else None
+            entry = {'word': mv['word'] if mv else None,
+                     'challenged': mv['challenged'] if mv else t.get('phony_challenged')}
+            (jesse_phonies if t['player_index'] == jesse_idx else opp_phonies).append(entry)
+        if t.get('missed_bingo'):
+            om = t.get('optimal_move') or ''
+            hist_rack = racks[turn_idx] if turn_idx < len(racks) else ''
+            if validate_bingo(om, hist_rack):  # else: analysis false positive — rack mismatch
+                word = resolve_bingo_word(om, snapshots[turn_idx]) if turn_idx < len(snapshots) else om
+                if t['player_index'] == jesse_idx:
+                    missed_bingos += 1
+                    missed_bingo_words.append(word)
+                else:
+                    opp_missed_bingo_words.append(word)
+
         if t['player_index'] != jesse_idx:
             continue
         if t.get('tiles_in_bag') == 0:
@@ -356,18 +412,6 @@ def compute_game(r):
         win_prob_lost += t.get('win_prob_loss') or 0
         if t.get('is_phony'):
             phonies_played += 1
-        if t.get('missed_bingo'):
-            om = t.get('optimal_move') or ''
-            hist_rack = racks[turn_idx] if turn_idx < len(racks) else ''
-            if not validate_bingo(om, hist_rack):
-                continue  # analysis false positive — rack mismatch
-            missed_bingos += 1
-            if turn_idx < len(snapshots):
-                word = resolve_bingo_word(om, snapshots[turn_idx])
-            else:
-                parts = om.strip().split()
-                word = parts[1] if len(parts) >= 2 else om
-            missed_bingo_words.append(word)
 
     rd_match = re.search(r'(?:Rd\.?\s*|Round\s*)(\d+)', meta['chapter_title'], re.I)
     rnd = int(rd_match.group(1)) if rd_match else meta['chapter_number']
@@ -385,8 +429,12 @@ def compute_game(r):
         'endgame_spread_lost': endgame_spread_lost,
         'win_prob_lost': win_prob_lost,   # multiply by 100 for %
         'phonies_played': phonies_played,
+        'opp_phonies_played': len(opp_phonies),
         'missed_bingos': missed_bingos,
         'missed_bingo_words': missed_bingo_words,
+        'opp_missed_bingo_words': opp_missed_bingo_words,
+        'jesse_phonies': jesse_phonies,
+        'opp_phonies': opp_phonies,
     }
 
 stats = [compute_game(r) for r in results]
@@ -411,6 +459,7 @@ total_ob = sum(g['opp_bingos']    for g in stats)
 total_bl = sum(g['jesse_blanks']  for g in stats)
 total_eg = sum(g['endgame_spread_lost'] for g in stats)
 total_ph = sum(g['phonies_played'] for g in stats)
+total_opp_ph = sum(g['opp_phonies_played'] for g in stats)
 total_sp = sum(g['jesse_score'] - g['opp_score'] for g in stats)
 
 agg = {
@@ -424,50 +473,74 @@ agg = {
     'total_bl':        total_bl,
     'avg_eg':          round(total_eg / n, 1),
     'avg_wpl':         round(sum(g['win_prob_lost'] for g in stats) / n * 100, 1),
-    'total_phonies':   total_ph,
+    'total_phonies':     total_ph,
+    'total_opp_phonies': total_opp_ph,
     'games_per_mb':    round(n / total_mb, 1) if total_mb else None,
     'games_per_phony': round(n / total_ph, 1) if total_ph else None,
 }
 ```
 
+`Opponent Phonies Played` sits right after `Total Phonies Played` in the Aggregate Stats table (own row, no "games per" derivative needed).
+
 ### Step 7: Per-game notes
 
-Generate a short (≤3 phrases) note for each game. Pick the most notable characteristic as the primary descriptor, then add up to 2 secondary facts:
+Keep notes brief. Every phony or missed bingo — by Jesse **or** the opponent — gets named by word; nothing else gets a percentage or win-prob callout. Missed bingos use cumulative numbering (`missed bingo #N (WORD)`) cross-referenced with the Missed Bingos table, which lists rows in the same order. Track the counter across the whole report as you iterate games in round order:
 
 ```python
+missed_bingo_counter = 0
+
 def game_note(g):
+    global missed_bingo_counter
     mi  = g['mistake_index'] if g['mistake_index'] is not None else 0.0
     wpl = round(g['win_prob_lost'] * 100, 1)
     eg  = g['endgame_spread_lost']
     mb  = g['missed_bingos']
-    ph  = g['phonies_played']
     jb  = g['jesse_bingos']
     ob  = g['opp_bingos']
     sp  = g['jesse_score'] - g['opp_score']
     res = g['result']
     ws  = g.get('missed_bingo_words', [])
+    opp_ws = g.get('opp_missed_bingo_words', [])
+    opp_name = g['opponent']
     parts = []
-    # Primary — exactly one (elif chain, most notable wins)
+    # Primary — exactly one (elif chain, most notable wins). Skipped entirely if nothing
+    # matches AND secondary facts exist below — don't force a generic label onto an
+    # already-informative note.
     if g['jesse_score'] >= 570:          parts.append(f'{g["jesse_score"]}-pt monster')
     elif mi <= 0.8:                       parts.append('very clean')
-    elif mi > 3.5 and res == 'W':        parts.append('errorful win')
+    elif mi > 3.5:                        parts.append('errorful win' if res == 'W' else 'errorful')
     elif abs(sp) <= 15:                  parts.append('narrow loss' if res=='L' else 'narrow win')
     elif res=='L' and abs(sp) >= 175:    parts.append('blowout')
     elif res=='W' and sp >= 150:         parts.append(f'+{sp} dominant')
-    # Secondary (up to 2 more)
-    if len(parts) < 3 and (ob>=4 or (ob>=3 and res=='L')): parts.append(f'opp {ob} bingos')
-    if len(parts) < 3 and jb >= 4 and res=='W':  parts.append(f'{jb} bingos')
-    if len(parts) < 3 and ph:            parts.append(f'{ph} phony' if ph==1 else f'{ph} phonies')
-    if len(parts) < 3 and mb == 1 and ws:
-        clean = re.sub(r'\((.)\)', r'\1', ws[0]).upper()
-        parts.append(f'missed {clean[:9]}')
-    elif len(parts) < 3 and mb > 1:      parts.append(f'{mb} missed bingos')
-    if len(parts) < 3 and eg >= 50:      parts.append(f'{eg}-pt endgame')
-    elif len(parts) < 3 and eg >= 30 and g['jesse_score'] < 570: parts.append('big endgame')
-    if len(parts) < 3 and wpl >= 40:     parts.append('equity leak')
+    # Jesse's own phonies — always named
+    for p in g.get('jesse_phonies', []):
+        tag = '' if p['challenged'] else ' (unchallenged)'
+        parts.append(f"phony {p['word']}{tag}")
+    # Missed bingos — cumulative numbering + word, one clause per game
+    if mb == 1:
+        missed_bingo_counter += 1
+        parts.append(f'missed bingo #{missed_bingo_counter} ({ws[0]})')
+    elif mb > 1:
+        start = missed_bingo_counter + 1
+        missed_bingo_counter += mb
+        parts.append(f"missed bingos #{start}–#{missed_bingo_counter} ({', '.join(ws)})")
+    # Opponent's phonies and missed bingos — named, attributed by name
+    for p in g.get('opp_phonies', []):
+        tag = '' if p['challenged'] else ' (unchallenged)'
+        parts.append(f"{opp_name} phony {p['word']}{tag}")
+    for w in opp_ws:
+        parts.append(f'{opp_name} missed {w}')
+    # Everything else stays brief and low-priority
+    if len(parts) < 4 and (ob>=4 or (ob>=3 and res=='L')): parts.append(f'opp {ob} bingos')
+    if len(parts) < 4 and jb >= 4 and res=='W':  parts.append(f'{jb} bingos')
+    if len(parts) < 4 and eg >= 50:      parts.append(f'{eg}-pt endgame')
+    elif len(parts) < 4 and eg >= 30 and g['jesse_score'] < 570: parts.append('big endgame')
+    if len(parts) < 4 and wpl >= 40:     parts.append('equity leak')
     if not parts:                         parts.append('solid win' if res=='W' else 'competitive')
     return '; '.join(parts)
 ```
+
+Reset `missed_bingo_counter = 0` once per report (not per collection run) — it must match the Missed Bingos table row order exactly, so generate notes in round order in the same pass that builds that table.
 
 ### Step 8: Write the report
 
@@ -476,6 +549,8 @@ Save to `<project root>/reports/<tournament-slug>-report.md`. Format:
 ```markdown
 # <Collection Title>
 **Collection:** <title> | **Games:** <n> (<note if rounds missing>) | **Record:** W-L ±spread
+
+🟩🟩🟥🟩🟩 🟥🟩🟩🟥🟩 ...
 
 ## Aggregate Stats (Jesse Day)
 
@@ -491,6 +566,7 @@ Save to `<project root>/reports/<tournament-slug>-report.md`. Format:
 | Avg Endgame Spread Lost | XX.X |
 | Avg Win% Lost | XX.X% |
 | Total Phonies Played | N |
+| Opponent Phonies Played | N |
 | Games per Missed Bingo | N.N |
 | Games per Phony Played | N.N |
 
@@ -528,7 +604,13 @@ No spreadsheet output (Jesse's preference as of June 2026).
 - For very large collections (50+ games), check with Jesse before committing to a full analysis sweep in one sitting.
 - **Endgame spread lost context:** values of 20+ in a single game are worth flagging — use per-turn `played_move` / `optimal_move` / `spread_loss` to explain what happened.
 - **Win% Lost:** sum of `win_prob_loss` over Jesse's turns × 100. High in a win = nearly gave it away; high in a close loss = structural deficit, not bad luck.
-- **Phonies:** `is_phony` = word not in lexicon. If `total_phonies == 0`, omit "Games per Phony Played" from the report.
+- **Phonies:** `is_phony` = word not in lexicon; check it for BOTH players, not just Jesse (`analysis['turns'][i]['is_phony']` is the authoritative flag — don't infer phony-ness from the event log alone, since an *unchallenged* phony has no `PHONY_TILES_RETURNED` event and still scores). If `total_phonies == 0`, omit "Games per Phony Played" from the report. Every phony gets named by word in the per-game note (`phony WORD`, or `phony WORD (unchallenged)` if it wasn't caught); opponent phonies are attributed by the opponent's name from the Opponent column.
 - **Missed bingo validation:** always cross-check `missed_bingo` against the history event rack. The analysis occasionally stores an incorrect rack, causing a false-positive (confirmed in Causeway R2: analysis showed BEEIORZ, actual was BEELORZ). If `validate_bingo(om, history_rack)` returns False, skip the entry.
 - **Board reconstruction:** `build_snapshots_and_racks` runs in ~2ms per 19-game tournament and uses zero Claude tokens. Prefer it over dictionary lookup for missed-bingo word resolution.
 - **Game URL:** `https://woogles.io/game/<game_id>`
+- **Win/Loss Progression:** a single line of 🟩 (win) / 🟥 (loss) boxes, one per game in chronological order, no round numbers and no labels. Group into blocks of 5 separated by a space for readability (no separator within a block). Built directly from `stats` (already sorted by round):
+  ```python
+  boxes = ['🟩' if g['result']=='W' else '🟥' for g in stats]
+  progression = ' '.join(''.join(boxes[i:i+5]) for i in range(0, len(boxes), 5))
+  ```
+  Placed immediately after the header line, before Aggregate Stats — no section header of its own.

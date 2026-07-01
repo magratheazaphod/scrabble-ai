@@ -1,6 +1,8 @@
 # Austin One-Day Aug '23
 **Collection:** Austin One-Day Aug '23 | **Games:** 6 | **Record:** 5-1 +500
 
+🟩🟩🟩🟩🟥 🟩
+
 ## Aggregate Stats (Jesse Day)
 
 | Stat | Value |
@@ -15,6 +17,7 @@
 | Avg Endgame Spread Lost | 16.7 |
 | Avg Win% Lost | 12.5% |
 | Total Phonies Played | 1 |
+| Opponent Phonies Played | 1 |
 | Games per Missed Bingo | 3.0 |
 | Games per Phony Played | 6.0 |
 
@@ -23,8 +26,8 @@
 | Rnd | Game | Opponent | Result | Jesse | Opp | Spread | Mistakes | Jesse Bingos | Missed Bingos | Opp Bingos | Jesse Blanks | Endgame Spread Lost | Win% Lost | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | [↗](https://woogles.io/game/hfaeKGQyoiBihz3EmX3JQe) | Michael Donegan | W | 482 | 296 | +186 | 0.6 | 2 | 0 | 1 | 0 | 0 | 1.5% | very clean |
-| 2 | [↗](https://woogles.io/game/3bqJ9CQ5vfyxnzra2efNZD) | Anuj Shetty | W | 547 | 362 | +185 | 1.7 | 3 | 0 | 1 | 1 | 12 | 1.8% | +185 dominant |
-| 3 | [↗](https://woogles.io/game/RXjof385YpJwDEPZeX2kgy) | James Curley | W | 395 | 359 | +36 | 3.4 | 2 | 2 | 2 | 2 | 19 | 29.0% | 1 phony; missed bingos #1–#2 |
+| 2 | [↗](https://woogles.io/game/3bqJ9CQ5vfyxnzra2efNZD) | Anuj Shetty | W | 547 | 362 | +185 | 1.7 | 3 | 0 | 1 | 1 | 12 | 1.8% | +185 dominant; Anuj Shetty phony GU |
+| 3 | [↗](https://woogles.io/game/RXjof385YpJwDEPZeX2kgy) | James Curley | W | 395 | 359 | +36 | 3.4 | 2 | 2 | 2 | 2 | 19 | 29.0% | phony LINUX (unchallenged); missed bingos #1–#2 (COURAN(T)O, DOGGEDl(Y)) |
 | 4 | [↗](https://woogles.io/game/FT7z7zHdXmMXxgtgRKSWpH) | Becky Dyer | W | 524 | 452 | +72 | 3.1 | 2 | 0 | 3 | 1 | 62 | 5.1% | 62-pt endgame |
 | 5 | [↗](https://woogles.io/game/SjBZWqeRda545PuojvRAUM) | Chris Canik | L | 384 | 437 | −53 | 2.3 | 1 | 0 | 3 | 1 | 0 | 35.2% | competitive |
 | 6 | [↗](https://woogles.io/game/4CEbb26JnESdQQCSDSaggG) | Becky Dyer | W | 497 | 423 | +74 | 0.8 | 2 | 0 | 3 | 1 | 7 | 2.4% | very clean |
