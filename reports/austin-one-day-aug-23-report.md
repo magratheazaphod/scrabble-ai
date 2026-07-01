@@ -23,11 +23,13 @@
 
 ## Per-Game Breakdown
 
+*Notes: `*` marks a phony (all words formed by the play; the specific invalid word isn't always identifiable when multiple words were formed — CSW is the configured lexicon for every game).*
+
 | Rnd | Game | Opponent | Result | Jesse | Opp | Spread | Mistakes | Jesse Bingos | Missed Bingos | Opp Bingos | Jesse Blanks | Endgame Spread Lost | Win% Lost | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | [↗](https://woogles.io/game/hfaeKGQyoiBihz3EmX3JQe) | Michael Donegan | W | 482 | 296 | +186 | 0.6 | 2 | 0 | 1 | 0 | 0 | 1.5% | very clean |
-| 2 | [↗](https://woogles.io/game/3bqJ9CQ5vfyxnzra2efNZD) | Anuj Shetty | W | 547 | 362 | +185 | 1.7 | 3 | 0 | 1 | 1 | 12 | 1.8% | +185 dominant; Anuj Shetty phony GU |
-| 3 | [↗](https://woogles.io/game/RXjof385YpJwDEPZeX2kgy) | James Curley | W | 395 | 359 | +36 | 3.4 | 2 | 2 | 2 | 2 | 19 | 29.0% | phony LINUX (unchallenged); missed bingos #1–#2 (COURAN(T)O, DOGGEDl(Y)) |
+| 2 | [↗](https://woogles.io/game/3bqJ9CQ5vfyxnzra2efNZD) | Anuj Shetty | W | 547 | 362 | +185 | 1.7 | 3 | 0 | 1 | 1 | 12 | 1.8% | +185 dominant; Anuj Shetty phony GU/PU* |
+| 3 | [↗](https://woogles.io/game/RXjof385YpJwDEPZeX2kgy) | James Curley | W | 395 | 359 | +36 | 3.4 | 2 | 2 | 2 | 2 | 19 | 29.0% | phony LINUX/NEEL* (unchallenged); missed bingos #1–#2 (COURAN(T)O, DOGGEDl(Y)) |
 | 4 | [↗](https://woogles.io/game/FT7z7zHdXmMXxgtgRKSWpH) | Becky Dyer | W | 524 | 452 | +72 | 3.1 | 2 | 0 | 3 | 1 | 62 | 5.1% | 62-pt endgame |
 | 5 | [↗](https://woogles.io/game/SjBZWqeRda545PuojvRAUM) | Chris Canik | L | 384 | 437 | −53 | 2.3 | 1 | 0 | 3 | 1 | 0 | 35.2% | competitive |
 | 6 | [↗](https://woogles.io/game/4CEbb26JnESdQQCSDSaggG) | Becky Dyer | W | 497 | 423 | +74 | 0.8 | 2 | 0 | 3 | 1 | 7 | 2.4% | very clean |

@@ -317,8 +317,14 @@ def build_played_words(events):
     (PHONY_TILES_RETURNED). It is NOT the same as "is this a phony" — an unchallenged
     phony stands on the board and is_phony must come from analysis['turns'][i]['is_phony'].
 
-    Returns a list of {'word': str|None, 'challenged': bool, 'player_index': int}.
-    word is None for EXCHANGE/PASS turns.
+    `words_formed` is the event's own list of every word the play created (main word +
+    any cross words). IMPORTANT: when a phony play forms more than one word, the analysis
+    is_phony flag only tells you the PLAY was illegal, not WHICH of the formed words was
+    the actual violation — don't assume it's the primary/longest one. Show all of them
+    (see game_note's `*`-marking below) rather than guessing.
+
+    Returns a list of {'word': str|None, 'words_formed': list[str], 'challenged': bool,
+    'player_index': int}. word/words_formed are None/[] for EXCHANGE/PASS turns.
     """
     board = [['' for _ in range(15)] for _ in range(15)]
     moves = []
@@ -329,7 +335,8 @@ def build_played_words(events):
         if et == 'TILE_PLACEMENT_MOVE':
             challenged = i + 1 < len(events) and events[i+1].get('type') == 'PHONY_TILES_RETURNED'
             word = resolve_bingo_word(f"{ev['position']} {ev.get('played_tiles') or ''}", board)
-            moves.append({'word': word, 'challenged': challenged, 'player_index': ev['player_index']})
+            moves.append({'word': word, 'words_formed': ev.get('words_formed') or [word],
+                           'challenged': challenged, 'player_index': ev['player_index']})
             if challenged:
                 i += 2; continue
             dr = 1 if ev['direction'] == 'VERTICAL' else 0
@@ -340,7 +347,7 @@ def build_played_words(events):
                     board[r2][c2] = ch.upper()
                 r2 += dr; c2 += dc
         elif et in ('EXCHANGE', 'PASS'):
-            moves.append({'word': None, 'challenged': False, 'player_index': ev.get('player_index')})
+            moves.append({'word': None, 'words_formed': [], 'challenged': False, 'player_index': ev.get('player_index')})
         i += 1
     return moves
 
@@ -385,13 +392,13 @@ def compute_game(r):
     endgame_spread_lost = win_prob_lost = phonies_played = missed_bingos = 0
     missed_bingo_words = []
     opp_missed_bingo_words = []
-    jesse_phonies = []   # [{'word', 'challenged'}]
-    opp_phonies = []     # [{'word', 'challenged'}]
+    jesse_phonies = []   # [{'words_formed', 'challenged'}]
+    opp_phonies = []     # [{'words_formed', 'challenged'}]
     for turn_idx, t in enumerate(analysis['turns']):
         # is_phony/missed_bingo are evaluated for BOTH players — mention them either way
         if t.get('is_phony'):
             mv = played_words[turn_idx] if turn_idx < len(played_words) else None
-            entry = {'word': mv['word'] if mv else None,
+            entry = {'words_formed': mv['words_formed'] if mv else [],
                      'challenged': mv['challenged'] if mv else t.get('phony_challenged')}
             (jesse_phonies if t['player_index'] == jesse_idx else opp_phonies).append(entry)
         if t.get('missed_bingo'):
@@ -512,10 +519,11 @@ def game_note(g):
     elif abs(sp) <= 15:                  parts.append('narrow loss' if res=='L' else 'narrow win')
     elif res=='L' and abs(sp) >= 175:    parts.append('blowout')
     elif res=='W' and sp >= 150:         parts.append(f'+{sp} dominant')
-    # Jesse's own phonies — always named
+    # Jesse's own phonies — always named, `*` marks the phony, all words_formed shown
+    # since the specific invalid word isn't identifiable when the play formed several
     for p in g.get('jesse_phonies', []):
-        tag = '' if p['challenged'] else ' (unchallenged)'
-        parts.append(f"phony {p['word']}{tag}")
+        tag = ' (unchallenged)' if not p['challenged'] else ''
+        parts.append(f"phony {'/'.join(p['words_formed'])}*{tag}")
     # Missed bingos — cumulative numbering + word, one clause per game
     if mb == 1:
         missed_bingo_counter += 1
@@ -526,8 +534,8 @@ def game_note(g):
         parts.append(f"missed bingos #{start}–#{missed_bingo_counter} ({', '.join(ws)})")
     # Opponent's phonies and missed bingos — named, attributed by name
     for p in g.get('opp_phonies', []):
-        tag = '' if p['challenged'] else ' (unchallenged)'
-        parts.append(f"{opp_name} phony {p['word']}{tag}")
+        tag = ' (unchallenged)' if not p['challenged'] else ''
+        parts.append(f"{opp_name} phony {'/'.join(p['words_formed'])}*{tag}")
     for w in opp_ws:
         parts.append(f'{opp_name} missed {w}')
     # Everything else stays brief and low-priority
@@ -572,6 +580,8 @@ Save to `<project root>/reports/<tournament-slug>-report.md`. Format:
 
 ## Per-Game Breakdown
 
+*Notes: `*` marks a phony (all words formed by the play; the specific invalid word isn't always identifiable when multiple words were formed — CSW is the configured lexicon for every game).*
+
 | Rnd | Game | Opponent | Result | Jesse | Opp | Spread | Mistakes | Jesse Bingos | Missed Bingos | Opp Bingos | Jesse Blanks | Endgame Spread Lost | Win% Lost | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | N | [↗](https://woogles.io/game/GAME_ID) | Name | W/L | NNN | NNN | ±NNN | X.X | N | N | N | N | N | XX.X% | note |
@@ -604,7 +614,7 @@ No spreadsheet output (Jesse's preference as of June 2026).
 - For very large collections (50+ games), check with Jesse before committing to a full analysis sweep in one sitting.
 - **Endgame spread lost context:** values of 20+ in a single game are worth flagging — use per-turn `played_move` / `optimal_move` / `spread_loss` to explain what happened.
 - **Win% Lost:** sum of `win_prob_loss` over Jesse's turns × 100. High in a win = nearly gave it away; high in a close loss = structural deficit, not bad luck.
-- **Phonies:** `is_phony` = word not in lexicon; check it for BOTH players, not just Jesse (`analysis['turns'][i]['is_phony']` is the authoritative flag — don't infer phony-ness from the event log alone, since an *unchallenged* phony has no `PHONY_TILES_RETURNED` event and still scores). If `total_phonies == 0`, omit "Games per Phony Played" from the report. Every phony gets named by word in the per-game note (`phony WORD`, or `phony WORD (unchallenged)` if it wasn't caught); opponent phonies are attributed by the opponent's name from the Opponent column.
+- **Phonies:** `is_phony` = word not in lexicon (games are configured for CSW — the lexicon Jesse always plays, confirmed via `history['lexicon']`, e.g. `CSW21`/`CSW24`); check it for BOTH players, not just Jesse (`analysis['turns'][i]['is_phony']` is the authoritative flag — don't infer phony-ness from the event log alone, since an *unchallenged* phony has no `PHONY_TILES_RETURNED` event and still scores). If `total_phonies == 0`, omit "Games per Phony Played" from the report. Every phony gets named in the per-game note with a trailing `*` (`phony WORD*`, or `phony WORD* (unchallenged)` if it wasn't caught); opponent phonies are attributed by the opponent's name from the Opponent column. **Multi-word plays:** when the play formed more than one word (`event['words_formed']` has >1 entry — e.g. a bingo crossing several tiles, or a short play forming a cross word), show ALL of them joined by `/` before the `*` (e.g. `GU/PU*`) — do NOT assume the primary/longest word is the invalid one. This bit Jesse: two "phonies" (GU, LINUX) turned out to be valid CSW words, and the actual violation was almost certainly the cross word (PU, NEEL) formed alongside them. Never assert which specific word was invalid; let Jesse read the full set and judge for himself.
 - **Missed bingo validation:** always cross-check `missed_bingo` against the history event rack. The analysis occasionally stores an incorrect rack, causing a false-positive (confirmed in Causeway R2: analysis showed BEEIORZ, actual was BEELORZ). If `validate_bingo(om, history_rack)` returns False, skip the entry.
 - **Board reconstruction:** `build_snapshots_and_racks` runs in ~2ms per 19-game tournament and uses zero Claude tokens. Prefer it over dictionary lookup for missed-bingo word resolution.
 - **Game URL:** `https://woogles.io/game/<game_id>`
