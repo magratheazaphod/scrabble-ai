@@ -109,7 +109,7 @@ def send_email(body):
     html_body = markdown.markdown(body, extensions=["tables", "nl2br"])
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"Woogles Daily Report: {date_str}"
+    msg["Subject"] = f"Magrathean's Woogles daily report - {date_str}"
     msg["From"] = sender
     msg["To"] = RECIPIENT
     msg.attach(MIMEText(body, "plain", "utf-8"))
