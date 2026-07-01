@@ -13,7 +13,11 @@ on:
   workflow_dispatch:
     inputs:
       target_username:
-        description: "Woogles username to report on for a one-off send (leave blank for Jesse's daily report)"
+        description: "Woogles username to report on for a one-off send — all of their collections (leave blank for Jesse's daily report)"
+        required: false
+        default: ""
+      target_collection_uuid:
+        description: "Specific collection UUID to report on for a one-off send, e.g. from a woogles.io/collections/<uuid> URL (overrides target_username's full-profile scope)"
         required: false
         default: ""
       recipient_email:
@@ -37,19 +41,20 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Fetch latest data snapshot and send-status marker from woogles-data branch
-        if: ${{ github.event.inputs.target_username == '' }}
+        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
         run: |
           mkdir -p data
           git fetch origin woogles-data
           git show origin/woogles-data:data/woogles-snapshot.json > data/woogles-snapshot.json
           git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
 
-      - name: Fetch fresh snapshot for one-off target user
-        if: ${{ github.event.inputs.target_username != '' }}
+      - name: Fetch fresh snapshot for one-off target
+        if: ${{ github.event.inputs.target_username != '' || github.event.inputs.target_collection_uuid != '' }}
         run: python scripts/fetch_woogles_snapshot.py
         env:
           WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
           TARGET_USERNAME: ${{ github.event.inputs.target_username }}
+          TARGET_COLLECTION_UUID: ${{ github.event.inputs.target_collection_uuid }}
 
       - run: python scripts/generate_report_email.py
         env:
@@ -57,10 +62,11 @@ jobs:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           TARGET_USERNAME: ${{ github.event.inputs.target_username }}
+          TARGET_COLLECTION_UUID: ${{ github.event.inputs.target_collection_uuid }}
           RECIPIENT_EMAIL: ${{ github.event.inputs.recipient_email }}
 
       - name: Commit updated report state
-        if: ${{ github.event.inputs.target_username == '' }}
+        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -69,7 +75,7 @@ jobs:
           git push origin HEAD:master
 
       - name: Record send-status marker if a report was sent
-        if: ${{ github.event.inputs.target_username == '' }}
+        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

@@ -68,22 +68,36 @@ def resolve_subject_identity(results):
 
 def main():
     target_username = os.environ.get("TARGET_USERNAME", "").strip()
-    user_uuid = resolve_user_uuid(target_username) if target_username else DEFAULT_USER_UUID
-    if target_username:
-        print(f"One-off snapshot for username: {target_username} ({user_uuid})", file=sys.stderr)
+    target_collection_uuid = os.environ.get("TARGET_COLLECTION_UUID", "").strip()
+    one_off = bool(target_username or target_collection_uuid)
 
-    collections = []
-    offset = 0
-    while True:
-        resp = post(
-            "collections_service.CollectionsService/GetUserCollections",
-            {"user_uuid": user_uuid, "limit": 50, "offset": offset},
+    if target_collection_uuid:
+        # A specific collection was named directly (e.g. from a woogles.io URL) —
+        # skip listing the owner's collections entirely and fetch just this one.
+        col_resp = post(
+            "collections_service.CollectionsService/GetCollection",
+            {"collection_uuid": target_collection_uuid},
         )
-        batch = resp.get("collections", [])
-        collections.extend(batch)
-        if len(batch) < 50:
-            break
-        offset += 50
+        col_title = col_resp.get("collection", {}).get("title", "Untitled collection")
+        collections = [{"uuid": target_collection_uuid, "title": col_title}]
+        print(f"One-off snapshot for collection: {col_title} ({target_collection_uuid})", file=sys.stderr)
+    else:
+        user_uuid = resolve_user_uuid(target_username) if target_username else DEFAULT_USER_UUID
+        if target_username:
+            print(f"One-off snapshot for username: {target_username} ({user_uuid})", file=sys.stderr)
+
+        collections = []
+        offset = 0
+        while True:
+            resp = post(
+                "collections_service.CollectionsService/GetUserCollections",
+                {"user_uuid": user_uuid, "limit": 50, "offset": offset},
+            )
+            batch = resp.get("collections", [])
+            collections.extend(batch)
+            if len(batch) < 50:
+                break
+            offset += 50
 
     print(f"Collections found: {len(collections)}", file=sys.stderr)
 
@@ -154,7 +168,7 @@ def main():
         print(f"  Snapshot ready: {len(game_entries)} games", file=sys.stderr)
 
     output = {"collections": results, "pending": pending}
-    if target_username:
+    if one_off:
         subject = resolve_subject_identity(results)
         if subject:
             output["target"] = {"username": target_username, **subject}

@@ -164,8 +164,9 @@ def send_email(body, recipient, subject):
 
 def main():
     target_username = os.environ.get("TARGET_USERNAME", "").strip()
+    target_collection_uuid = os.environ.get("TARGET_COLLECTION_UUID", "").strip()
     recipient = os.environ.get("RECIPIENT_EMAIL", "").strip() or DEFAULT_RECIPIENT
-    one_off = bool(target_username)
+    one_off = bool(target_username or target_collection_uuid)
 
     today_str = datetime.now(CENTRAL).strftime("%Y-%m-%d")
     if not one_off and already_sent_today(today_str):
