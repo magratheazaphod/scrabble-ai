@@ -23,10 +23,14 @@ SKIP_STATUSES = {"NOT_A_PLAYER", "GAME_NOT_ENDED", "INVALID_VARIANT"}
 
 # Woogles' RequestAnalysis quota (15/day regular, 30/day volunteer — see
 # liwords pkg/analysis/service.go) is a rolling 24h window keyed off each
-# individual request's timestamp (db/queries/analysis.sql:
-# "requested_at > NOW() - INTERVAL '24 hours'"), not a calendar-day reset.
-# So once we get RATE_LIMITED, further RequestAnalysis calls are pointless
-# until ~24h after that point — GetAnalysisStatus checks (read-only, not
+# individual request's own timestamp (db/queries/analysis.sql:
+# "requested_at > NOW() - INTERVAL '24 hours'"), not a calendar-day reset —
+# the API exposes no reset time anywhere, so we estimate one. Since this
+# script fires its whole batch of requests in one tight burst, the oldest
+# request counted in the window is (to a good approximation) the *first*
+# successful RequestAnalysis call of the run that hit the limit, not the
+# moment of the rejected call — anchoring on the rejection would overshoot
+# by the length of the burst. GetAnalysisStatus checks (read-only, not
 # quota-consuming) still run every time in case games complete some other
 # way (e.g. another contributor's worker picking up the backlog).
 RATE_LIMIT_MARKER_PATH = "data/rate-limited-until.txt"
@@ -124,6 +128,7 @@ def main():
 
     results, pending = [], []
     rate_limited = blocked_until is not None
+    first_request_at = None
     if rate_limited:
         print(
             f"Known rate-limited until {blocked_until.isoformat()} — skipping new "
@@ -155,13 +160,17 @@ def main():
                 continue
             if rate_limited:
                 continue
+            request_sent_at = datetime.now(timezone.utc)
             r = post(
                 "analysis_service.AnalysisService/RequestAnalysis",
                 {"game_id": g["game_id"], "force": False},
             )
             s = r.get("status", "UNKNOWN")
             if s == "RATE_LIMITED":
-                blocked_until = now + timedelta(hours=24)
+                # Anchor on the first successful request of this run (the oldest one
+                # actually counted in the window), not on now — see comment above.
+                anchor = first_request_at if first_request_at else request_sent_at
+                blocked_until = anchor + timedelta(hours=24)
                 print(
                     f"  Rate limited — stopping new requests until {blocked_until.isoformat()}",
                     file=sys.stderr,
@@ -171,6 +180,8 @@ def main():
                 print(f"  Skipping {g['chapter_title']}: {s}", file=sys.stderr)
                 skipped_ids.add(g["game_id"])
             else:
+                if s == "SUCCESS" and first_request_at is None:
+                    first_request_at = request_sent_at
                 print(f"  {s}: {g['chapter_title']}", file=sys.stderr)
 
         reportable_ids = analyzed_ids | skipped_ids
