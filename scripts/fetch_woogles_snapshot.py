@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -19,6 +20,16 @@ BASE = "https://woogles.io/api"
 HDRS = {"Content-Type": "application/json", "X-Api-Key": API_KEY}
 
 SKIP_STATUSES = {"NOT_A_PLAYER", "GAME_NOT_ENDED", "INVALID_VARIANT"}
+
+# Woogles' RequestAnalysis quota (15/day regular, 30/day volunteer — see
+# liwords pkg/analysis/service.go) is a rolling 24h window keyed off each
+# individual request's timestamp (db/queries/analysis.sql:
+# "requested_at > NOW() - INTERVAL '24 hours'"), not a calendar-day reset.
+# So once we get RATE_LIMITED, further RequestAnalysis calls are pointless
+# until ~24h after that point — GetAnalysisStatus checks (read-only, not
+# quota-consuming) still run every time in case games complete some other
+# way (e.g. another contributor's worker picking up the backlog).
+RATE_LIMIT_MARKER_PATH = "data/rate-limited-until.txt"
 
 
 def post(endpoint, body):
@@ -101,8 +112,24 @@ def main():
 
     print(f"Collections found: {len(collections)}", file=sys.stderr)
 
+    now = datetime.now(timezone.utc)
+    blocked_until = None
+    if os.path.exists(RATE_LIMIT_MARKER_PATH):
+        with open(RATE_LIMIT_MARKER_PATH) as f:
+            raw = f.read().strip()
+        if raw:
+            known_until = datetime.fromisoformat(raw)
+            if known_until > now:
+                blocked_until = known_until
+
     results, pending = [], []
-    rate_limited = False
+    rate_limited = blocked_until is not None
+    if rate_limited:
+        print(
+            f"Known rate-limited until {blocked_until.isoformat()} — skipping new "
+            "analysis requests this run (still checking status of pending games)",
+            file=sys.stderr,
+        )
 
     for col in collections:
         col_uuid, col_title = col["uuid"], col["title"]
@@ -134,7 +161,11 @@ def main():
             )
             s = r.get("status", "UNKNOWN")
             if s == "RATE_LIMITED":
-                print("  Rate limited — stopping new requests this run", file=sys.stderr)
+                blocked_until = now + timedelta(hours=24)
+                print(
+                    f"  Rate limited — stopping new requests until {blocked_until.isoformat()}",
+                    file=sys.stderr,
+                )
                 rate_limited = True
             elif s in SKIP_STATUSES:
                 print(f"  Skipping {g['chapter_title']}: {s}", file=sys.stderr)
@@ -179,6 +210,8 @@ def main():
     os.makedirs("data", exist_ok=True)
     with open("data/woogles-snapshot.json", "w") as f:
         json.dump(output, f)
+    with open(RATE_LIMIT_MARKER_PATH, "w") as f:
+        f.write(blocked_until.isoformat() if blocked_until else "")
 
     print(f"Done. {len(results)} collections ready, {len(pending)} deferred.", file=sys.stderr)
 

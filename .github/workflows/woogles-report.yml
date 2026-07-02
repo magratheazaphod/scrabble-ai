@@ -40,12 +40,14 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Fetch send-status marker from woogles-data branch
-        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
+      - name: Fetch send-status and rate-limit markers from woogles-data branch
         run: |
           mkdir -p data
           git fetch origin woogles-data
-          git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
+          git show origin/woogles-data:data/rate-limited-until.txt > data/rate-limited-until.txt 2>/dev/null || echo "" > data/rate-limited-until.txt
+          if [ "${{ github.event.inputs.target_username }}" = "" ] && [ "${{ github.event.inputs.target_collection_uuid }}" = "" ]; then
+            git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
+          fi
 
       - name: Fetch fresh snapshot (requests analysis for pending games)
         run: python scripts/fetch_woogles_snapshot.py
@@ -72,16 +74,25 @@ jobs:
           git diff --cached --quiet || git commit -m "Update report state ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git push origin HEAD:master
 
-      - name: Publish fresh snapshot and send-status marker to woogles-data branch
-        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
+      - name: Publish fresh snapshot, rate-limit, and send-status markers to woogles-data branch
         run: |
-          cp data/last-report-sent.txt /tmp/last-report-sent.txt
+          cp data/rate-limited-until.txt /tmp/rate-limited-until.txt
           cp data/woogles-snapshot.json /tmp/woogles-snapshot.json
+          one_off=false
+          if [ "${{ github.event.inputs.target_username }}" != "" ] || [ "${{ github.event.inputs.target_collection_uuid }}" != "" ]; then
+            one_off=true
+          else
+            cp data/last-report-sent.txt /tmp/last-report-sent.txt
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin woogles-data
           git checkout -B woogles-data origin/woogles-data
-          cp /tmp/last-report-sent.txt data/last-report-sent.txt
-          cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
-          git add -f data/last-report-sent.txt data/woogles-snapshot.json
-          git diff --cached --quiet && echo "Nothing changed — nothing to record." || (git commit -m "Update snapshot / report-sent marker ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
+          cp /tmp/rate-limited-until.txt data/rate-limited-until.txt
+          git add -f data/rate-limited-until.txt
+          if [ "$one_off" = false ]; then
+            cp /tmp/last-report-sent.txt data/last-report-sent.txt
+            cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
+            git add -f data/last-report-sent.txt data/woogles-snapshot.json
+          fi
+          git diff --cached --quiet && echo "Nothing changed — nothing to record." || (git commit -m "Update snapshot / rate-limit / report-sent markers ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
