@@ -40,16 +40,14 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Fetch latest data snapshot and send-status marker from woogles-data branch
+      - name: Fetch send-status marker from woogles-data branch
         if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
         run: |
           mkdir -p data
           git fetch origin woogles-data
-          git show origin/woogles-data:data/woogles-snapshot.json > data/woogles-snapshot.json
           git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
 
-      - name: Fetch fresh snapshot for one-off target
-        if: ${{ github.event.inputs.target_username != '' || github.event.inputs.target_collection_uuid != '' }}
+      - name: Fetch fresh snapshot (requests analysis for pending games)
         run: python scripts/fetch_woogles_snapshot.py
         env:
           WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
@@ -74,14 +72,16 @@ jobs:
           git diff --cached --quiet || git commit -m "Update report state ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git push origin HEAD:master
 
-      - name: Record send-status marker if a report was sent
+      - name: Publish fresh snapshot and send-status marker to woogles-data branch
         if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
         run: |
           cp data/last-report-sent.txt /tmp/last-report-sent.txt
+          cp data/woogles-snapshot.json /tmp/woogles-snapshot.json
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin woogles-data
           git checkout -B woogles-data origin/woogles-data
           cp /tmp/last-report-sent.txt data/last-report-sent.txt
-          git add -f data/last-report-sent.txt
-          git diff --cached --quiet && echo "No report sent this run — nothing to record." || (git commit -m "Record report sent ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
+          cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
+          git add -f data/last-report-sent.txt data/woogles-snapshot.json
+          git diff --cached --quiet && echo "Nothing changed — nothing to record." || (git commit -m "Update snapshot / report-sent marker ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
