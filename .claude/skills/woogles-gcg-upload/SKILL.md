@@ -1,24 +1,32 @@
 ---
 name: woogles-gcg-upload
-description: Upload local .gcg tournament game files to woogles.io's Board Editor and group them into a collection. Use this whenever Jesse asks to upload GCG files to Woogles, add tournament rounds to a Woogles collection, or mentions a folder of .gcg files that need to go up on his profile. Covers the finicky UI mechanics of the upload form, the antd Select dropdowns, the Add-to-Collection modal, and the GCG endgame-line gotcha that silently breaks the parser.
+description: Upload local .gcg tournament game files to woogles.io as annotated games and group them into a collection, via the Woogles Connect RPC API. Use this whenever Jesse asks to upload GCG files to Woogles, add tournament rounds to a Woogles collection, or mentions a folder of .gcg files that need to go up on his profile. Covers the ImportGCG/AddGameToCollection API calls, lexicon/challenge-rule pitfalls, and the GCG endgame-line gotcha that silently breaks the parser.
 ---
 
 # Woogles.io GCG Upload
 
-Jesse (woogles.io username `Magrathean`) keeps tournament games as local `.gcg` files (e.g. exported from Quackle) and wants them uploaded to woogles.io's **Board Editor**, then grouped into a **collection** named after the tournament (e.g. "Austin One-Day Aug '23"), one chapter per round.
+Jesse (woogles.io username `Magrathean`) keeps tournament games as local `.gcg` files (e.g. exported from Quackle) and wants them uploaded to woogles.io as **annotated games**, then grouped into a **collection** named after the tournament (e.g. "Austin One-Day Aug '23"), one chapter per round.
 
-Woogles.io is a JS-rendered SPA — use the **Claude in Chrome** MCP tools throughout (`navigate`, `computer`, `javascript_tool`, `file_upload`, `read_page`). If Chrome isn't connected, ask Jesse to connect it first.
+Upload this directly via the Woogles Connect RPC API with `requests` — no browser needed. Auth is `X-Api-Key: $WOOGLES_API_KEY` (stored in `.env` at project root, gitignored), same pattern as `woogles-tournament-analysis`. Confirmed working end-to-end 2026-07-01.
+
+```python
+import os, json, requests
+
+API_KEY = os.environ['WOOGLES_API_KEY']  # load from .env at project root (gitignored)
+HDRS = {'Content-Type': 'application/json', 'X-Api-Key': API_KEY}
+BASE = 'https://woogles.io/api'
+```
 
 ## Jesse's standing defaults — always apply these
 
-- **Lexicon: Jesse always plays CSW, never NWL.** The GCG files don't encode a lexicon, so you must pick one in the upload form.
-- **Use the CSW edition current at the time of the tournament**, not today's. E.g. a tournament from August 2023 should use **CSW21** (the CSW edition in force at that time), not whatever the newest CSW edition is now. Ask Jesse if the right historical edition isn't obvious from context.
-- **Challenge rule: always "5 points"** (CSW tournaments use the 5-point challenge rule).
-- **The lexicon and challenge rule CANNOT be edited after the game is created.** Both must be set correctly in the upload form *before* clicking "Create new game." If you get this wrong, delete the game and re-upload rather than trying to fix it after the fact.
+- **Lexicon: Jesse always plays CSW, never NWL.** GCG files don't encode a lexicon, so you must pick one explicitly in the `ImportGCG` request. **Watch for "JD" in `#player` lines — that's Jesse Day's own initials, not a stranger.** Don't assume a game is someone else's (and therefore safe to use a different lexicon on) just because the recorded name isn't "Jesse" or "Magrathean".
+- **Use the CSW edition current at the time of the tournament**, not today's. E.g. a tournament from August 2023 should use `CSW21` (the CSW edition in force at that time), not whatever the newest CSW edition is now. Ask Jesse if the right historical edition isn't obvious from context. Lexicon codes are short forms like `CSW21`, `CSW24`, `NWL20`, `NWL23` — not `CSW2021`/`NWL2023` (those long forms cause a 500 with a "lexicon file not found" error).
+- **Challenge rule: always `ChallengeRule_FIVE_POINT`** (CSW tournaments use the 5-point challenge rule).
+- **The lexicon and challenge rule CANNOT be edited after the game is created, and finished games CANNOT be deleted via the API** (`DeleteAnnotatedGame` returns `"you cannot delete a game that is already done"` for any completed game). There is also no working way to hide a wrongly-created game — `SetAnnotatedGamePrivacy` is currently a no-op stub on the server. **Get the lexicon right before calling `ImportGCG`** — there is no clean undo. If genuinely unsure, ask Jesse rather than guessing.
 
 ## Before uploading: check the GCG file for the endgame-line gotcha
 
-Read each `.gcg` file before uploading it. GCG files end one of two ways, and **woogles.io's parser rejects a file if these are confused** (it fails with an opaque "no match found for line" error, or — worse — silently creates a blank game with no board):
+Read each `.gcg` file before uploading it. GCG files end one of two ways, and **the server-side parser (`gcgio.ParseGCGFromReader`, same code whether via API or the old web form) rejects a file if these are confused** (fails with an opaque `invalid_argument` error, or — worse — silently creates a blank game with no board):
 
 1. **Going-out bonus** (one player plays out their rack, the other is left with tiles): the line has an **empty rack field** (two spaces after the colon), then the opponent's leftover tiles in parentheses, then a **positive** score:
    ```
@@ -34,116 +42,95 @@ These two formats are NOT interchangeable — emptying the rack field on a penal
 
 If you have to edit a file to fix this, only touch the rack field and parenthetical/sign — don't otherwise alter scores or moves.
 
-## Step 1: Open the upload form
+## Step 1: Import the game (create the annotated game)
 
-1. Navigate to `https://woogles.io/editor`.
-2. Click **"Add an annotated game"**. This opens a small menu (Create a new game from scratch / Upload a GCG file / Annotate from your camera with Scrabblecam).
-3. Click **"Upload a GCG file"**.
+`POST {BASE}/omgwords_service.GameEventService/ImportGCG`
 
-**Known flakiness:** menu-item clicks frequently don't register on the first try, and the form that should appear sometimes doesn't. Screenshot after each click to confirm the menu/form actually changed state before proceeding. If a coordinate click doesn't work, fall back to a JS click targeting the exact visible node:
-```js
-const items = Array.from(document.querySelectorAll('li, div, span'))
-  .filter(e => e.textContent.trim() === 'Upload a GCG file' && e.offsetParent !== null);
-items[items.length - 1].click();
-```
-Confirm success by checking for the file input:
-```js
-document.querySelectorAll('input[type="file"]').length
-```
+```python
+with open(gcg_path) as f:
+    gcg_contents = f.read()
 
-## Step 2: Upload the file
-
-Use `file_upload` with the file input's ref and the absolute path to the `.gcg` file. Getting a `ref`:
-- Prefer `read_page` over `find` — `find` is backed by a rate-limited model call and can return 429s under load; `read_page`'s accessibility tree usually includes the file input directly (look for an element typed `"file"` inside the upload `<form>`).
-
-After upload, the form should preview the file's raw text and show **Dictionary** and **Challenge rule** fields, plus a "Create new game" button.
-
-## Step 3: Set Dictionary and Challenge rule (before creating the game)
-
-These are antd `Select` components and are the least reliable part of the whole flow. Plain coordinate clicks on dropdown options frequently fail to register (the field stays empty even though the dropdown visually closes). Use this JS pattern instead — it has been reliable every time:
-
-```js
-async function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-function setReactInputValue(el, value) {
-  const proto = window.HTMLInputElement.prototype;
-  const setter = Object.getOwnPropertyDescriptor(proto, 'value').set;
-  setter.call(el, value);
-  el.dispatchEvent(new Event('input', { bubbles: true }));
-  el.dispatchEvent(new Event('change', { bubbles: true }));
-}
-
-// Open the select (e.g. selects[0] = Dictionary, selects[1] = Challenge rule)
-const selects = Array.from(document.querySelectorAll('.ant-select'));
-const dictSelect = selects[0];
-dictSelect.querySelector('.ant-select-selector')
-  .dispatchEvent(new MouseEvent('mousedown', {bubbles:true, cancelable:true}));
-await sleep(300);
+resp = requests.post(
+    f'{BASE}/omgwords_service.GameEventService/ImportGCG',
+    headers=HDRS,
+    data=json.dumps({
+        'gcg': gcg_contents,
+        'lexicon': 'CSW21',  # short form, era-appropriate — see defaults above
+        'rules': {
+            'board_layout_name': 'CrosswordGame',
+            'letter_distribution_name': 'english',
+            'variant_name': 'classic',
+        },
+        'challenge_rule': 'ChallengeRule_FIVE_POINT',
+    }),
+    timeout=30,
+)
+resp.raise_for_status()
+game_id = resp.json()['game_id']
 ```
 
-**The historical CSW edition (e.g. CSW21) often isn't in the default visible option list** — the unfiltered dropdown only shows a handful of current options (CSW 24, NWL23, NWL20, NWL18, etc.). To reveal it, type into the search input to filter:
-```js
-const input = dictSelect.querySelector('input.ant-select-selection-search-input');
-setReactInputValue(input, '21'); // filters down to "CSW21"
-await sleep(300);
+Notes:
+- `gcg` field is capped at 128,000 bytes server-side (`InvalidArg` if exceeded — not a concern for a single game's GCG).
+- On success, response is `{"game_id": "<uuid-like string>"}`. The game is viewable at `https://woogles.io/anno/<game_id>`.
+- A `500` mentioning a missing `.kwg` file almost always means the lexicon code is wrong (e.g. `NWL2023` instead of `NWL23`) — fix the code, don't retry blindly.
+- A blank/empty board at the resulting URL means the GCG didn't parse cleanly — re-check the endgame-line format above before re-importing (as a brand new game; the broken one can't be deleted once "done").
+
+## Step 2: Find or create the tournament's collection
+
+`POST {BASE}/collections_service.CollectionsService/GetUserCollections` (empty `user_uuid` returns the authenticated user's own collections):
+
+```python
+resp = requests.post(
+    f'{BASE}/collections_service.CollectionsService/GetUserCollections',
+    headers=HDRS,
+    data=json.dumps({'user_uuid': '', 'limit': 100, 'offset': 0}),
+    timeout=30,
+)
+collections = resp.json().get('collections', [])
+match = next((c for c in collections if c['title'] == tournament_title), None)
 ```
-Then select the option, again via JS (visibility-filtered, since closed/hidden dropdown items can share the same class):
-```js
-const items = Array.from(document.querySelectorAll('.ant-select-item-option'))
-  .filter(i => i.offsetParent !== null);
-const item = items.find(i => i.textContent === 'CSW21');
-item.dispatchEvent(new MouseEvent('mousedown', {bubbles:true, cancelable:true}));
-item.click();
+
+If no match, create it:
+
+```python
+resp = requests.post(
+    f'{BASE}/collections_service.CollectionsService/CreateCollection',
+    headers=HDRS,
+    data=json.dumps({'title': tournament_title, 'description': '', 'public': True}),
+    timeout=30,
+)
+collection_uuid = resp.json()['collection_uuid']
 ```
-Repeat the same pattern for the Challenge rule select, picking the option with exact text `'5 points'`. Verify both fields actually took the value before moving on:
-```js
-document.querySelectorAll('.ant-select-selection-item')[0].textContent // Dictionary
-document.querySelectorAll('.ant-select-selection-item')[1].textContent // Challenge rule
+
+(Confirm the public/private choice with Jesse if not already established for this tournament — existing collections default to `public: True` per past uploads, but don't assume silently for a brand-new tournament.)
+
+## Step 3: Add the game to the collection
+
+`POST {BASE}/collections_service.CollectionsService/AddGameToCollection`
+
+```python
+resp = requests.post(
+    f'{BASE}/collections_service.CollectionsService/AddGameToCollection',
+    headers=HDRS,
+    data=json.dumps({
+        'collection_uuid': collection_uuid,
+        'game_id': game_id,
+        'chapter_title': f'Round {round_num} - {player_a} vs {player_b}',
+        'is_annotated': True,
+    }),
+    timeout=30,
+)
+resp.raise_for_status()
 ```
-Take a screenshot too — sometimes the dropdown list visually overlaps the form in a way that's only obvious from a screenshot, even though the underlying value is set correctly.
 
-## Step 4: Create the game
+Use a consistent chapter-title naming convention across the tournament, e.g. `Round 4 - JD vs Becky Dyer`. `AddGameToCollectionResponse` is empty on success — a non-2xx status or a JSON `code`/`message` body means it failed (e.g. `permission_denied` if the collection isn't owned by the authenticated user).
 
-Click **"Create new game"**. On success you land on `/editor/<gameId>` with the full board rendered and final scores shown in the right-hand panel, and the header should read something like "Annotated • Classic • CSW21" / "5 point challenge • Unrated". A blank/empty board on this page means the GCG didn't parse — re-check the endgame-line format (Step "Before uploading").
+## Step 4: Verify
 
-## Step 5: Add the game to the collection
-
-In the editor controls panel (scroll down if needed), expand **Collections** and click **Add**.
-
-**Known flakiness:** the very first click on "Add" frequently does nothing visible — click it again to actually open the "Add Game to Collection" modal. Likewise, clicking inside the modal's "Select Collection" field with a plain coordinate click can intermittently close the whole modal (it resets back to the lobby/game view) instead of opening the dropdown. The reliable approach is, once the modal is open, to do the whole fill-in via JS in one shot:
-
-```js
-async function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-function setReactInputValue(el, value) {
-  const proto = window.HTMLInputElement.prototype;
-  const setter = Object.getOwnPropertyDescriptor(proto, 'value').set;
-  setter.call(el, value);
-  el.dispatchEvent(new Event('input', { bubbles: true }));
-  el.dispatchEvent(new Event('change', { bubbles: true }));
-}
-const modal = document.querySelector('.ant-modal-content');
-const selector = modal.querySelector('.ant-select-selector');
-selector.dispatchEvent(new MouseEvent('mousedown', {bubbles:true, cancelable:true}));
-await sleep(300);
-const items = Array.from(document.querySelectorAll('.ant-select-item-option')).filter(i => i.offsetParent !== null);
-const item = items.find(i => i.textContent.includes('<tournament collection name>'));
-item.dispatchEvent(new MouseEvent('mousedown', {bubbles:true, cancelable:true}));
-item.click();
-await sleep(300);
-const titleInput = modal.querySelector('input[placeholder*="Round 1"]');
-setReactInputValue(titleInput, 'Round N - <Player A> vs <Player B>');
-```
-Verify both fields with a screenshot (the "Select Collection" and "Chapter Title" inputs should show the values you set — they tend to *retain* JS-set values across the modal's re-renders even when an immediately-following coordinate click looked like it cleared them).
-
-Use a consistent chapter-title naming convention across the tournament, e.g. `Round 4 - JD vs Becky Dyer`.
-
-Then click **"Add to Collection"**. Confirm via the green "Game added to collection" toast — don't assume success just because the modal closed.
-
-## Step 6: Verify
-
-After all rounds are uploaded, navigate to `https://woogles.io/collections/<collectionId>` and check the **Chapters** list in the left sidebar: it should show one chapter per round, correctly numbered and named, matching the chapter count shown next to the collection title (e.g. "Collection by magrathean • 6 chapters"). Spot check a couple of chapters' boards render fully (not blank).
+`POST {BASE}/collections_service.CollectionsService/GetCollection` with `{'collection_uuid': collection_uuid}` and check `game_count` matches the number of rounds uploaded, and that each `games[].chapter_title` is correct. Spot check a couple of the resulting `https://woogles.io/anno/<game_id>` pages render a full board (not blank).
 
 ## Notes / open questions to flag to Jesse if encountered
 
 - A GCG file with an endgame line format Claude hasn't seen before (not a clean going-out or six-scoreless-turns ending) — don't guess, ask Jesse or check the spec.
-- A file whose lexicon/era isn't obvious (tournament may have used a lexicon other than CSW, or an edition Jesse hasn't specified) — confirm before creating the game, since it can't be changed afterward.
-- The Claude in Chrome `find` tool can hit session-level rate limits during a long multi-file upload run; prefer `read_page` + raw JS DOM queries over `find` when possible to avoid stalling mid-task.
+- A file whose lexicon/era isn't obvious (tournament may have used a lexicon other than CSW, or an edition Jesse hasn't specified) — confirm before calling `ImportGCG`, since it can't be changed afterward and the game can't be deleted or hidden once finished.
+- If `ImportGCG` or `AddGameToCollection` returns an auth error, check that `WOOGLES_API_KEY` is set and current in `.env` — same key used by `woogles-tournament-analysis`.
