@@ -5,9 +5,15 @@ description: Upload local .gcg tournament game files to woogles.io as annotated 
 
 # Woogles.io GCG Upload
 
-Jesse (woogles.io username `Magrathean`) keeps tournament games as local `.gcg` files (e.g. exported from Quackle) and wants them uploaded to woogles.io as **annotated games**, then grouped into a **collection** named after the tournament (e.g. "Austin One-Day Aug '23"), one chapter per round.
+Jesse (woogles.io username `Magrathean`) keeps tournament games as `.gcg` files (e.g. exported from Quackle) and wants them uploaded to woogles.io as **annotated games**, then grouped into a **collection** named after the tournament (e.g. "Austin One-Day Aug '23"), one chapter per round.
 
 Upload this directly via the Woogles Connect RPC API with `requests` — no browser needed. Auth is `X-Api-Key: $WOOGLES_API_KEY` (stored in `.env` at project root, gitignored), same pattern as `tournament-analysis`. Confirmed working end-to-end 2026-07-01.
+
+## Where to find the files
+
+Jesse's full tournament game archive (2010–2025) is backed up in this repo under `Tournament Games/<year>/<tournament name>/`, mirrored from his local Quackle folder as of 2026-07-03. **Default to this repo as the source** — even if Jesse just names a tournament without saying where the files are, look for a matching folder under `Tournament Games/<year>/` before asking. Folder names don't always match a tournament's full/canonical name (e.g. "WESPAC '23" for "WESPAC 2023 (Las Vegas)", "WSC '18" for "World Scrabble Championship 2018") — search by year and fuzzy name match. As of 2026-07-03 all actual game files in the archive carry a `.gcg` extension; if you ever find one that doesn't, treat it the same as the others (content, not extension, is what matters). If no matching folder exists for what Jesse describes, say so and ask rather than guessing at a substitute (don't silently pick a differently-named event as a stand-in).
+
+**Every tournament folder typically also has a file named `equity`** (no extension) — this is Jesse's personal notes file for that tournament (mistake/decision commentary per round), not a game. It never carries a `.gcg` extension and should never be uploaded or treated as a game file. Same goes for other non-game files that sometimes appear alongside the rounds (`words`, `toughies`, `stats`, tough-word lists) — a real GCG game file always starts with a `#player1`/`#character-encoding` header line followed by `>Name: ...` move lines; `equity` and its siblings don't look like that.
 
 ```python
 import os, json, requests
