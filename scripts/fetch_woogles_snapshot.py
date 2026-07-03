@@ -158,20 +158,30 @@ def main():
             if status == "COMPLETED":
                 analyzed_ids.add(g["game_id"])
                 continue
-            if status == "NOT_FOUND":
-                # Collection lists a game_id that Woogles has no record of (e.g. a
-                # GCG import that silently failed) — RequestAnalysis 400s on these,
-                # so skip instead of crashing the whole run.
-                print(f"  Skipping {g['chapter_title']}: game not found on Woogles", file=sys.stderr)
-                skipped_ids.add(g["game_id"])
-                continue
+            # NOT_FOUND here just means "no analysis requested yet" — the normal
+            # state for any never-analyzed game, not evidence the game is missing.
+            # Fall through to RequestAnalysis as usual.
             if rate_limited:
                 continue
             request_sent_at = datetime.now(timezone.utc)
-            r = post(
-                "analysis_service.AnalysisService/RequestAnalysis",
-                {"game_id": g["game_id"], "force": False},
-            )
+            try:
+                r = post(
+                    "analysis_service.AnalysisService/RequestAnalysis",
+                    {"game_id": g["game_id"], "force": False},
+                )
+            except requests.exceptions.HTTPError as e:
+                if e.response is not None and e.response.status_code == 400:
+                    # Collection lists a game_id Woogles has no record of at all
+                    # (e.g. a GCG import that silently failed) — skip instead of
+                    # crashing the whole run.
+                    print(
+                        f"  Skipping {g['chapter_title']}: RequestAnalysis rejected "
+                        f"the game ({e.response.text.strip()})",
+                        file=sys.stderr,
+                    )
+                    skipped_ids.add(g["game_id"])
+                    continue
+                raise
             s = r.get("status", "UNKNOWN")
             if s == "RATE_LIMITED":
                 # Anchor on the first successful request of this run (the oldest one
