@@ -1,5 +1,5 @@
 ---
-name: woogles-tournament-analysis
+name: tournament-analysis
 description: Pull BestBot-analyzed stats (mistakes score, scores, bingos, blanks drawn) out of a woogles.io game collection and turn them into a tournament report. Use this whenever Jesse asks to analyze a Woogles collection/tournament, asks for his "mistakes" score, bingo counts, or wants a report/spreadsheet covering games annotated on woogles.io. Also use proactively when Jesse mentions adding games to a Woogles collection or wants every tournament on his profile covered with a report.
 ---
 
@@ -169,7 +169,7 @@ Analysis takes 2–10 minutes per game (Monte-Carlo simulation). Queue all pendi
 
 #### Hitting the daily limit
 1. Stop requesting new analyses.
-2. Write a progress file at `.claude/skills/woogles-tournament-analysis/state/<collectionId>.json` recording which games are `COMPLETED`, which are pending, and which are analyzed but not yet aggregated.
+2. Write a progress file at `.claude/skills/tournament-analysis/state/<collectionId>.json` recording which games are `COMPLETED`, which are pending, and which are analyzed but not yet aggregated.
 3. Tell Jesse how many are done and how many are waiting. Offer to set up a daily scheduled task via the `schedule` skill to resume automatically.
 4. On a resumed run, read the progress file and only request analysis for pending games.
 

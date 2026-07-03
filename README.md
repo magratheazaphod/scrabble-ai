@@ -9,4 +9,4 @@ Tournament analysis reports for Jesse Day (woogles.io: `magrathean`), generated 
 
 ## Generating a new report
 
-Use the `woogles-tournament-analysis` skill (`.claude/skills/woogles-tournament-analysis/SKILL.md`) via Claude Code. All API calls use the Woogles `X-Api-Key` stored in the skill file.
+Use the `tournament-analysis` skill (`.claude/skills/tournament-analysis/SKILL.md`) via Claude Code. All API calls use the Woogles `X-Api-Key` stored in the skill file.
