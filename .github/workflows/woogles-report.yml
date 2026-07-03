@@ -1,15 +1,21 @@
 name: Woogles report email
 
-# Fires at :05 and :35 past every hour from 13:05 to 23:35 UTC, i.e. 8:05am to
-# 6:35pm Central Daylight Time — a first attempt at 8:05am, then a retry every
-# 30 minutes until the report actually sends (generate_report_email.py skips
-# re-sending once today's report has already gone out, and skips sending at
-# all while every collection is still pending analysis). Central is UTC-5
-# during CDT (Mar-Nov) and UTC-6 during CST (Nov-Mar), so this window runs an
-# hour earlier — roughly 7:05am to 5:35pm — during CST.
+# Fires at :12 and :42 past every hour in two windows: 08:12-10:42 UTC
+# (3:12am-5:42am Central Daylight Time, an early attempt before the day's
+# peak GitHub Actions crunch) and 13:12-23:42 UTC (8:12am-6:42pm CDT, the
+# original daytime fallback). Either window retries every 30 minutes until
+# the report actually sends (generate_report_email.py skips re-sending once
+# today's report has already gone out, and skips sending at all while every
+# collection is still pending analysis) — so if the early window finds
+# nothing new to report yet, the daytime window keeps trying. Central is
+# UTC-5 during CDT (Mar-Nov) and UTC-6 during CST (Nov-Mar), so both windows
+# run an hour earlier — roughly 2:12am-4:42am and 7:12am-5:42pm — during CST.
+# Minutes are offset away from :00/:05/:30/:35 since GitHub Actions scheduled
+# runs queue behind everyone else's cron jobs at those popular
+# top-of-hour/half-hour marks.
 on:
   schedule:
-    - cron: "5,35 13-23 * * *"
+    - cron: "12,42 8-10,13-23 * * *"
   workflow_dispatch:
     inputs:
       target_username:

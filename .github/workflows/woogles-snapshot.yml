@@ -1,8 +1,10 @@
 name: Woogles snapshot
 
+# Fires at :17 past every hour rather than :00, since scheduled GitHub Actions
+# runs queue behind everyone else's cron jobs at the top of the hour.
 on:
   schedule:
-    - cron: "0 12-18 * * *"
+    - cron: "17 12-18 * * *"
   workflow_dispatch: {}
 
 permissions:
