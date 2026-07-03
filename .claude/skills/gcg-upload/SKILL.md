@@ -1,5 +1,5 @@
 ---
-name: woogles-gcg-upload
+name: gcg-upload
 description: Upload local .gcg tournament game files to woogles.io as annotated games and group them into a collection, via the Woogles Connect RPC API. Use this whenever Jesse asks to upload GCG files to Woogles, add tournament rounds to a Woogles collection, or mentions a folder of .gcg files that need to go up on his profile. Covers the ImportGCG/AddGameToCollection API calls, lexicon/challenge-rule pitfalls, and the GCG endgame-line gotcha that silently breaks the parser.
 ---
 
@@ -7,7 +7,7 @@ description: Upload local .gcg tournament game files to woogles.io as annotated 
 
 Jesse (woogles.io username `Magrathean`) keeps tournament games as local `.gcg` files (e.g. exported from Quackle) and wants them uploaded to woogles.io as **annotated games**, then grouped into a **collection** named after the tournament (e.g. "Austin One-Day Aug '23"), one chapter per round.
 
-Upload this directly via the Woogles Connect RPC API with `requests` — no browser needed. Auth is `X-Api-Key: $WOOGLES_API_KEY` (stored in `.env` at project root, gitignored), same pattern as `woogles-tournament-analysis`. Confirmed working end-to-end 2026-07-01.
+Upload this directly via the Woogles Connect RPC API with `requests` — no browser needed. Auth is `X-Api-Key: $WOOGLES_API_KEY` (stored in `.env` at project root, gitignored), same pattern as `tournament-analysis`. Confirmed working end-to-end 2026-07-01.
 
 ```python
 import os, json, requests
@@ -133,4 +133,4 @@ Use a consistent chapter-title naming convention across the tournament, e.g. `Ro
 
 - A GCG file with an endgame line format Claude hasn't seen before (not a clean going-out or six-scoreless-turns ending) — don't guess, ask Jesse or check the spec.
 - A file whose lexicon/era isn't obvious (tournament may have used a lexicon other than CSW, or an edition Jesse hasn't specified) — confirm before calling `ImportGCG`, since it can't be changed afterward and the game can't be deleted or hidden once finished.
-- If `ImportGCG` or `AddGameToCollection` returns an auth error, check that `WOOGLES_API_KEY` is set and current in `.env` — same key used by `woogles-tournament-analysis`.
+- If `ImportGCG` or `AddGameToCollection` returns an auth error, check that `WOOGLES_API_KEY` is set and current in `.env` — same key used by `tournament-analysis`.
