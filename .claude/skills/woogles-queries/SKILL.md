@@ -82,6 +82,21 @@ leaving VSCode.
   `WHERE` filter as early as possible in the CTE chain rather than filtering after a
   join, and check `EXPLAIN` for a seq scan where an index scan should apply.
 
+## Scope: stay inside reporting/
+
+`reporting/` is Jesse's folder within the `liwords` repo — he owns it outright and
+uses it independently of the rest of the app. **Never let changes spill outside
+`reporting/`** (app code, other top-level dirs, root configs, etc.), even
+incidentally:
+- File edits, new scripts, cron/launchd automation, and generated artifacts
+  (CSVs, logs, `.env`-style credential files) all belong under `reporting/`.
+- When staging or committing, `git add` only paths under `reporting/` — never a
+  broad `git add -A`/`git add .` from the repo root.
+- If a PR or commit against `liwords` is ever needed for this work, its diff
+  should touch only `reporting/**`. If a task seems to require a change outside
+  `reporting/`, stop and check with Jesse before touching it — don't assume it's
+  in scope just because it's convenient.
+
 ## Connection details (for reference, not to be duplicated elsewhere)
 
 - Host `10.0.0.76:5432`, db `liwords`, user `jesse`, reached only over the "Woogles"
