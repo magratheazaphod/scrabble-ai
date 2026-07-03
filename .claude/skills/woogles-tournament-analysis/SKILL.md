@@ -93,18 +93,30 @@ Use the Bash tool with Python throughout. Use `requests` (not `urllib.request` �
 ### Helper — put this at the top of every Python snippet
 
 ```python
-import json, os, re, requests
+import json, os, re, time, random, requests
 from concurrent.futures import ThreadPoolExecutor
 
 API_KEY = os.environ['WOOGLES_API_KEY']  # load from .env at project root (gitignored)
 BASE    = 'https://woogles.io/api'
 HDRS    = {'Content-Type': 'application/json', 'X-Api-Key': API_KEY}
 
-def woogles(endpoint, body):
-    r = requests.post(f'{BASE}/{endpoint}', json=body, headers=HDRS)
-    r.raise_for_status()
-    return r.json()
+def woogles(endpoint, body, retries=4):
+    """POST to a woogles.io RPC endpoint, retrying transient overload/rate-limit
+    responses with exponential backoff + jitter. Steps 3 and 4 below fan this out
+    across 10-20 concurrent games — without backoff, a burst that trips woogles.io's
+    own rate limiting turns into a hard failure instead of a brief slowdown."""
+    for attempt in range(retries):
+        r = requests.post(f'{BASE}/{endpoint}', json=body, headers=HDRS)
+        if r.status_code == 429 or r.status_code >= 500:
+            if attempt == retries - 1:
+                r.raise_for_status()
+            time.sleep((2 ** attempt) + random.uniform(0, 0.5))
+            continue
+        r.raise_for_status()
+        return r.json()
 ```
+
+**Concurrency note:** Steps 3 and 4 fan this helper out concurrently (nested `ThreadPoolExecutor`s), capped at 6 and 10 concurrent requests respectively — down from the original 10/20, which is the most likely place this workflow would trip a third-party rate limit on a large collection. If `woogles()` still raises 429/503 after the retries above, drop `max_workers` further (e.g. to 3-4) before re-running rather than retrying immediately at the same concurrency.
 
 ### Step 1: Enumerate collections
 
@@ -138,7 +150,7 @@ def check_status(g):
     r = woogles('analysis_service.AnalysisService/GetAnalysisStatus', {'game_id': g['game_id']})
     return {'title': g['chapter_title'], 'game_id': g['game_id'], 'status': r.get('status')}
 
-with ThreadPoolExecutor(max_workers=10) as ex:
+with ThreadPoolExecutor(max_workers=6) as ex:
     statuses = list(ex.map(check_status, games))
 
 for s in statuses:
@@ -168,7 +180,7 @@ def fetch_game(g):
         fh = ex.submit(woogles, 'game_service.GameMetadataService/GetGameHistory',          {'game_id': g['game_id']})
     return {'meta': g, 'analysis': fa.result(), 'history': fh.result()}
 
-with ThreadPoolExecutor(max_workers=10) as ex:
+with ThreadPoolExecutor(max_workers=5) as ex:  # nested with the inner pool above, this caps at 10 concurrent requests
     results = list(ex.map(fetch_game, games))
 ```
 
@@ -428,6 +440,7 @@ def compute_game(r):
         'title': meta['chapter_title'],
         'opponent': opp_name,
         'game_url': game_url,
+        'lexicon': history.get('lexicon'),
         'jesse_score': jesse_score, 'opp_score': opp_score,
         'result': 'W' if jesse_score > opp_score else 'L',
         'mistake_index': mistake_index,
@@ -447,6 +460,62 @@ def compute_game(r):
 stats = [compute_game(r) for r in results]
 stats.sort(key=lambda g: g['round'])
 ```
+
+### Step 5b: Identify the specific invalid word(s) in each phony play
+
+`is_phony` only tells you the *play* was illegal — when it formed multiple words (main word + cross words), it doesn't say which one was the actual violation. Resolve that by checking every word the play formed against the game's actual lexicon via Woogles' public word-validity endpoint (see `/Users/Siwen/projects/scrabble-ai` conversation — confirmed live, no API key needed):
+
+```python
+def check_words(lexicon, words, retries=4):
+    """Batch-check word validity in a lexicon via woogles.io's public word_service.
+
+    One call per lexicon (see check_phony_words below) — never per word or per game.
+    That keeps this well clear of rate limits regardless of collection size, but the
+    retry/backoff still guards against a transient 429/5xx from the shared endpoint."""
+    if not lexicon or not words:
+        return {}
+    for attempt in range(retries):
+        try:
+            r = requests.post(f'{BASE}/word_service.WordService/DefineWords',
+                               json={'lexicon': lexicon, 'words': sorted(words),
+                                     'definitions': False, 'anagrams': False})
+            if r.status_code == 429 or r.status_code >= 500:
+                if attempt == retries - 1:
+                    return {}
+                time.sleep((2 ** attempt) + random.uniform(0, 0.5))
+                continue
+            r.raise_for_status()
+            return {w: res['v'] for w, res in r.json()['results'].items()}
+        except requests.RequestException:
+            if attempt == retries - 1:
+                return {}  # no egress / persistent hiccup — caller falls back to starring the whole play
+            time.sleep((2 ** attempt) + random.uniform(0, 0.5))
+    return {}
+
+def check_phony_words(stats):
+    """Populate each phony entry's `invalid_words` — the subset of words_formed that
+    are actually not in the lexicon. Batches one API call per distinct lexicon seen."""
+    by_lexicon = {}
+    for g in stats:
+        for p in g.get('jesse_phonies', []) + g.get('opp_phonies', []):
+            by_lexicon.setdefault(g.get('lexicon'), set()).update(
+                w.upper() for w in p['words_formed'])
+
+    validity = {lex: check_words(lex, words) for lex, words in by_lexicon.items()}
+
+    for g in stats:
+        lex_validity = validity.get(g.get('lexicon'), {})
+        for p in g.get('jesse_phonies', []) + g.get('opp_phonies', []):
+            # empty dict (API unreachable) -> invalid_words stays None -> caller falls back
+            p['invalid_words'] = (
+                [w for w in p['words_formed'] if not lex_validity.get(w.upper(), True)]
+                if lex_validity else None
+            )
+
+check_phony_words(stats)
+```
+
+Run this once, right after `stats` is built — `game_note` (Step 7) reads `invalid_words` off each phony entry.
 
 If `is_jesse_summary` finds nothing, print the actual `player_name` values and adjust before rerunning.
 
