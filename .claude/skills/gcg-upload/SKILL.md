@@ -48,6 +48,27 @@ These two formats are NOT interchangeable — emptying the rack field on a penal
 
 If you have to edit a file to fix this, only touch the rack field and parenthetical/sign — don't otherwise alter scores or moves.
 
+**A third, separate gotcha (confirmed 2026-07-03, WESPAC 2023 Round 13):** if the going-out bonus line is immediately preceded by a mid-game `(challenge) +N` bonus line (i.e. the last event before the final bonus is a successful challenge, not a normal play), `ImportGCG` returns 200 with a `game_id`, but the game is server-side broken — it gets stuck permanently "unfinished" (`GetGameHistory` returns `"please wait until the game is over to download GCG"`, and it blocks all further `ImportGCG` calls on the account with `"please finish or delete your unfinished games before starting a new one"` until deleted via `DeleteAnnotatedGame`). This is a genuine bug in liwords' `ImportGCG` handler (`pkg/omgwords/service.go`, the dummy-terminal-pass-event insertion is skipped specifically when the event before `END_RACK_PTS` is `CHALLENGE_BONUS`), not something fixable by editing lexicon/rules params. Workaround: drop the `(challenge)` bonus line and fold its points into the adjustment of the final bonus line's cumulative score (subtract the challenge bonus from the final cumulative) — Jesse has done this manually rather than have Woogles misrepresent/lose the game entirely. If you hit `"game not found"` (`400`) calling `RequestAnalysis`/`GetAnalysisStatus` on a game_id that's listed in a collection, check `GetGameHistory` for `"no rows in result set"` — that means the game record doesn't exist in Woogles' DB at all (likely a remnant of this exact bug from an earlier upload attempt that was never cleaned up), and the collection entry should be removed and replaced once a working game_id exists.
+
+## When a round can't be uploaded (parsing failure)
+
+If a `.gcg` file won't parse cleanly (endgame-line gotcha above, or a non-standard construct you can't confidently fix — e.g. a Quackle-exported `(challenge)` bonus line that isn't part of the two documented endgame formats) and you decide to skip that round rather than guess at a fix, **do not put the skip note in the next game's `chapter_title`.** Keep every `chapter_title` clean (`Round N - JD vs Player`) and instead record the note as a comment on the next game you do upload, via `comments_service.GameCommentService/AddGameComment`:
+
+```python
+resp = requests.post(
+    f'{BASE}/comments_service.GameCommentService/AddGameComment',
+    headers=HDRS,
+    data=json.dumps({
+        'game_id': next_game_id,   # the next round's game_id, once it's been imported
+        'event_number': 0,          # attaches before the first move
+        'comment': 'Round 4 vs Prince Omosefe skipped - GCG parsing issue',
+    }),
+    timeout=30,
+)
+```
+
+This keeps collection chapter titles readable while still leaving a durable, in-context note on the game that follows the gap. (Confirmed working 2026-07-03; `GetGameComments`/`{'game_id': ...}` reads them back.)
+
 ## Step 1: Import the game (create the annotated game)
 
 `POST {BASE}/omgwords_service.GameEventService/ImportGCG`

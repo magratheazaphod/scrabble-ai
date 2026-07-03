@@ -158,6 +158,13 @@ def main():
             if status == "COMPLETED":
                 analyzed_ids.add(g["game_id"])
                 continue
+            if status == "NOT_FOUND":
+                # Collection lists a game_id that Woogles has no record of (e.g. a
+                # GCG import that silently failed) — RequestAnalysis 400s on these,
+                # so skip instead of crashing the whole run.
+                print(f"  Skipping {g['chapter_title']}: game not found on Woogles", file=sys.stderr)
+                skipped_ids.add(g["game_id"])
+                continue
             if rate_limited:
                 continue
             request_sent_at = datetime.now(timezone.utc)
