@@ -1,0 +1,40 @@
+#player1 David_Whitley David Whitley
+#player2 JD JD
+>David_Whitley: AKOOR 8D KAROO +28 28
+#note when I opened with this earlier in the tournament, it was a mistake!
+>JD: ?FQRUUY F6 FU.RY +27 27
+#note FURY looks like it gives me more useful ways to play the Q next turn.
+>David_Whitley: EEHIMOO 9C GOA. +15 43
+>David_Whitley: EEHIMOO --  -15 28
+#note oops
+>JD: ?CDNQUX H7 C.X +12 39
+#note I spent at least 5 minutes on this turn. it was tempting to burn the blank on QUICK, but the X didn't hold much promise on this board. I also realized that my play gave him COXA/AGO, presumably his best play since better than the phony he just tried. Ultimately on a sim QUICK is even with my play, and best is QUOD by a couple of points giving back less (in spite of an anemic 12% bingo chance next turn).
+>David_Whitley: AAGLO D8 .OALA +18 46
+#note ok then!
+>JD: ?DENQTU 12D .NTiQUED +77 116
+>David_Whitley: AEGPW K7 GAWPE. +26 72
+>JD: CELRSVZ 8J C.RVEL +36 152
+#note On a 2-ply sim, Q thinks worth burning the first S of the game for 9 extra points (CAVELS) even though it sets up opponent goldenly. The S doesn't really go anywhere else on this board, so I suppose it's reasonable, but I'm most likely playing the Z elsewhere next turn, and therefore giving David two turns to bingo to the S. I'm not usually a 4-ply sim advocate, but here going 4 turns deep with 5k+ iterations suggests that CARVEL will prove worth the sacrifice.
+>David_Whitley: ADI H12 .ADI +42 114
+>JD: IMOSSSZ 13B ZOS +34 186
+#note the IOSSS leave after MIZ seemed dreadful, but this play gives so much back (DZOS hook, Z overlaps) that any advantage granted by the superior leave next turn is overwhelmed.
+>David_Whitley: AINNRTT N2 INTRAN.T +70 184
+>JD: ?GIMSST 15H .MaGISTS +83 269
+>David_Whitley: DFGILU A8 FULGID +50 234
+>JD: AEHIOTU L3 THIOU.EA +84 353
+#note jeez, what a draw. I guess that should pretty much do it?
+>David_Whitley: OW 14B OW +37 271
+>JD: EIIINPT 15C TIPI +13 366
+#note fails at the crucial "score more points, stupid" metric of keeping a lead in scrabble. I do indeed save about 5 points defensively next turn, preventing some huge plays like JOEY for 72, but there are so many Es out there that I should really cash mine for points e.g. PINIES or PITIES.
+>David_Whitley: AJ 14J JA +52 323
+>JD: BDEEIMN K2 DIEB +29 395
+#note sadly, I'd already gotten myself down to the wire on time by agonizing on my COX v QUICK play on turn 2. I didn't like giving him the D to play to, but playing the E for points is absolutely the right thing. the alternative might be playing something like BENI at B7 to block, but DIEB should give me a great chance to outrun David, possibly overlapping his bingo on column B or row 2.
+>David_Whitley: EILNOOV B2 VIOLONE +79 402
+>JD: ABEEMNY E2 MAYBE +29 424
+#note no pre-endgame wins all the scenarios, but I had much better plays available. I chose my play because it would give me a win if I drew an out, which is pretty much true on further analysis; I win 22.5/36 endgames, with a reasonable shot at 27/36 total with opponent error. But there are plays that win 31/36 endgames, losing only to outbingos by David with draws of HR or HS (VENERERS/VENEERER). I spotted one of the 31/36 plays during post-mortem: YAMENS at M10, threatening BELEE at O6 with an EE draw. Over the board, the key to understanding this position is that he has very few scoring plays available; as long as I can score well and draw an out, only the bingos can win him the game. Therefore, my actual play is dangerous by giving him lots of new ways to score, even if it does interfere with the bingos. He could easily miss VENERERS or VENEERER, even. Another very strong play is MAVEN at M6 holding back BYE at C9, which again only loses to a bingo. The best play that blocks the bingos is BYNAME at E1, but it loses other endgames (and would've lost given my EE draw).
+>David_Whitley: EEHNRRS D1 SHEN +35 437
+#note this felt very unfortunate at the time, but as mentioned before, I had less than a 2/3 chance of pulling a win.
+>JD: EEEN J1 EEN +13 437
+#note blocking his best out
+>David_Whitley: ERR M12 ERR. +8 445
+>David_Whitley:  (E) +2 447

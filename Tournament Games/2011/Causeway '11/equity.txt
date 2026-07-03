@@ -1,0 +1,1167 @@
+Rd 1	Nsikan Etim
+W427-348	1-0 +79
+0
+0
+5
+7
+24
+0
+0
+10
+4 (5)
+19
+0
+1
+0
+75/5.8
+
+csw words - 24
+vision - 31
+regular errors - 15
+challenges - 5
+
+Rd 2	Taewan
+L342-531	1-1 -110
+0
+0
+1
+3
+0
+0
+0
+7
+1 (5)
+0
+?
+8
+0
+25/2.1
+
+csw words - 0
+vision - 0
+regular errors - 20
+challenges - 5
+
+Rd 3	Odette Rio
+W476-464	2-1 -98
+1
+2
+0
+0
+1
+0
+0? (5)
+0
+0
+6
+0
+15/1.4 per turn
+
+csw words - 3
+vision - 0
+regular errors - 7
+challenges - 5
+
+Rd 4	Vannitha Balasingam
+L455-476	2-2 -119
+0
+27
+5
+18
+4
+10
+2
+0
+3
+0
+69/6.9 per turn
+
+csw words - 27
+vision - 0
+regular errors - 42
+challenges -
+
+Rd 5	Nick Mbugua
+L382-432	2-3 -169
+0
+0
+0
+0
+0
+0
+12
+6
+0
+0
+3 (43)
+4?
+0? (5)
+X( 
+73/5.6
+
+csw words - 43
+vision - 0
+regular errors - 25
+challenges - 5
+
+Rd 6	Dielle Saldanha
+L495-554	2-4 -228
+0
+0
+5
+2
+0
+0
+2
+0
+0
+0 (5)
+2?
+19
+7
+42/3.2
+
+csw words - 19
+vision - 12
+regular errors - 6
+challenges - 5
+
+Rd 7	Ralph Lobo
+W504-466	3-4 -190
+0
+0 (5)
+0
+12
+0
+0
+14
+0
+20
+0
+25
+76/6.9
+
+csw words - 46
+vision - 0
+regular errors - 25
+challenges - 5
+
+Rd 8	Daniel Piechnick
+W451-372	4-4 -111
+2
+0
+0
+4
+0
+0
+1
+0
+0
+0
+0
+7/.6
+
+csw words - 3
+vision - 0
+regular errors - 4
+challenges - 0
+
+Rd 9	Taewan
+W494-387	5-4 -4
+52
+0
+0
+0
+40
+0
+0
+0
+0
+23
+0
+0
+5
+120/9.2
+
+csw words - 85
+vision - 0
+regular errors - 45
+challenges - 0
+
+Day 1
+5-4 -4
+447.3-446.9
+56 points of equity lost on average
+4 missed collins bingos, 2 twl misses
+
+
+Rd 10	Cheah Siu Hean
+L348-372	5-5 -28
+1
+0
+0
+2
+0
+0
+2
+11
+0
+0
+1?
+18
+12
+47/3.6
+
+csw words - 19
+vision - 12
+regular errors - 16
+challenges - 0
+
+Rd 11	Steve Perry
+W484-351	6-5 +105
+0
+0
+0
+18
+0
+0
+0
+0 (5)
+2
+0
+0
+0
+0
+0
+25/1.8
+
+csw words - 0
+vision - 0
+regular errors - 25
+challenges - 0
+
+Rd 12 Akkarapol
+W471-459	7-5 +117
+5
+5
+34
+0
+2
+0
+0
+0
+0
+3
+9
+0
+58/4.8
+
+csw words - 11
+vision - 0
+regular errors - 47
+challenges - 0
+
+Rd 13	Komol
+W501-471	8-5 +147
+12
+0
+0
+0
+5
+0
+3
+6
+0
+0
+26/2.6
+
+csw words - 12
+vision - 0
+regular errors - 14
+challenges - 0
+
+Rd 14	Komol
+W473-415	9-5 +205
+0
+1
+0?
+0
+0
+9
+0
+0
+7
+0
+3
+0
+0
+20/1.5
+
+csw words - 3
+vision - 0
+regular errors - 17 
+challenges - 0
+
+Rd 15 	Daniel Piechnick
+W500-297	10-5 +408
+1
+1
+0
+0
+4
+0
+?
+0
+23
+0
+0
+0
+0
+29/2.2
+
+csw words - 23
+vision - 0
+regular errors - 6 
+challenges - 0
+
+Rd 16 	Daniel Piechnick
+L372-489	10-6 +291
+1
+0
+5
+7
+0
+0
+44
+36
+2
+0
+12
+0
+0
+107/8.2
+
+csw words - 1
+vision - 0
+regular errors - 106 
+challenges - 0
+
+Rd 17	Marut
+L434-459	10-7 +266
+62
+0
+1
+9
+0
+2
+0
+22
+0
+0?
+0
+0
+96/8.0
+
+csw words - 62
+vision - 0
+regular errors - 34 
+challenges - 0
+
+Rd 18 	Hubert Wee
+L301-419	10-8 +148
+0
+0
+25
+13
+0
+36
+2?
+3
+3
+0
+4
+14
+18
+1
+119/8.5
+
+csw words - 3
+vision - 0
+regular errors - 116
+challenges - 0
+
+Rd 19	 Odette Rio
+L363-373	10-9 +138
+0
+1
+2
+2
+0 (5)
+6
+0
+8
+0
+2
+0
+12
+0?
+0?
+4
+42/2.8
+
+csw words - 14
+vision - 0
+regular errors - 23
+challenges - 5
+
+Rd 20	 Marlon Prudencio
+W405-364	11-9 +179
+3
+0
+0
+0
+18
+0
+2
+0
+5
+12
+6 (5)
+4
+55/4.6
+
+csw words - 21
+vision - 0
+regular errors - 29
+challenges - 5
+
+Rd 21	 Theodoro Martus
+L410-566	11-10 +23
+13 (5)
+3
+0
+0
+0
+2
+0
+0
+18
+0
+41/4.1
+
+csw words - 31
+vision - 0
+regular errors - 5
+challenges - 5
+
+Rd 22	Theodoro Martus
+L414-452	11-11 -15
+3
+14
+2
+2
+3
+14
+1
+0
+0
+0
+0
+10?
+75
+15
+139/11.7
+
+csw words - 43
+vision - 0
+regular errors - 96
+challenges - 0
+
+Rd 23	Nsikan Etim
+W541-406	12-11 +120
+0
+0?
+0
+0
+3
+0
+0
+0
+2
+2
+0
+0
+9
+16/1.2
+
+csw words - 0
+vision - 0
+regular errors - 16
+challenges - 0
+
+Rd 24	Daniel Piechnick
+W378-364	12-11 +129 
+5
+0
+1
+30
+0
+0
+30
+0?
+0
+9
+0
+7
+82/6.8
+
+csw words - 35
+vision - 1
+regular errors - 46
+challenges - 0
+
+Rd 25	Nsikan Etim
+W471-368	13-11 +232
+0
+17
+0
+0
+6
+0
+0
+0
+0
+0
+0
+0
+0
+0
+23/1.6
+
+csw words - 0
+vision - 0
+regular errors - 23
+challenges - 0
+
+Rd 26	Nsikan Etim
+W508-494	14-11 +246
+2
+0 (5)
+0
+6 (5)
+0
+0
+0
+10
+26
+0
+54/5.4
+
+csw words - 0
+vision - 0
+regular errors - 44
+challenges - 10
+
+Rd 27	Marlon Prudencio
+W479-388	15-11 +337
+0
+48
+1
+0
+0
+0
+0
+0
+0
+?
+4
+53/5.3
+
+
+csw words - 48
+vision - 0
+regular errors - 5
+challenges - 0
+
+Rd 28	Chollapat
+L410-426	15-12 +321
+1
+0
+0
+5
+4
+0
+0
+0
+5
+3
+0
+0
+18/1.5
+
+csw words - 0
+vision - 0
+regular errors - 18
+challenges - 0
+
+Rd 29	Conrad
+L323-412	15-13 +232
+10
+5 (5)
+0
+2
+0
+18
+0
+5
+1
+3
+0
+19
+68/5.7
+
+csw words - 23
+vision - 0
+regular errors - 40
+challenges - 5
+
+Rd 30	Rich Jeremy
+W476-322	17-13 +386
+2
+0
+0
+0
+0
+0
+2
+0
+0
+0
+0
+12
+16/1.3
+
+csw words - 4
+vision - 0
+regular errors - 12
+challenges - 0
+
+Rd 31	Vannitha
+W430-384	18-13 +432
+5
+0
+0
+0
+0
+0
+0
+2
+0
+3 (5)
+11
+5 (5)
+36/3.0
+
+csw words - 10
+vision - 0
+regular errors - 16
+challenges - 10
+
+Rd 32 Akkarapol
+W468-353	19-13 +547
+23
+0 (5)
+3
+0
+0
+0
+10
+5
+0
+1
+17
+0
+64/5.3
+
+csw words - 17
+vision - 0
+regular errors - 42
+challenges - 5
+
+Rd 33 Akkarapol
+W413-351	20-13 +609
+0
+10
+63
+12
+11
+0?
+0
+0
+7
+18
+121/12.1
+
+csw words - 96
+vision - 0
+regular errors - 25
+challenges - 0
+
+Rd 34	Theodoro Martus
+L425-702	20-14 +332
+0
+0
+0
+14
+0
+0
+8
+0
+0
+8
+30/3.0
+
+csw words - 8
+vision - 0
+regular errors - 22
+challenges - 0
+
+Rd 35	Cheah Siu Hean
+W542-320	21-14	+554
+0
+0
+11
+0
+0
+0
+0
+25
+0
+0
+0
+4
+40/3.3
+
+csw words - 40
+vision - 0
+regular errors - 0
+challenges - 0
+
+Rd 36	Conrad
+L309-561	21-15 +302
+0
+1
+0
+0
+7
+0
+3
+1
+2
+0 (30)
+1
+1
+46/3.8
+
+csw words - 0
+vision - 0
+regular errors - 46
+challenges - 0
+
+Rd 37	Jakkrit
+L370-399	21-16 +273
+1
+2? 0?
+0 (5)
+0?
+10
+0
+0
+0
+6
+4
+6
+0
+10?
+12 (5)
+61/4.4
+
+csw words - 0
+vision - 0
+regular errors - 51
+challenges - 10
+
+Rd 38	Marlon Prudencio
+L417-467	21-17 +223
+0
+29
+0
+0
+3
+12
+7
+0
+2
+2
+0
+4
+0
+59/4.5
+
+csw words - 0
+vision - 7
+regular errors - 52
+challenges - 0
+
+Rd 39	Marut
+L374-463	21-18 +134
+0
+55
+2
+24
+0
+7
+12
+1
+0
+3
+0?
+3
+10
+117/9.0
+
+csw words - 55
+vision - 12
+regular errors - 50
+challenges - 0
+
+Rd 40	Odette Rio
+L392-442	21-19 +84
+0
+0
+7
+1
+1
+4
+0
+4
+0
+12
+0
+29/2.6
+
+csw words - 0
+vision - 0
+regular errors - 29
+challenges - 0
+
+Rd 41	Sunday Oshodi
+L431-450	21-20	+65
+3
+16
+0
+8
+0
+10
+0
+0
+0
+12
+0
+3
+52/4.3
+
+csw words - 8
+vision - 0
+regular errors - 44
+challenges - 0
+
+Rd 42	Joanne Craig
+L342-508	21-21 -101
+0
+3
+0
+4
+1
+0
+5?
+0?
+2
+0
+6
+blah
+36/2.8
+
+csw words - 0
+vision - 0
+regular errors - 21
+challenges - 15
+
+Rd 43	Moses Peter
+L376-381	21-22 -106
+0
+0
+0?
+0
+0?
+0
+35
+0
+0
+2
+0
+1?
+50
+0
+88/6.3
+
+csw words - 2
+vision - 0
+regular errors - 86
+challenges - 0
+
+Rd 44	Akkarapol
+L376-381	22-22 +46
+0
+1
+0
+5
+5
+0
+0
+0
+0
+1
+0
+0
+0
+12/.9
+
+csw words - 0 
+vision - 0
+regular errors - 12
+challenges - 0
+
+Rd 45	Dokun Esan
+L348-481	22-23 -87
+0
+2
+0
+0
+0
+8
+1
+0
+4
+8
+3
+26/2.4
+
+csw words - 0 
+vision - 0
+regular errors - 26
+challenges - 0
+
+
+collins bingos I played
+LAIRISE
+CRINATE
+TRILBYS
+LIONETS
+EROTEMA
+TORDION
+TEDESCO
+OBTENDS
+7!
+
+collins I didn't know
+KEAVIE
+GOONDAS
+GOADSMEN
+EYALET - Etim1
+TOTTY
+SCOOG - Odette1
+MISFARES/MISFARED - Vannitha1
+JAUNTIES
+LIONISM - Dielle
+SIRNAME
+OLLIE 
+BEPRAISE
+TREESHIPS - Ralph Lobo
+INTONACO
+DOLINES - Daniel Piechnick1
+HOLMIAS
+GESTANT - Taewan2
+OVARIOUS - Cheah1
+MICO
+GEARE - Akkarapol1
+HEBEN - Komol1
+PIEND - Komol2
+DAWBAKES - Daniel Piechnick2
+MELODION
+VIRINO - Marut1
+UPLEANED - Hubert Wee
+SAZHEN - Odette2
+GROUF
+IRIDISED - Marlon1
+EURONOTE - Theodoro Martus1
+DIMBLE
+YUCKO
+MIRO
+MILOR
+BACLAVA
+BACHA - Theodoro Martus2
+WHATA/WHATNA/WATARAH
+COGGLES - Daniel Piechnick4
+VIDEOFIT
+TUFFE - Marlon2
+NIMB - Conrad1
+PILOW
+AGOOD - Richard Jeremy
+BLOCKIE/BICKIE
+WENTS
+DITT - Vannitha2
+LUTITES - Akkarapol2
+TWICER - Akkarapol3
+GLOIRE - Theodoro Martus3
+TOADRUSH
+SMIDDY - Cheah2
+VAUDOO
+PIERT
+AGOGE - Jakkrit
+AWATO - Marlon3
+PLEROMES/SEMPLER - Marut2
+DENET - Sunday Oshodi
+VARAN 
+DOOLAN
+INWIT - Joanne Craig
+PELL - Moses Peter
+ETAT - Akkarapol4
+
+worse bingos
+19 DEMAGOGS/GOADSMEN - Etim1
+18 MISFARES/MISFARED - Vannitha1
+2 INTONACO 
+1 DOLINES - Daniel Piechnick1
+13 EURONOTE - Theodoro Martus1
+30 COGGLES - Daniel Piechnick4
+10 BIDENTS - Etim4
+7 total/93/2.1
+
+missed bingos
+14 BEPRAISE 
+20 TREESHIPS - Ralph Lobo
+52 HOLMIAS 
+23 GESTANT - Taewan2
+42 DAWBAKE - Daniel Piechnick2
+62 MELODION - Marut1
+18 IRIDISED - Marlon1
+48 VIDEOFIT - Marlon2
+25 TOADRUSH - Cheah2
+55 PLEROMES/SEMPLER - Marut2
+6 MARDIEST - Joanne Craig
+11 total/365/8.1
+
+twl misses
+40 UNFAIRLY - Taewan2
+34 ARCATURE - Akkarapol1
+20 BAKEWARE - Daniel Piechnick2
+44 TENTORIUMX2 - Daniel Piechnick3
+22 CERCARIAN - Marut1
+25 ENDBRAIN - Hubert Wee
+23 BELLBOY - Akkarapol2
+63 RAVENER - Akkarapol3 (didn't know the CSW hook)
+35 TUFTILY - Moses Peter
+9 total/350/7.8
+
+challenges
+me
+correct
+WAGONEER* - Dielle
+BERGELT* - Ralph Lobo
+VERMINS# - Cheah1 (wtf)
+UPLEANED# - Hubert Wee
+GRUTTENS* - Theodoro Martus2
+FO* - Etim2
+THEEL* - Etim3
+DRYPONDS* - Etim3
+AGNSIED* - Etim4
+WAGGY* - Vannitha2
+KEEVINGS* - Akkarapol2
+SCULLY* - Joanne Craig
+12 (10)
+
+incorrect
+EYALET# - Etim1
+PRETERMS - Taewan1
+BRAZIL - Odette1
+SALS - Nick Mbugua
+JAUNTIES# - Dielle
+SIRNAME# - Ralph Lobo
+OVARIOUS# - Cheah1
+ARYL - Steve Perry
+KITER - Odette2
+QUERIER - Marlon1
+ODORFUL - Theodoro Martus1
+TRITONIA#
+FOUTH# - Etim4
+INDULINE - Conrad1
+WENTS - Vannitha2
+SWIFTED#
+SHAMBLED - Theodoro Martus3
+CAVORTER - Conrad2
+VAUDOO#
+AGOGE# - Jakkrit
+LUZERN# - Marlon Prudencio3
+SPARKIER
+DOOLAN# - Joanne Craig
+23/115/2.6
+
+got away with
+ROTINI* - Komol2
+VANFUL* - Theodoro Martus1
+KEEVING* - Akkarapol2
+YAS* - Akkarapol3
+HARPIE* - Jakkrit
+ELBOWERS* - Marut2
+6
+
+them
+correct
+OVERTINT* - Daniel Piechnick3
+GANOPH* - Hubert Wee
+JINNY* - Daniel Piechnick4
+FRICK* - Marlon Prudencio3
+4
+
+incorrect
+CERIC - Etim1
+VEGOS#
+THORO - Dielle
+FROWZILY - Ralph Lobo
+SHIVERY 
+KORES# - Taewan2
+HUHU# - Steve Perry
+WULLED# - Daniel Piechnick2
+SMARMIER - Theodoro Martus1
+DECALOGS - DAniel Piechnick4
+TOROT - Etim3
+FABLIAU - Etim4
+KLAP# 
+ATTEMPER
+IMARIS# - Marlon2
+VIVAED# - Conrad1
+DOWP#
+DOWPS#
+EXILIAN - Richard Jeremy
+VANDA - Vannitha2
+KUTI# - Akkarapol2
+TORDION# - Theodoro Martus3
+WHOOPIES
+OBTENDS# - Akkarapol4
+24/120/2.6
+
+got away with
+BUNE*- Nick Mbugua
+BOREDLY* - Conrad2
+2

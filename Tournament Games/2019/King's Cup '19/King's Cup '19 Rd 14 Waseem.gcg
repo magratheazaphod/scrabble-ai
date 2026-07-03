@@ -1,0 +1,38 @@
+#player1 Waseem Waseem Khatri
+#player2 Jesse Jesse Day
+#title Game 14, Board 1
+#description Game 14, Board 1
+>Waseem: EMSTTTX 8G TEXT +22 22
+>Jesse: EIOOOTU -IOOUU +0 0
+#note annotator error, I had 3 Os and 1 U here (not OOUU). this is an obvious play-through rack with EUOI, not sure why I traded so hastily!
+>Waseem: EFMSTUZ K3 FUTZES +48 70
+>Jesse: BDEIRST H1 BESTRID. +86 86
+>Waseem: ?IMNNOY J2 YON +21 91
+>Jesse: AEEIIIO -AEIIIO +0 86
+>Waseem: ?AHIKMN 3A KoHANIM. +88 179
+>Waseem: ?AHIKMN --  -88 91
+>Jesse: CDEEILM 3C MEDIC. +28 114
+#note a major mistake. I thought that MEDICS would give back MAK at 2D, then allowing me to get counterplay on row 1. But I didn't anticipate that he'd score almost 50 without opening anything. I realized afterward that the play has to be CLIMES, which leaves him with much weaker plays (assuming he misses MAKHANI again). According to the sim, I have roughly a 35% chance of winning after CLIMES versus 31% after MEDICS (translates in early game to roughly a 12 point equity mistake).
+>Waseem: ?AHIKMN 2C MAIK +47 138
+>Jesse: ?EEGLLR L4 REEL +29 143
+#note knowing he has a blank in hand, no way I'm bingoing into the triple-triple lane
+>Waseem: ?HINOOS M7 SHOOINg +76 214
+>Jesse: ?GLNORW 11H gROWL.NG +72 215
+#note should make second G a blank, more likely he'll play through that G.
+>Waseem: AACIQTV G6 QA. +28 242
+>Jesse: DFGGLNO O8 GLO.G +30 245
+>Waseem: ACEILTV N2 ACTIVE +42 284
+>Jesse: AADFNST 9A FANTADS +77 322
+>Waseem: ABHJLOW 10J JO +55 339
+>Jesse: ADIINOU D5 AUDI.ION +70 392
+>Waseem: ABHILOW E11 BOW +26 365
+#note I think he had to make this move faster than he wanted.
+>Jesse: AEIPUVY F12 YEP +25 417
+#note cuts his bingo percentage dramatically (especially after he just set himself up with a lane), and also saves UVA/UMM/VAE/AID for 31 which I didn't think would get blocked.
+>Waseem: AEHILNP 1A PAH +34 399
+>Jesse: AEEIUUV A9 .AUVE +15 432
+#note this and AUF at A7 supposedly win every endgame. I knew that I had to block scoring plays from the F because there just isn't much else he can do with his one-point tiles once I take that lane. AUF is safe because, keeping the V, I either draw a play down from the G at H11 (GREVE, GIVER), or AVENUE at B9 - or Waseem ends up having all 3 Rs on his rack and can't go out efficiently.
+>Waseem: AEEILNR 12J LEA. +28 427
+>Jesse: EIRRU 14F .UIRER +10 442
+#note actually one point better to play RUER/JOLE/OWER blocking all his outs!
+>Jesse:  (EINR) +8 450

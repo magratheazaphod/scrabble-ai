@@ -1,0 +1,19 @@
+# This is a comment because it starts with a '#'.
+# The next lines state that you will store the data for Division a,b in files a.t, b.t
+division a a.t
+division b b.t
+division c c.t
+# Used to specify the event date, particularly when submitting ratings data.
+config event_date = "July 10, 2010"
+# Used to identify the event, particularly when submitting ratings data
+config event_name = "Berkeley, CA"
+# Used to identify the tournament director, particularly when submitting ratings data.
+config director_name = "Edward De Guzman"
+# Specify the order of player 1’s round robin opponents.
+config round_robin_order = [6,5,4,3,2]
+# When using default pairings, makes the last round be KOTH with unlimited repeats, rather than Chew pairings.
+config force_koth = 1
+# Specify how names are listed in the player roster
+config surname_last = 1
+# Specify how much spread to give during a bye
+config bye_spread = 50

@@ -1,0 +1,570 @@
+Rd. 1
+Gregg Speicher	W424-394
+1-0		bingos 2-2
+0
+0/BINGO
+0
+0
+0/BINGO
+0
+0
+0
+1
+21
+30
+
+Rd. 2
+Zev Kaufman	L336-535
+1-1		bingos 2-3
+0
+0/BINGO
+0/BINGO
+53
+0
+0
+0
+0
+0
+38
+6
+97/8.8
+
+Rd. 3
+Nawapadol Sayavesa W467-351
+2-1		bingos 2-2
+0/BINGO (yikes)
+0
+7
+0
+0
+0
+0/BINGO
+9
+0
+0
+15
+7
+0
+38/2.9
+
+Rd. 4
+Lisa Odom	W502-252
+3-1		bingos 2-0
+0
+1/BINGO
+0
+0
+0/BINGO
+4
+0
+1
+0
+0
+0
+2
+0
+8/.6
+
+Rd. 5
+Mark Przybyszewski L366-494
+4-1		bingos 2-3
+0
+0/BINGO
+0
+0
+6
+0
+0/BINGO
+0
+3
+0
+14
+23/2.1
+
+Rd. 6
+Kate Fukawa-Connelly W406-378
+4-2		bingos 1-2
+0
+5
+15
+2
+0
+0/BINGO
+0
+0
+0
+15
+0
+8
+45/3.8
+
+Rd. 7
+Ed de Guzman	L390-423
+4-3		bingos 2-2
+4
+0/BINGO
+0
+0
+5
+0/BINGO
+0
+4
+0
+3
+0
+16/1.5
+
+Rd. 8
+Rachel Knapp	L400-422
+4-4		bingos 2-2
+0
+6
+0
+2
+0
+7/BINGO
+0
+0
+6/BINGO
+2
+11
+0
+12
+0
+7
+53/3.5
+
+Rd. 9
+Ben Schoenbrun	L396-518
+4-5		bingos 2-2
+5/BINGO
+0
+0
+5
+0
+0
+0
+2
+2
+0
+0
+x
+x
+14/1.3 per turn
+
+Rd. 10
+Darrell Day	L324-464
+4-6		bingos 1-2
+9
+0
+0
+0
+0
+0
+55/missed BINGO
+27/again
+0/BINGO
+15
+0
+0
+106/8.8
+
+Rd. 11
+Thavachai Thivavarnvongs  L384-440
+4-7		bingos 1-2
+0
+8
+5
+0
+0
+0
+10
+0
+0/BINGO
+0
+0
+4
+0
+1
+5
+7
+0
+40/2.4
+
+
+Rd. 12
+Stu Goldman	L372-421
+4-8		bingos 1-2
+0
+1
+0
+0
+1
+7
+0/BINGO
+3
+1
+0
+0
+30?
+20
+0
+2
+65/4.3
+
+Rd. 13
+Mark Kenas	W451-414
+5-8 		bingos 2-2
+0
+0/BINGO
+5
+0
+0
+0
+6
+0/BINGO
+0
+0
+0
+0
+11/.9
+
+Rd. 14
+Dave Leifer	W403-299
+6-8		bingos 2-0
+5
+0/BINGO
+5
+2
+0/BINGO
+0
+4
+0
+0
+9
+5
+3
+25
+0
+58/4.1
+
+Rd. 15
+Ted Rosen	L377-414
+6-9		bingos 1-2
+0
+4
+0
+0
+0
+0
+0/BINGO
+0
+6
+6
+0
+0
+5
+0
+0
+21/1.4
+
+Rd. 16
+Bob Linn	L357-380
+6-10		bingos 1-1
+0
+0
+0
+0
+0
+8/BINGO
+1
+4
+3
+20
+28
+15
+3
+82/6.3
+
+Rd. 17
+Mike Baker	W409-382
+7-10		bingos 3-2
+0
+5
+0
+5
+0/BINGO
+0/BINGO
+0
+0
+0/BINGO
+37.5
+0
+47.5/4.3
+
+
+Rd. 18
+Carol Kaplan	L321-403
+7-11		bingos 0-1
+4
+5
+0
+0
+3
+1
+4
+0
+0
+5
+39
+3
+33
+97/7.5
+
+Rd. 19
+Debbie Stegman	L300-442
+7-12		bingos 1-2
+0
+1
+0
+5
+0
+2
+2
+0
+3
+4
+5
+1
+23/1.8
+
+Rd. 20
+Paula Catanse	W332-293
+8-12		bingos 1-1
+0
+0/BINGO
+10
+0
+0
+0?
+1
+0
+17
+0
+0
+4
+0
+0
+32/2.3
+
+
+Rd. 21
+Bruce D'Ambrosio L385-396
+8-13		bingos 1-2
+2
+0
+1
+0
+1
+3
+0
+0
+0
+0/BINGO
+0
+5
+0
+0
+12/.9
+
+Rd. 22
+Rod MacNeil	L316-468
+8-14		bingos 2-1
+1
+26/missed BINGO
+0
+1
+2
+0
+7
+0/BINGO
+0/BINGO
+0
+3
+doesn't really matter any more
+40/3.6
+
+
+
+Rd. 23	
+Brett Haughney	L365-386
+8-15		bingos 0-1
+55/missed BINGO
+9
+0
+5
+0
+1
+6
+0
+14
+0
+0
+0
+1
+91/7.0
+
+
+Rd. 24
+Juraj Pivovarov	W474-349
+9-15		bingos 2-1
+0
+0
+0
+12/missed BINGO
+17
+0/BINgo
+0
+0
+7
+0
+0
+0
+36/3.0
+
+
+Rd. 25
+Wallace Schultz W412-396
+10-15		bingos 1-3
+3
+0
+7
+0
+0
+0
+0/BINGO
+7
+0
+0
+3
+0
+20/1.7
+
+
+Rd. 26
+Sandy Nang	L366-501
+10-16		bingos 1-2
+3
+10
+0
+6
+4
+42
+80
+0/BINGO
+0
+10
+0
+0
+0
+155/11.9
+
+Rd. 27
+James Henderson	W611-317
+11-16		bingos 4-1
+0/BINGO
+8/BINGO
+0
+0/BINGO
+0
+0
+0
+0
+0/BINGO
+0
+5
+16
+29/2.4
+
+Rd. 28
+Siri Tillekeratne W507-346
+12-16		bingos 2-2
+5
+0
+0
+0
+1
+7
+2
+0
+3
+0/BINGO
+0/BINGO
+6
+0
+0
+24/1.7
+
+Rd. 29
+Joel Elkins	L374-382
+12-17		bingos 1-1
+0
+0
+0
+3
+0
+20
+0
+8
+0
+0
+0/BINGO
+20
+5
+56/4.3
+
+Rd. 30
+Sam Kantimathi	W523-492
+13-17		bingos 4-3
+1/BINGO
+0/BINGO
+0
+2
+19/missed BINGO
+0/BINGO
+0
+0/BINGO
+3
+0
+0
+25/2.1
+
+Rd. 31	
+Rachel Knapp	W442-379 +63	
+14-17		bingos 2-0
+2
+0
+0
+0
+0*
+0
+0
+0/BINGO
+0?/BINGO
+6*
+12*
+0*
+20/1.9
+
+missed
+1 - NEUTERED, ADMITTER
+2 - AUGUSTER
+3 - FREEDMEN
+6 - TINWORKS
+10 - TRYSAIL
+16 - APODOUS, ROTUNDA/EDUCATOR/AUDITION
+22 - COLESEED
+23 - ENDOPOD, LEMNISCAL
+24 - CANOODLE
+26 - PICHOLINE
+30 - NOTICING

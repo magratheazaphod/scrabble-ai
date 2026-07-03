@@ -1,0 +1,36 @@
+#player1 JD JD
+#player2 bnjy bnjy
+>JD: ABOOTUW 8D WOOBUT +30 30
+>bnjy: INNPPRY E7 P.RNY +20 20
+>JD: AGLLNOT D3 GALLO. +24 54
+>bnjy: AIMNPTU 5C P.ATINUM +74 94
+>JD: AJLNOTT F2 JOL. +27 81
+#note didn't seem worth it to block the PLATINUMS hook with TAJ, LNOT isn't going anywhere (although it bingos about the same amount as ANTT). JOLT sims about 3 points better.
+>bnjy: DEGRY 6I GYRED +36 130
+>JD: AENTTTV L3 NAV.TTE +22 103
+#note opens up the board, can't play VATTED here
+>bnjy: ?DINQRZ H7 Q.IZ +22 152
+>JD: ?BDDSTT 9K D.BT +10 113
+#note this looks maniacal. Q is giving Bnjy random racks, which is not accurate. I doubt Bnjy had an S when he played GYRED, but he's turned over 8 tiles since then, so very roughly his odds of having an S or blank are (1-4/60)^8, which is about 55%. He also could've had the blank when he played GYRED, so let's gueestimate that he's 50-50 to have the hook - 15% to have blank, and 35% to have S. If you run a sim for different scenarios, DEBT is +9 vs exchanging against a random rack, whereas if I give Bnjy an S I'm -5 against exchange, and I'm +2 if Bnjy is holding the blank (he can't always hook DEBTS). What that means, roughly, is that I need Bnjy to have S or ? 75-80% of the time before this becomes a bad move! So I have to play DEBT and eat the volatility. In reality, Q should have the option of drawing simulation racks from a reasonable range given how many turns it's been since opponent bingoed, and given letters just played off, but we'll have to leave that for another day...
+>bnjy: ?ADILNR O3 ALDRINs +81 233
+>JD: ?DEEFST D11 FED +22 135
+#note Q thinks FETED is the move - I think most of the time Benjy will just overlap C12-C14 and kill the board, so I like my play.
+>bnjy: EEERUUW 13B WU.U +16 249
+>JD: ?EEOSTX G2 OX +43 178
+#note the pool is extremely vowel-heavy, so I figured I have a shot at catching Bnjy with a bad rack that can't block row 1. but I totally whiffed on the star play of ZEXES at 10H for 51 - there are 3 more Ss coming so I can totally cash one right now, and I don't give him back so many free points!
+>bnjy: EEEIR K6 .EE.IER +20 269
+#note extremely lucky
+>JD: ?EESSST 1G SEStETS +81 259
+>bnjy: AEH J10 HAE +31 300
+>JD: CFIMORV 14A VOM +30 289
+#note in my estimation, I need to not play down from L12 because it'll make it too easy for Bnjy to score right back. VOM at 14A introduces the threat of the S hook on row 15. I can cash the F next turn for good points.
+>bnjy: AEHI 12I A..IE +10 310
+>JD: CCFHIOR N9 .HORIC +44 333
+#note yikes, I wasn't even thinking of FAERIE. It's super-important to play there because it blocks scoring plays for Bnjy on row 15. Huge airball just got fixated on THORIC and didn't think of the new hook he set u.
+>bnjy: AEIINNO 6B OI. +9 319
+#note as the bag lies, this play is 1/3 to win. he figured he had no shot of winning except to draw a bingo that fits in both spots. the one point of interest is that Q thinks EINNO might bingo more often.
+>JD: AACFIKS A4 SIFAKA +49 382
+#note from my perspective, after Bnjy's astute play, I'm 2/8 to win and there's nothing I can do about it! I can only win if his rack is now AEEGINN or AEEINNR. I didn't know with OIL that he was fishing from a rack where he already had NN. FACIAS is technically slightly better because I can still go out in two spots if I draw the G out of the bag.
+>bnjy: AEEGINN M1 .NAG +17 336
+>JD: CR 9A .RC +8 390
+>JD:  (EEIN) +8 398

@@ -1,0 +1,123 @@
+Rd 1 Wayne Clifford
+W
+
+Rd 2 Peter Huszagh
+W516-430 2-0
+
+Rd 3 Chris Tallman
+W458-359 3-0
+
+Rd 4	Ron Gideons
+T418-418 3.5-.5
+5
+0
+0
+7
+0
+0
+0
+8
+9
+
+Rd 5	Rebecca Slivka
+W525-229 4.5-.5
+0
+0
+0
+0
+0
+5
+22
+
+13
+
+rd 6	juraj pivovarov
+W386-372 5.5-.5
+0
+0
+0
+0
+9
+2
+0
+0
+0
+0
+0
+11/1.0
+
+Rd 7	Bruce D'Ambrosio
+W423-374 6.5-.5
+0
+0
+0
+0
+3
+0
+1
+0
+2
+0
+0
+22
+10
+38/2.9
+
+Rd 8	Gunther Jacobi
+W413-373
+0
+0
+0
+2
+0
+0
+0
+15
+3
+9
+0
+0
+0
+0
+29/2.1
+
+Rd 9	Mark Milan
+W417-408 8.5-.5
+1
+5
+14
+7
+0
+1
+0
+0
+0
+0
+0
+0?
+3
+31/2.4
+
+Rd 10	Dan Goodwin
+L356-534 8.5-1.5
+
+Rd 13	Ed de Guzman
+
+Rd 15 Chris Williams
+L328-484
+8
+0
+0
+2
+6
+2
+
+
+
+Rd 17 Carl Johnson
+
+EENQRRSTXY
+
+missed BINGOS
+RESIDUE (OVINES)
+PROUDFUL

@@ -1,0 +1,37 @@
+#player1 Nigel_Richards Nigel Richards
+#player2 Jesse_Day Jesse Day
+>Nigel_Richards: AAFGRSS H6 FRAG +16 16
+#note even Nigel's first move here defies conventional logic. FRAGS sims top, and cashing a second S for 10 more points is normally a no-brainer, but Nigel must think he can make up the deficit with long-term improved defensive value.
+>Jesse_Day: AELNQST 8G Q.T +12 12
+#note could also think about just exchanging Q. My heuristic is that each 10% increase in bingo percentage next turn is worth about a 4 point sacrifice this turn. However, in this case, QAT is easily best because it also robs Nigel of many scoring plays and bingos he would otherwise have. Without these defensive effects, AELNST bingos ~95% next turn versus ~65% with AELNS, and we'd conclude that exchanging would be about even.
+>Nigel_Richards: AEFSSVZ J4 FAZES +50 66
+>Jesse_Day: AEIILNS 6H .I. +15 27
+#note another interesting play where defense matters. EILNS would normally be much worse than AEILNS, but Quackle likes AI at I5 rather than just fishing an I because it blocks the K5 scoring spot.
+>Nigel_Richards: ?DEPRSV 5I P.V +20 86
+>Jesse_Day: AEILNST L4 TENAILS +75 102
+#note if I think that Nigel has a scoring rack, then hooking an S on PAV would be best to prevent column M overlaps. however, I inferred a bingo leave, and so TENAILS makes it as tough as possible for Nigel to bingo.
+>Nigel_Richards: ?DEHORS M2 sHODERS +92 178
+#note wouldn't have happened with PAVS/EASTLIN, but I still think TENAILS was the right choice.
+>Jesse_Day: CILOSUU 2F LUSCIOU. +63 165
+>Nigel_Richards: AEEEEGV 1E VEGA +35 213
+>Jesse_Day: IJLMORU 3B JORUM +33 198
+>Nigel_Richards: AEEEINO 10I ONE.IE +10 223
+#note probably the most infamous Nigel play from the final! Nigel sacrifices 12 points to avoid having to play AJEE at B2, the obvious play - and it sims best! Before ONESIE, this is a very tight board that depends heavily on drawing the blank for FRAGS, with one scoring spot (4B) that Nigel can't do much with. AJEE would give me back a huge score without leaving Nigel scores in return. After ONESIE the board is tremendously dynamic with an even bigger S hook, a double-double threat (row 11), and the top-left all present. In addition, he has now gotten a head-start on gathering the key tile (the blank) by playing through 5 letters. From my chair, it felt a bit as if we had been running a half-marathon and Nigel suddenly changed the race to a 400m sprint.
+>Jesse_Day: HILMNOT C2 M.NOLITH +68 266
+>Nigel_Richards: ?AEEOOR 8A OA.ER +18 241
+#note another beautiful play. Nigel now has the key tile (the blank), and he can take his time to bingo on column O as heavily as possible. Hence, no need to play a fishier move like ROO at D3 or ORE at D2.
+>Jesse_Day: ABEIRRY 11E BRIARY +29 295
+#note I was asked after the game "you would've played BARRIER if you'd seen it, right?" Well, I did see it and pass it up, and Quackle thinks it's a mistake. The idea is to play Nigel's game and turn over as many tiles as possible hunting for the blank. Part of the BRIARY versus BARRIER choice was not giving back X hotspots, but that's too minor of a concern to justify passing up 7 points (there are many other ways Nigel can chase me down). An alternative is BY at N6 trying to defuse ONESIES, but I had doubts about the prospects of the AEIRR leave next turn.
+>Nigel_Richards: ?CDEEKO O4 DECOKEs +101 342
+>Jesse_Day: DDEENTW H11 .WNED +39 334
+>Nigel_Richards: ABGNTTU B1 BA.U +36 378
+>Jesse_Day: DEEIOTW 10D WOE +16 350
+#note I didn't know what else to do here except for trying for one last bingo. DEIT would conventionally be the best leave, but with two more Is unseen, keeping DEOT or even DIOT are very reasonable. Another try is WEIR at E5 setting up an X spot if I draw it, which Nigel cannot use for himself (he has the wrong vowels). But that's more of a feint - even if I do draw the X, my tempo is unlikely to be good enough to win.
+>Nigel_Richards: AGINTTY 14E GYT. +16 394
+#note After GYTE, I am 5% to bingo if I have a random rack (and about 15% given my actual leave DEIT). GYTE also empties the bag intentionally, preventing me from fishing for unblockable out-bingos. He takes the loss if I've draw either AIN, ILN or LNP.
+>Jesse_Day: DEIINTX 1J TIX +39 389
+#note was my 15% shot at winning as good as I could've done with WOE? Perhaps I had a higher chance of winning by playing for points and trying to draw the X. Instead, I win if I draw TOPLINED, IODINATE or TOLIDINE - close but not quite! Incidentallly this play is wrong, should dump DINE at 12B setting up a second TIX spot rather than playing TIX first.
+>Nigel_Richards: AAILNPT 12A PLATAN +30 424
+>Jesse_Day: DEIN C11 D.INE +12 401
+#note should slot DIN/OBANG instead of going out!
+>Jesse_Day:  (I) +2 403

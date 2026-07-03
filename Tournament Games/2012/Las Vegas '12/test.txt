@@ -1,0 +1,596 @@
+<simulation>
+	<iteration index="367">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EINNOTX" />
+				<move action="place" tiles="OX" position="B14" score="31" />
+				<pc value="5.70703" />
+			</ply>
+			<ply index="2">
+				<rack tiles="?AEIRSY" />
+				<move action="place" tiles="RESAYIn." position="A1" score="86" />
+				<pc value="0" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EINNOTX" />
+				<move action="place" tiles="EX" position="2I" score="59" />
+				<pc value="1.08984" />
+			</ply>
+			<ply index="2">
+				<rack tiles="?AEIRSY" />
+				<move action="place" tiles="AY" position="B14" score="19" />
+				<pc value="42.207" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EINNOTX" />
+				<move action="place" tiles="EX" position="2I" score="59" />
+				<pc value="1.08984" />
+			</ply>
+			<ply index="2">
+				<rack tiles="?AEIRSU" />
+				<move action="place" tiles=".UtRAISE" position="15A" score="74" />
+				<pc value="0" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EINNOTX" />
+				<move action="place" tiles="EX" position="2I" score="59" />
+				<pc value="1.08984" />
+			</ply>
+			<ply index="2">
+				<rack tiles="?AERSUY" />
+				<move action="place" tiles="tREASU.Y" position="C2" score="80" />
+				<pc value="0" />
+			</ply>
+		</playahead>
+	</iteration>
+	<iteration index="368">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="OORRTXZ" />
+				<move action="place" tiles="ORZO" position="2D" score="38" />
+				<pc value="0.296875" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEIINQS" />
+				<move action="place" tiles="QI" position="3C" score="24" />
+				<pc value="15.5195" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="OORRTXZ" />
+				<move action="place" tiles=".X" position="J1" score="25" />
+				<pc value="8.13672" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEIINQS" />
+				<move action="place" tiles="QAI." position="D5" score="14" />
+				<pc value="17.0898" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="OORRTXZ" />
+				<move action="place" tiles=".X" position="J1" score="25" />
+				<pc value="8.13672" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEIIQSU" />
+				<move action="place" tiles="QUAI." position="E4" score="28" />
+				<pc value="7.75781" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="OORRTXZ" />
+				<move action="place" tiles=".X" position="J1" score="25" />
+				<pc value="8.13672" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEINQSU" />
+				<move action="place" tiles="SEQUIN" position="N8" score="43" />
+				<pc value="-0.636719" />
+			</ply>
+		</playahead>
+	</iteration>
+	<iteration index="369">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EINORTY" />
+				<move action="place" tiles=".EROTINY" position="O1" score="86" />
+				<pc value="0" />
+			</ply>
+			<ply index="2">
+				<rack tiles="ABEISUV" />
+				<move action="place" tiles="ABUSIVE" position="4A" score="81" />
+				<pc value="0" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EINORTY" />
+				<move action="place" tiles=".EROTINY" position="O1" score="86" />
+				<pc value="0" />
+			</ply>
+			<ply index="2">
+				<rack tiles="ABEISUV" />
+				<move action="place" tiles="ABUSIVE" position="14E" score="78" />
+				<pc value="0" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EINORTY" />
+				<move action="place" tiles=".OY" position="O1" score="21" />
+				<pc value="19.0977" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEISUUV" />
+				<move action="place" tiles="UVEA." position="E4" score="16" />
+				<pc value="-2.55469" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EINORTY" />
+				<move action="place" tiles=".EROTINY" position="O1" score="86" />
+				<pc value="0" />
+			</ply>
+			<ply index="2">
+				<rack tiles="ABESUUV" />
+				<move action="place" tiles="SUAVE" position="B2" score="27" />
+				<pc value="-8.17969" />
+			</ply>
+		</playahead>
+	</iteration>
+	<iteration index="370">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="AEIRSTX" />
+				<move action="place" tiles="SEXTAR.I" position="B2" score="84" />
+				<pc value="0" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEHIISV" />
+				<move action="place" tiles="HI" position="C3" score="29" />
+				<pc value="7.61719" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="AEIRSTX" />
+				<move action="place" tiles="EX" position="2I" score="59" />
+				<pc value="20.9688" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEHIISV" />
+				<move action="place" tiles="HIVE" position="N8" score="29" />
+				<pc value="4.82812" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="AEIRSTX" />
+				<move action="place" tiles="SEXTAR.I" position="B2" score="84" />
+				<pc value="0" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEHISUV" />
+				<move action="place" tiles="E.UVIA" position="4A" score="34" />
+				<pc value="11.0039" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="AEIRSTX" />
+				<move action="place" tiles="EX" position="2I" score="59" />
+				<pc value="20.9688" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEHISUV" />
+				<move action="place" tiles="SHAVIE" position="B1" score="35" />
+				<pc value="-5.10547" />
+			</ply>
+		</playahead>
+	</iteration>
+	<iteration index="371">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="AEEIIRT" />
+				<move action="place" tiles=".....I" position="H6" score="14" />
+				<pc value="5.37891" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AAEIILS" />
+				<move action="place" tiles=".IA" position="N1" score="12" />
+				<pc value="14.8281" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="AEEIIRT" />
+				<move action="place" tiles="AERIE" position="B2" score="21" />
+				<pc value="-1.33984" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AAEIILS" />
+				<move action="place" tiles=".IA" position="N1" score="12" />
+				<pc value="14.8281" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="AEEIIRT" />
+				<move action="place" tiles=".....I" position="H6" score="14" />
+				<pc value="5.37891" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AAEIISU" />
+				<move action="exchange" tiles="AAIIU" />
+				<pc value="10.4023" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="AEEIIRT" />
+				<move action="place" tiles="AERIE" position="B2" score="21" />
+				<pc value="-1.33984" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AAEILSU" />
+				<move action="place" tiles="AU.A" position="C6" score="12" />
+				<pc value="15.0078" />
+			</ply>
+		</playahead>
+	</iteration>
+	<iteration index="372">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="ELNOPRV" />
+				<move action="place" tiles="PLOVE." position="C3" score="24" />
+				<pc value="2.88672" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AADEIIS" />
+				<move action="place" tiles="AI" position="D3" score="12" />
+				<pc value="13.5391" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="ELNOPRV" />
+				<move action="place" tiles="PROVE" position="B2" score="31" />
+				<pc value="1.41406" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AADEIIS" />
+				<move action="place" tiles=".IA" position="N1" score="12" />
+				<pc value="13.5391" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="ELNOPRV" />
+				<move action="place" tiles="PLOVE." position="C3" score="24" />
+				<pc value="2.88672" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AAEIISU" />
+				<move action="place" tiles="AA.II" position="4A" score="12" />
+				<pc value="2.5625" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="ELNOPRV" />
+				<move action="place" tiles="PROVE" position="B2" score="31" />
+				<pc value="1.41406" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AADEISU" />
+				<move action="place" tiles="AU.A" position="C6" score="12" />
+				<pc value="14.6562" />
+			</ply>
+		</playahead>
+	</iteration>
+	<iteration index="373">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="GHINPUV" />
+				<move action="place" tiles="HUP" position="N8" score="25" />
+				<pc value="-0.113281" />
+			</ply>
+			<ply index="2">
+				<rack tiles="ADEEIIS" />
+				<move action="place" tiles="IDEAS" position="O4" score="57" />
+				<pc value="-5.69531" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="GHINPUV" />
+				<move action="place" tiles="PHU." position="K3" score="35" />
+				<pc value="-0.113281" />
+			</ply>
+			<ply index="2">
+				<rack tiles="ADEEIIS" />
+				<move action="place" tiles="AIDE." position="D4" score="14" />
+				<pc value="7.75781" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="GHINPUV" />
+				<move action="place" tiles="HUP" position="N8" score="25" />
+				<pc value="-0.113281" />
+			</ply>
+			<ply index="2">
+				<rack tiles="ADEIISU" />
+				<move action="place" tiles="IDEAS" position="O4" score="57" />
+				<pc value="-14.4648" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="GHINPUV" />
+				<move action="place" tiles="PHU." position="K3" score="35" />
+				<pc value="-0.113281" />
+			</ply>
+			<ply index="2">
+				<rack tiles="ADEEISU" />
+				<move action="place" tiles="EAU" position="11J" score="9" />
+				<pc value="14.6562" />
+			</ply>
+		</playahead>
+	</iteration>
+	<iteration index="374">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EEIOPRU" />
+				<move action="place" tiles="ROUPIE." position="C2" score="20" />
+				<pc value="0.34375" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEILNOS" />
+				<move action="place" tiles="ANISOLE" position="14E" score="63" />
+				<pc value="0" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EEIOPRU" />
+				<move action="place" tiles="OURIE" position="B2" score="21" />
+				<pc value="0.480469" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEILNOS" />
+				<move action="place" tiles="ANISOLE" position="14E" score="63" />
+				<pc value="0" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EEIOPRU" />
+				<move action="place" tiles="ROUPIE." position="C2" score="20" />
+				<pc value="0.34375" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEINOSU" />
+				<move action="place" tiles="U.AEI" position="2B" score="14" />
+				<pc value="8.77344" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EEIOPRU" />
+				<move action="place" tiles="OURIE" position="B2" score="21" />
+				<pc value="0.480469" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AELNOSU" />
+				<move action="place" tiles="ULNA" position="A1" score="22" />
+				<pc value="5.82422" />
+			</ply>
+		</playahead>
+	</iteration>
+	<iteration index="375">
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="3G" score="13" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EEGNSXZ" />
+				<move action="place" tiles="SEX" position="N8" score="34" />
+				<pc value="6.11719" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEIILRS" />
+				<move action="place" tiles=".....I" position="H6" score="14" />
+				<pc value="28.7383" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YU.A" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EEGNSXZ" />
+				<move action="place" tiles="EX" position="2I" score="59" />
+				<pc value="12.2695" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEIILRS" />
+				<move action="place" tiles=".....I" position="H6" score="14" />
+				<pc value="28.7383" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles=".YA" position="N1" score="18" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EEGNSXZ" />
+				<move action="place" tiles="EX" position="2I" score="59" />
+				<pc value="12.2695" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEILRSU" />
+				<move action="place" tiles="U." position="K5" score="4" />
+				<pc value="28.7383" />
+			</ply>
+		</playahead>
+		<playahead>
+			<ply index="0">
+				<rack tiles="AAEISUY" />
+				<move action="place" tiles="YA.I" position="A6" score="8" />
+			</ply>
+			<ply index="1">
+				<rack tiles="EEGNSXZ" />
+				<move action="place" tiles="EX" position="2I" score="59" />
+				<pc value="12.2695" />
+			</ply>
+			<ply index="2">
+				<rack tiles="AEILRSU" />
+				<move action="place" tiles="U." position="K5" score="4" />
+				<pc value="28.7383" />
+			</ply>
+		</playahead>
+	</iteration>
+</simulation>

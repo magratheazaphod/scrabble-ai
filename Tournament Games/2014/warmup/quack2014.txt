@@ -1,0 +1,11 @@
+kajikawa
+non-parametric mann-kendall
+
+quackle
+1-0 469-442 +27 10
+2-0 492-344 +175 15
+2-1 366-534 +7 10
+2-2 366-457 -84 25
+
+missed bingos - 2
+phony bingos - 1

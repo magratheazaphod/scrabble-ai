@@ -1,0 +1,403 @@
+Round 1		Debbie Stegman
+L392-431	0-1 -39
+12
+0
+0
+0
+0
+2
+0
+0
+16
+16
+5
+8
+6
+0
+65/4.6
+
+Round 2		Richard Popper
+W471-355	1-1 +77
+0
+0
+0
+0
+0
+0
+2
+0
+0
+16
+4
+4
+26/2.2
+
+Round 3		Joe Edley
+W423-312	2-1 +188
+1
+1
+0
+0
+0
+0
+12
+7
+11
+11
+0
+13
+5
+5
+66/4.7
+
+Round 4		Alyssa Faria
+L400-466	2-2 +122
+0
+0
+0
+33
+0
+0
+0
+0
+0
+10?
+5
+1
+49/4.1
+
+round 5		Rob Robinsky
+L408-536	2-3 -6
+0
+0
+0 (50)
+0
+0
+0
+0
+0
+1
+0
+0
+51/4.6
+
+round 6		john Luebkemann
+W466-350	3-3 +110
+0
+0
+0
+0
+0
+0
+0
+3
+13
+0
+0
+16/1.5
+
+Round 7		Rod MacNeil
+L340-488	3-4 -38
+0
+7
+4
+0
+20
+25
+0
+0
+2
+11
+blahhh
+69/6.9
+
+Round 8		Jason Keller
+W442-343	4-4 +61
+0
+3
+0
+1
+0
+2
+2
+0
+0
+0
+1
+2
+0
+11/.8
+
+Round 9		Chris Lipe
+W456-361	5-4 +156
+0
+6
+0
+1
+0
+0
+0
+2
+0
+5
+0?
+2
+16/1.3
+
+Round 10	Vince Castellano
+W480-314	6-4 +322
+1
+0
+0
+1
+0
+1
+0
+5
+0
+0
+0?
+0
+0?
+0
+0
+8/.5
+
+Round 11	Joel Sherman
+W422-377	7-4 +367
+0
+0
+1
+7
+0
+0
+0
+2
+11
+0
+5
+0
+0
+26/2.0
+
+Round 12	Joey Mallick
+L391-459	7-5 +299
+0
+0
+0
+0
+6
+0
+4
+0
+2?
+0
+2
+0
+14/1.2
+
+Round 13	Vince Castellano
+W534-284	8-5 +549
+0
+0
+2
+0
+0
+0
+0
+0
+1
+0
+1
+1
+5/.4
+
+Round 14	Joe Edley
+L365-379	8-6 +535
+0
+0
+7
+0
+8
+0
+0
+0
+10
+0
+12
+0
+45/3.8
+
+Round 15	Kenji Matsumoto
+L392-417	8-7 +510
+2
+0
+0
+0
+0
+0
+0
+0
+0? 5?
+13
+4
+19/1.7
+
+Round 16	Winter
+W471-454        9-7 +527
+0
+0
+0
+7
+1
+0
+0
+0
+0
+11
+1
+20/1.8
+
+Round 17	Jason Ubeika
+W502-273	10-7 +756
+0
+0
+0
+0
+0
+3
+0
+0
+3
+0
+0
+0
+10
+20/1.5
+
+Round 18	Heather Drumm
+L346-387	10-8 +715
+0
+0
+2
+0
+0
+0
+0
+0
+9
+0
+0
+12
+0
+23/1.8
+	
+Round 19	Winter
+W461-359	11-8 +817
+4
+5
+0
+1
+0
+5
+6
+10
+0
+2
+0
+4
+16
+81
+3
+137/9.1
+
+Round 20	Rod MacNeil
+L324-451	11-9 +690
+1
+1
+0
+2
+2
+6
+0
+3
+6
+6
+0
+0
+4
+31/2.4
+
+Round 21	Debbie Stegman
+W477-326	12-9 +841
+0
+0
+3
+0
+0
+6
+3
+0
+4
+0
+0
+6
+0
+22/1.7
+
+Round 22	Joey Mallick
+L414-488	12-10 +767
+0
+0
+1
+5
+2
+1
+13
+6
+0
+5?
+0
+6
+0
+0
+39/2.8
+
+equity average: 35.0
+
+missed bingos
+CHALICED*
+MOIETIES
+MILITATE
+
+better bingos
+RONYONS
+CAUDALLY
+CRONISH
+RESTRICT
+STERNITE
+FANFOLDS
+
+phonies
+me
+challenged wrong
+
+accepted
+RETASKED
+
+challenged off
+GOVAL
+UNMERGE
+
+
+them
+challenged wrong
+SCREAKED
+
+accepted
+UNCARED
+SUbEVENT
+
+challenged off
+SAM
+FOOLABLE

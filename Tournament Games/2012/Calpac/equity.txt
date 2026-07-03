@@ -1,0 +1,56 @@
+Rd 1 Mike Baker
+W507-404 1-0 +103
+0
+4
+0
+you played good
+
+Rd 2 Mike Baker
+W410-363 2-0 150
+0
+0
+3
+0
+0
+2
+5
+0
+0
+7
+12?
+0
+0
+0
+0
+29/1.9
+
+Rd 3 Chris Williams
+L332-485 2-1 -3
+0
+0
+4
+16
+
+Rd 4 Chris Williams
+W547-320 3-1 224
+
+Rd 5 Winter
+W540-334 4-1 430
+ELIGIBLES/missed elapsing
+
+Rd 6 Winter
+W453-427 5-1 456
+
+Rd 7 Mike Frentz
+W466-342 6-1 680
+
+interesting positions:
+-pre-endgame/endgame against mike baker, game 2
+-pre-endgame against winter, game 6
+-RAVERS v LAR against mike frentz, game 7
+-Rd 10 pre-endgame against noah.
+-Rd 11 against Rafi
+-Rd 13 against Nigel
+-Rd 14 against Nigel - YUCHS
+-Rd 15 against Wiegand
+

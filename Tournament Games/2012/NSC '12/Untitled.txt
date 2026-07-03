@@ -1,0 +1,29 @@
+		DiT	FiT	DiTS	FiTS	FAD	QAT	FA	DEFAT	FEST	FATSO	EF	
+?A X 2		W - 17	W-32	
+?C		W - 15		
+?L		W - 22
+?N		W - 18
+?O		W - 19
+?R X 2		W - 22
+AA		W - 8	W-29	W-7
+AC X 2		W - 9	W-17	W-14
+AL X 2		W - 2	W-10	W-9
+AN X 2		W - 8	W-14	W-10
+AO X 2		W - 8	W-27	W-11
+AR X 4		L - 1	W-10	W-5
+CL		T	W-17	W-10
+CN		L - bingo	W-11
+CO		W - 7	W-13	W-13
+CR X 2		W - 1	W-10	W-10
+LN		L - 7	W-10	W-3
+LO		W - 2	W-10	W-11
+LR X 2		L	L-2	W-5
+NO		T	W-10	W-8
+NR X 2		L - bingo	W-7
+OR X 2		W - 2	W-11	W-11
+RR		L - bingo	W-7
+		24/36	31/36	36/36!!!
+
+DiT - wins as long as he doesn't get OSAR, get too good of a play on row 15, or bingo.		
+
+assume a win while drawing the blank - 1/4

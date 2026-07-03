@@ -1,0 +1,595 @@
+Rd 1	Yuki Loritz
+W451-347	1-0 +104
+0
+0
+5
+8
+0
+2?
+0
+0
+0
+0
+10
+2
+0
+0
+/27
+
+Rd 2	Webster Phillips
+W322-293	2-0 +133
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+2
+4
+0
+/6
+
+Rd 3	Greg Heidler
+W487-360	3-0 +260
+1
+0
+0
+0
+2
+0
+0
+2
+1
+0
+0
+0!
+19
+21
+0
+0
+/6 (46)
+
+Rd 4	Joey Krafchick
+W499-319	4-0 +440
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+/1
+
+Rd 5	Matt Tunnicliffe
+W451-417	5-0 +474
+phew
+
+Rd 6	Orry Swift
+L414-467	5-1 +421
+0
+0
+0
+0
+1
+0
+0
+3
+0
+0
+0
+0
+111
+/115
+
+Rd 7	Jerry Lerman
+W487-311	6-1 +597
+0
+0
+0
+0
+0
+0
+14
+0
+12
+0
+1
+0?
+28
+/55
+
+	A	E	U	D	N	R	S*2
+bunko	-82	-8	-82	-22	-25     	-15
+bleak   -82	-20	-82	-20	-41	-82	-85	
+
+Rd 8	Adam Ginzberg
+T469-469	6.5-1.5 +597
+1
+0
+0
+0
+4
+7
+0
+0
+?
+?
+4
+5
+/
+21
+
+Rd 9	Nigel Richards
+L386-487	6.5-2.5 +496
+0
+0
+0
+0
+0
+2
+5
+0?
+0
+0
+8
+/15
+
+Rd 10	Scott Appel
+L368-405	6.5-3.5 +469
+0
+3
+0
+0
+0
+0
+0
+0
+0
+0
+12.5, kind of
+43
+/58.5 (45)
+
+	N*2	R	S	T*3	?
+AEON	18	7	-1	14	-10
+ANOA	4	12	1	12	-11
+
+Rd 11   BNJY
+L328-469	6.5-4.5 +328
+0
+0
+6
+6
+0
+0
+2
+0
+0
+10
+0
+0
+/24
+
+Rd 12	Jesse Matthews
+W448-398	7.5-4.5 +378
+0
+0
+25
+0
+0
+0
+0
+0
+0
+5
+0
+0
+/30
+
+Rd 13	Mike Frentz
+L331-508	7.5-5.5 +201
+3
+0
+0
+0
+5
+2
+0?
+0
+0
+3
+3
+/16
+
+Rd 14	Jeffrey Nelson
+W419-366	8.5-5.5 +254
+0
+4
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+/4
+
+Rd 15	Amit Chakrabarti
+W361-322	9.5-5.5 +293
+4
+0
+1
+0
+0
+3
+0
+0
+0
+0
+0
+0
+2
+0
+/10
+
+Rd 16	Carl Johnson
+W423-342	10.5-5.5 +374
+0
+0
+0
+1?
+5?
+0
+6
+0
+0
+0
+?
+0
+/12
+
+Rd 17	Mack Meller
+L402-413	10.5-6.5 +363
+0
+0
+12
+4
+0
+0
+13
+2
+0
+0
+0
+0
+0
+/31
+
+Rd 18	Will Anderson
+L380-451	10.5-7.5 +292
+0
+0
+5
+0
+0
+6
+0
+0
+6
+0
+1
+0
+0
+/18
+
+Rd 19	Joel Sherman
+L382-499	10.5-8.5 +175
+0
+0
+0
+0
+0
+12
+0
+10
+0?
+0
+/22
+
+Rd 20	Ed de Guzman
+W461-357	11.5-8.5 +279
+0
+0
+3
+0
+0
+8
+11
+5
+8
+0
+0
+0
+/35
+
+Rd 21	Jason Keller
+L310-526	11.5-9.5 +63
+4
+0
+0
+33
+0
+0
+0
+12
+-
+-
+-
+5
+/54
+
+Rd 22	Kolton Koehler
+W461-414	12.5-9.5 +110
+0
+0
+0
+2
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+/3
+
+Rd 23	Ryan Fischer
+W490-378	13.5-9.5 +222
+7
+0
+0
+0
+0
+10
+0
+0
+0
+0
+40
+/57
+
+Rd 24	Avery Mojica
+L428-449	13.5-10.5 +201
+0
+3
+0
+0
+0
+0
+0
+0
+5
+0?
+3
+0
+0
+/11
+
+
+could fish for…
+		fish off	draw
+anconoid	LST		DI? 	2/720
+societal	NNO		EI?	2/720
+ancients	LOO		EI?	2/720
+seconals	NOT		ES?	1/720
+lactones	NO		E? 	1/90
+lactoses	NNO		ES?	1/720
+factions	LNO		FI?	2/720
+locating	NNS		GI?	2/720
+location	NS		I? 	2/90
+vocalist	NNO		IV?	2/720
+vocation	LNS		IV?	2/720
+pactions	LNO		IP?	2/720
+piccolos	NNT		IS?	2/720
+enclosed	NOT		DE?	2/720
+inclosed	NOT		DE?/DI?/EI?/DEI	7/720
+uncooled	NST		DE?	1/720
+secondly	NOT		DE?	1/720
+dictions	LNO		DII/DI?/II? 4/720
+noctuoid	LNS		DI?	2/720
+noctuids	LNO		DI?	2/720
+lycopods	NNT		DP?	1/720
+oncogene	LST		EG?	1/720
+encloses	NOT		ES?	1/720
+escoting	LNO		EGI/EG?/EI?/GI?	7/720
+oscinine	LOT		EII/EI?/II?	4/720
+nicotine	LOS		EII/EI?/II?	4/720
+nucleins	OOT		EI?	2/720
+incloser	NOT		EI?	2/720
+incloses	NOT		EIS/EI?/ES?/IS?	7/720
+lections	NO		EI/E?/I? 5/90
+excitons	LNO		EI?	2/720
+lockstep	NNO		EP?	1/720
+locksets	NNO		ES?	1/720
+nucleons	OT		E?	1/90
+uncloses	NOT		ES?	1/720
+noctules	NO		E?	1/90
+pocosens	LNT		EP?/EPS/ES?/PS?	4/720
+fictions	LNO		FII/FI?/II?	4/720
+oncoming	LST		GI?	2/720
+incision	LOT		II?	1/720
+picolins	NOT		IIP/IP?/II?	4/720
+nicotins	LO		II/I?	3/90
+locoisms	NNT		II?	1/720
+orcinols	NT		I?	2/90
+locution	NS		I?	2/90
+unctions	LO		I?	2/90
+pocosins	LNT		IPS/IP?/IS?/PS?	7/720
+suctions	LNO		IS?	2/720
+pocosons	LNT		PS?	1/720
+
+cumulative
+LO	3/90 nicotins
+NO	5/90 lections
+NS	1/90 locution
+NT	2/90 orcinols
+OT	1/90 nucleons
+LNO	19/720 pactions, dictions, escoting, fictions, suctions
+LNS	4/720 vocation, noctuoid
+LNT	11/720 pocosens/pocosins/pocosons
+LOO	2/720 ancients
+LOS 	4/720 nicotine
+LOT	4/720 oscinine
+LST	5/720 anconoid, oncogene, oncoming
+NNO	6/720 societal, lactoses, vocalist, lockstep
+NNS	2/720 locating
+NNT	4/720 piccolos, lycopods, locoisms
+NOT	16/720 inclosed, incloses, picolins
+NST	1/720 uncooled
+OOT	2/720 nucleins
+
+best plays
+fish NO	- 40/720
+fish LO - 24/720
+fish LNO - 19/720
+
+Rd 25	Lester Schonbrun
+W443-404	14.5-10.5 +240
+0
+0
+3
+2
+5
+5
+0
+0
+0
+0
+10
+5
+0
+0
+/30
+
+Rd 26 	Scott Garner
+L397-428	14.5-11.5 +209
+4
+23
+0
+0
+2
+0
+5
+0
+0
+11
+0
+7
+38
+16
+14
+9
+/129
+
+Rd 27	Cesar del Solar
+W398-376	15.5-11.5 +231
+0
+0
+0
+0
+0
+0
+0?
+0
+0
+0
+0
+0
+2
+0
+/2
+
+Rd 28	Robin PD
+W477-340	16.5-11.5 +368
+1
+0
+2
+0
+8
+0
+0
+0
+3
+0
+0
+0
+0
+/14
+
+Rd 29	Erickson Smith
+W397-325	17.5-11.5 +440
+3
+0
+0
+0
+0
+4
+0
+2?
+0
+0
+15
+0
+0?
+0
+/24
+
+Rd 30	Rob Robinsky
+W438-383	18.5-11.5 +495
+0
+0?
+0
+0
+9
+3?
+3
+0
+0
+0
+21
+6
+/42
+
+Rd 31	Peter Armstrong
+W472-318	19.5-11.5 +649
+1
+0
+0
+5
+2
+0
+10
+0
+0
+0
+0
+0
+/18
+
+
+GUL 
+GNU

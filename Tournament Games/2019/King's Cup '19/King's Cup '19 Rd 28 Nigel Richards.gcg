@@ -1,0 +1,44 @@
+#player1 Nigel_Richards Nigel Richards
+#player2 Jesse_Day Jesse Day
+#title Game 28, Board 1
+#description Game 28, Board 1
+>Nigel_Richards: HLOSTUW H7 HOWL +20 20
+>Jesse_Day: ADELNOY G8 YEALDON +76 76
+>Nigel_Richards: DERSTUW H13 WUD +28 48
+>Jesse_Day: EEEEEGV F10 GEE +21 97
+>Nigel_Richards: ?EGIRST E5 TIRaGES +89 137
+>Jesse_Day: AEEEIVZ D8 ZA +44 141
+#note should just play AVIZE at D1 and clean up the rack.
+>Nigel_Richards: DIIQRUX C9 DI +12 149
+#note wow, beautiful play!
+>Jesse_Day: AEEEGIV D1 VEGIE +28 169
+#note hoooo boy, I made the wrong move here. I have to infer that he is drawing for a QU play on this turn, which will score him about 100 points. even if he has a Q play at D1 as well, that's still a 50-point gain for me. The best block I can make is probably GIVE at B10, which gives up 9 points and keeps a worse leave (about 6-7 points worse). It's easy to calculate: if I think he has the 100-point QU play at least 30% of the time, then I should be blocking (because 50*30% = 15, which is the equity that I concede by playing GAVE). In reality I think he has the Q play about 70% of the time next turn, and so the block is a no-brainer.
+>Nigel_Richards: EIOQRUX B10 QUIRE +99 248
+>Jesse_Day: ACEEOPR A11 OPERA +43 212
+>Nigel_Richards: BMNOSTX I5 TOMB +29 277
+#note ooooooh.
+>Jesse_Day: CEFIKRV C13 KIF +37 249
+#note I obviously thought that TOMB was also a setup, but this one is less obvious to block. First of all, he has another good spot for the X at 14C that can score up to 50 points, so I'm not rewarded as much by sacrificing to block. Also, I'm trailing by 65, and KIF at J4 gunks up the board pretty bad, whereas if he slots the X at J6 and a vowel at J5, I have some chance of a nice counter-play (a fair amount of the time he plays AX and sets me up for a nice play at H1, or I draw an O and get COVER/TOC/OXO back). There's also incidentally some chance that TOMB wasn't a setup play at all!! With all of that in mind, I think it's OK not to block here, and inferring his exact leave of NSX the two KIF placements sim about equal.
+>Nigel_Richards: HINOOSX J4 HOX +56 333
+>Jesse_Day: ?ACEORV K6 OVERACt +82 331
+>Nigel_Richards: IJNOOSU 15H .UO +4 337
+#note I literally burst out laughing when he set me up for the third time this game! I'm not sure that I agree with this one, but even if I block he can likely play the J at 10J and set up an S hook, or maybe draw EJIDO at 8K.
+>Jesse_Day: DEIIRTY 14J YITIE +45 376
+>Nigel_Richards: IJLLNOS C5 JOL +21 358
+#note JOL here instead of JOL at 2A because he wants to bingo and needs to keep the board open
+>Jesse_Day: DMNNRRU 8K .NURN +18 394
+#note I saw UNDERN and passed it up because...uh...yeah not sure! ENURN gives him better bingo lanes and is definitely wrong.
+>Nigel_Richards: AAILNSS 1A SIL.AN +27 385
+#note great play by nigel, setting up a nice lane at A1, and also choosing to keep AS because the pool is heavy on consonants. I would think about SALVIA here at 1A to set up another lane on row 2, but I guess Nigel felt that he wouldn't need it.
+>Jesse_Day: AADFMNR 2B FA.NA +38 432
+#note I didn't see the competitor play here, which is MADAFU at M3 blocking the R. MADAFU concedes fewer bingos, but FAENA puts me up 47 and keeps some nice scoring consonants that might allow me to outrun Nigel if he bingos next turn. I think this move is a tossup!
+>Nigel_Richards: AABPSST B6 BAS +23 408
+#note a fascinating decision. when he did it, my inference was that he knew he was in trouble - there are only a few bingos he can possible draw that fit on the left, and he must know that I am blocking on the right side next turn. is there something else he's trying for that I missed?
+>Jesse_Day: DEEIMRT O2 DIREME.T +62 494
+>Jesse_Day: DEEIMRT --  -62 432
+#note welp, it had been a long tournament, and I rushed this one thinking of DIRIMENT. what should've been a 100-point win looked like it might turn into a loss...
+>Nigel_Richards: ACNPSTT 10J C.NST +15 423
+#note a more, shall we say, "human" player would pressure me by playing CAST/YITIES or CANST in that spot. However, Nigel correctly calculates that I can block both his outs by playing down from M10, and instead plays the mathematically correct endgame, conceding IDEM. PHEW for me.
+>Jesse_Day: DEEIMRT 15L IDEM +32 464
+>Nigel_Richards: APT A7 PAT +26 449
+>Nigel_Richards:  (ERT) +6 455

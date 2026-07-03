@@ -1,0 +1,81 @@
+Rd 1	John Wiley
+L370-393	0-1 -23
+0
+0
+13
+0
+0
+7
+0
+?
+0
+0
+15
+5
+0
+/40
+
+Rd 2	STU
+W483-402	1-1 +58
+0
+0
+0
+0
+1
+36
+0
+0
+0
+0
+0
+/37
+
+Rd 3	Peter Armstrong
+L355-436	1-2 -23
+0
+0
+3
+0
+0
+12
+0
+14
+0
+8
+16
+0
+/53
+
+Rd 4	XP
+W428-416	2-2 -11
+0
+0
+0
+0
+18
+0
+0
+0
+0
+0?
+0?
+0 (should challenge!)
+/18
+
+Rd 5	Leesa
+W525-291	3-2 +223
+0
+0
+1
+3
+0
+0 (10)
+boom
+
+Rd 8	
+boom
+
+missed bingos
+DUALISTIC
+SOPRANI
+PIASABAS

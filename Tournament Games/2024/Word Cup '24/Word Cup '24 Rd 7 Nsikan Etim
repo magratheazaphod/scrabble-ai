@@ -1,0 +1,37 @@
+#character-encoding UTF-8
+#player1 JD JD
+#player2 Etim Etim
+>JD: ADELRTU -U +0 0
+>Etim: ILPTUWY -7 +0 0
+>JD: ADELNRT -N +0 0
+#note could also keep AELNRT or ADENRT
+>Etim: AEINNV 8D VIENNA +26 26
+>JD: ADELLRT E6 TR.ALLED +68 68
+>Etim: ?AKMOOS 6A MOOK.ArS +67 93
+>JD: EIIJOPR A4 JI.PIER +78 146
+>Etim: DEILMST 9I MILDEST +71 164
+>JD: DEGINOR B9 REDOING +78 224
+>Etim: ANORRW C2 NARR.W +26 190
+>JD: ACEGRXZ H1 GRAZE. +78 302
+>Etim: AOQTU F2 QUOT. +34 224
+>JD: ACDOPXY D12 POXY +51 353
+>Etim: EEEGNOS G8 .EOGENES +61 285
+>Etim: EEEGNOS --  -61 224
+>JD: AACDEEO A12 ODEA +35 388
+>Etim: EEEGNOS D3 GEE. +27 251
+>JD: ACCENUY 8M YEA +31 419
+#note need to block 3x3 since I know he has ENOS.
+>Etim: ?ENOSTW K5 TOWN.EtS +90 341
+>Etim: ABTU (challenge) +5 346
+#note TWONESSES?!
+>JD: CCILNOU 1H .LUCONIC +92 511
+>JD: ABFIIIV (challenge) +5 516
+#note wow, CICLATOUN available!
+>Etim: ABTU B1 TABU +33 379
+>Etim: EFHHSTU (challenge) +5 384
+#note challenged JURE
+>JD: ABFIIIV J4 FIB +26 542
+>Etim: EFHHSTU 10J F.ET +37 421
+>JD: AIIV 12I VI.A +14 556
+>Etim: HHSU 2L HUSH +38 459
+>Etim:  (I) +2 461
