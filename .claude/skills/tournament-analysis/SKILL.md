@@ -54,6 +54,8 @@ response["history"]["last_known_racks"][]
 - `mistake_index` — the "Mistakes" score shown in the UI. **Null/absent for annotated games.** Always handle None gracefully.
 - `estimated_elo`
 
+**Opponent mistake_index as a full-annotation signal:** BestBot can only score the opponent's mistakes if their rack was known for every turn — which only happens when the game was annotated for both sides (not just Jesse's), or was livestreamed with full move data. A non-null `mistake_index` on the opponent's `player_summaries` entry is the signal to treat that game's opponent stats (mistake index, win% lost) as trustworthy; when it's null, skip opponent stats for that game entirely rather than computing a partial number.
+
 ### turns[] fields
 - `player_index` — 0 or 1; use for reliable Jesse identification
 - `rack` — Jesse's rack for this turn (as seen by analysis; may differ from history in rare cases — validate against history)
@@ -380,6 +382,10 @@ def compute_game(r):
     summary      = next((s for s in analysis['player_summaries'] if is_jesse_summary(s)), None)
     mistake_index = summary['mistake_index'] if summary else None
 
+    opp_summary        = next((s for s in analysis['player_summaries'] if not is_jesse_summary(s)), None)
+    opp_mistake_index  = opp_summary['mistake_index'] if opp_summary else None
+    opp_fully_annotated = opp_mistake_index is not None  # opponent rack known every turn — see note above
+
     jesse_bingos = opp_bingos = 0
     for t in analysis['turns']:
         if t.get('played_is_bingo'):
@@ -402,6 +408,7 @@ def compute_game(r):
     played_words = build_played_words(events)
 
     endgame_spread_lost = win_prob_lost = phonies_played = missed_bingos = 0
+    opp_win_prob_lost = 0
     missed_bingo_words = []
     opp_missed_bingo_words = []
     jesse_phonies = []   # [{'words_formed', 'challenged'}]
@@ -425,6 +432,8 @@ def compute_game(r):
                     opp_missed_bingo_words.append(word)
 
         if t['player_index'] != jesse_idx:
+            if opp_fully_annotated:
+                opp_win_prob_lost += t.get('win_prob_loss') or 0
             continue
         if t.get('tiles_in_bag') == 0:
             endgame_spread_lost += t.get('spread_loss') or 0
@@ -444,10 +453,13 @@ def compute_game(r):
         'jesse_score': jesse_score, 'opp_score': opp_score,
         'result': 'W' if jesse_score > opp_score else 'L',
         'mistake_index': mistake_index,
+        'opp_mistake_index': opp_mistake_index,
+        'opp_fully_annotated': opp_fully_annotated,
         'jesse_bingos': jesse_bingos, 'opp_bingos': opp_bingos,
         'jesse_blanks': jesse_blanks,
         'endgame_spread_lost': endgame_spread_lost,
         'win_prob_lost': win_prob_lost,   # multiply by 100 for %
+        'opp_win_prob_lost': opp_win_prob_lost,   # only valid when opp_fully_annotated; multiply by 100 for %
         'phonies_played': phonies_played,
         'opp_phonies_played': len(opp_phonies),
         'missed_bingos': missed_bingos,
@@ -528,6 +540,7 @@ def sp_str(v):
 n     = len(stats)
 wins  = sum(1 for g in stats if g['result'] == 'W')
 mi_games = [g for g in stats if g['mistake_index'] is not None]
+opp_ann_games = [g for g in stats if g['opp_fully_annotated']]  # opponent racks known all game — see Notes
 
 total_jb = sum(g['jesse_bingos']  for g in stats)
 total_mb = sum(g['missed_bingos'] for g in stats)
@@ -553,6 +566,9 @@ agg = {
     'total_opp_phonies': total_opp_ph,
     'games_per_mb':    round(n / total_mb, 1) if total_mb else None,
     'games_per_phony': round(n / total_ph, 1) if total_ph else None,
+    'n_opp_annotated': len(opp_ann_games),
+    'avg_opp_mi':      round(sum(g['opp_mistake_index'] for g in opp_ann_games) / len(opp_ann_games), 2) if opp_ann_games else None,
+    'avg_opp_wpl':     round(sum(g['opp_win_prob_lost'] for g in opp_ann_games) / len(opp_ann_games) * 100, 1) if opp_ann_games else None,
 }
 ```
 
@@ -605,8 +621,9 @@ def game_note(g):
     for p in g.get('opp_phonies', []):
         tag = ' (unchallenged)' if not p['challenged'] else ''
         parts.append(f"{opp_name} phony {'/'.join(p['words_formed'])}*{tag}")
+    miss_verb = 'passed up' if 'nigel' in opp_name.lower() else 'missed'
     for w in opp_ws:
-        parts.append(f'{opp_name} missed {w}')
+        parts.append(f'{opp_name} {miss_verb} {w}')
     # Everything else stays brief and low-priority
     if len(parts) < 4 and (ob>=4 or (ob>=3 and res=='L')): parts.append(f'opp {ob} bingos')
     if len(parts) < 4 and jb >= 4 and res=='W':  parts.append(f'{jb} bingos')
@@ -646,15 +663,21 @@ Save to `<project root>/reports/<tournament-slug>-report.md`. Format:
 | Opponent Phonies Played | N |
 | Games per Missed Bingo | N.N |
 | Games per Phony Played | N.N |
+| Average Opponent Mistakes Score | X.XX (over N fully-annotated games) |
+| Average Opponent Win% Lost | XX.X% (over N fully-annotated games) |
+
+Omit the last two rows entirely if `n_opp_annotated == 0` (no game in the collection had the opponent's rack fully known). If `n_opp_annotated == n`, drop the "(over N fully-annotated games)" qualifier from both.
 
 ## Per-Game Breakdown
 
-*Notes: `*` marks a phony (all words formed by the play; the specific invalid word isn't always identifiable when multiple words were formed — CSW is the configured lexicon for every game).*
+*Notes: `*` marks a phony (all words formed by the play; the specific invalid word isn't always identifiable when multiple words were formed — CSW is the configured lexicon for every game). Opp Mistakes/Opp Win% Lost show "—" for games where the opponent's rack wasn't fully known (not livestreamed or double-annotated).*
 
-| Rnd | Game | Opponent | Result | Jesse | Opp | Spread | Mistakes | Jesse Bingos | Missed Bingos | Opp Bingos | Jesse Blanks | Endgame Spread Lost | Win% Lost | Notes |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| N | [↗](https://woogles.io/anno/GAME_ID) | Name | W/L | NNN | NNN | ±NNN | X.X | N | N | N | N | N | XX.X% | note |
-| **Avg** | | | | **NNN.N** | **NNN.N** | **±NN.N** | **X.XX** | **X.XX** | **X.XX** | **X.XX** | **X.XX** | **XX.X** | **XX.X%** | |
+| Rnd | Game | Opponent | Result | Jesse | Opp | Spread | Mistakes | Jesse Bingos | Missed Bingos | Opp Bingos | Jesse Blanks | Endgame Spread Lost | Win% Lost | Opp Mistakes | Opp Win% Lost | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| N | [↗](https://woogles.io/anno/GAME_ID) | Name | W/L | NNN | NNN | ±NNN | X.X | N | N | N | N | N | XX.X% | X.X | XX.X% | note |
+| **Avg** | | | | **NNN.N** | **NNN.N** | **±NN.N** | **X.XX** | **X.XX** | **X.XX** | **X.XX** | **X.XX** | **XX.X** | **XX.X%** | **X.XX**\* | **XX.X%**\* | |
+
+\*Opp Mistakes/Opp Win% Lost averages are computed only over the fully-annotated games (denominator = `n_opp_annotated`, not the full game count) — mark the average cells with a footnote stating that count, e.g. `**2.15** (4 games)`. Omit both columns entirely if `n_opp_annotated == 0`.
 
 ## Missed Bingos
 
@@ -685,6 +708,8 @@ No spreadsheet output (Jesse's preference as of June 2026).
 - **Win% Lost:** sum of `win_prob_loss` over Jesse's turns × 100. High in a win = nearly gave it away; high in a close loss = structural deficit, not bad luck.
 - **Phonies:** `is_phony` = word not in lexicon (games are configured for CSW — the lexicon Jesse always plays, confirmed via `history['lexicon']`, e.g. `CSW21`/`CSW24`); check it for BOTH players, not just Jesse (`analysis['turns'][i]['is_phony']` is the authoritative flag — don't infer phony-ness from the event log alone, since an *unchallenged* phony has no `PHONY_TILES_RETURNED` event and still scores). If `total_phonies == 0`, omit "Games per Phony Played" from the report. Every phony gets named in the per-game note with a trailing `*` (`phony WORD*`, or `phony WORD* (unchallenged)` if it wasn't caught); opponent phonies are attributed by the opponent's name from the Opponent column. **Multi-word plays:** when the play formed more than one word (`event['words_formed']` has >1 entry — e.g. a bingo crossing several tiles, or a short play forming a cross word), show ALL of them joined by `/` before the `*` (e.g. `GU/PU*`) — do NOT assume the primary/longest word is the invalid one. This bit Jesse: two "phonies" (GU, LINUX) turned out to be valid CSW words, and the actual violation was almost certainly the cross word (PU, NEEL) formed alongside them. Never assert which specific word was invalid; let Jesse read the full set and judge for himself.
 - **Missed bingo validation:** always cross-check `missed_bingo` against the history event rack. The analysis occasionally stores an incorrect rack, causing a false-positive (confirmed in Causeway R2: analysis showed BEEIORZ, actual was BEELORZ). If `validate_bingo(om, history_rack)` returns False, skip the entry.
+- **Nigel Richards' "missed" bingos:** when the opponent is Nigel Richards, phrase his passed-over bingos as "passed up" rather than "missed" in game notes (`game_note`'s `miss_verb` checks for `'nigel' in opp_name.lower()`) — he sees them and chooses not to play them, not a genuine oversight. Applies only to the opponent-attributed note text; Jesse's own missed-bingo wording and the Missed Bingos table (which only tracks Jesse's) are unaffected.
+- **Opponent mistake index / Win% Lost:** only trustworthy when `opp_fully_annotated` is True (opponent's `mistake_index` non-null in `player_summaries`) — i.e. the game was annotated for both sides or livestreamed with full rack data. Tournament-level averages (`avg_opp_mi`, `avg_opp_wpl`) must only include those games, not the full collection.
 - **Board reconstruction:** `build_snapshots_and_racks` runs in ~2ms per 19-game tournament and uses zero Claude tokens. Prefer it over dictionary lookup for missed-bingo word resolution.
 - **Game URL:** `https://woogles.io/anno/<game_id>`
 - **Win/Loss Progression:** a single line of 🟩 (win) / 🟥 (loss) boxes, one per game in chronological order, no round numbers and no labels. Group into blocks of 5 separated by a space for readability (no separator within a block). Built directly from `stats` (already sorted by round):
