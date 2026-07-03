@@ -375,7 +375,7 @@ def compute_game(r):
     jesse_score = history['final_scores'][jesse_idx]
     opp_score   = history['final_scores'][opp_idx]
     opp_name    = get_opp_name(meta, history['players'], jesse_idx)
-    game_url    = f'https://woogles.io/game/{meta["game_id"]}'
+    game_url    = f'https://woogles.io/anno/{meta["game_id"]}'
 
     summary      = next((s for s in analysis['player_summaries'] if is_jesse_summary(s)), None)
     mistake_index = summary['mistake_index'] if summary else None
@@ -653,7 +653,7 @@ Save to `<project root>/reports/<tournament-slug>-report.md`. Format:
 
 | Rnd | Game | Opponent | Result | Jesse | Opp | Spread | Mistakes | Jesse Bingos | Missed Bingos | Opp Bingos | Jesse Blanks | Endgame Spread Lost | Win% Lost | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| N | [↗](https://woogles.io/game/GAME_ID) | Name | W/L | NNN | NNN | ±NNN | X.X | N | N | N | N | N | XX.X% | note |
+| N | [↗](https://woogles.io/anno/GAME_ID) | Name | W/L | NNN | NNN | ±NNN | X.X | N | N | N | N | N | XX.X% | note |
 | **Avg** | | | | **NNN.N** | **NNN.N** | **±NN.N** | **X.XX** | **X.XX** | **X.XX** | **X.XX** | **X.XX** | **XX.X** | **XX.X%** | |
 
 ## Missed Bingos
@@ -686,7 +686,7 @@ No spreadsheet output (Jesse's preference as of June 2026).
 - **Phonies:** `is_phony` = word not in lexicon (games are configured for CSW — the lexicon Jesse always plays, confirmed via `history['lexicon']`, e.g. `CSW21`/`CSW24`); check it for BOTH players, not just Jesse (`analysis['turns'][i]['is_phony']` is the authoritative flag — don't infer phony-ness from the event log alone, since an *unchallenged* phony has no `PHONY_TILES_RETURNED` event and still scores). If `total_phonies == 0`, omit "Games per Phony Played" from the report. Every phony gets named in the per-game note with a trailing `*` (`phony WORD*`, or `phony WORD* (unchallenged)` if it wasn't caught); opponent phonies are attributed by the opponent's name from the Opponent column. **Multi-word plays:** when the play formed more than one word (`event['words_formed']` has >1 entry — e.g. a bingo crossing several tiles, or a short play forming a cross word), show ALL of them joined by `/` before the `*` (e.g. `GU/PU*`) — do NOT assume the primary/longest word is the invalid one. This bit Jesse: two "phonies" (GU, LINUX) turned out to be valid CSW words, and the actual violation was almost certainly the cross word (PU, NEEL) formed alongside them. Never assert which specific word was invalid; let Jesse read the full set and judge for himself.
 - **Missed bingo validation:** always cross-check `missed_bingo` against the history event rack. The analysis occasionally stores an incorrect rack, causing a false-positive (confirmed in Causeway R2: analysis showed BEEIORZ, actual was BEELORZ). If `validate_bingo(om, history_rack)` returns False, skip the entry.
 - **Board reconstruction:** `build_snapshots_and_racks` runs in ~2ms per 19-game tournament and uses zero Claude tokens. Prefer it over dictionary lookup for missed-bingo word resolution.
-- **Game URL:** `https://woogles.io/game/<game_id>`
+- **Game URL:** `https://woogles.io/anno/<game_id>`
 - **Win/Loss Progression:** a single line of 🟩 (win) / 🟥 (loss) boxes, one per game in chronological order, no round numbers and no labels. Group into blocks of 5 separated by a space for readability (no separator within a block). Built directly from `stats` (already sorted by round):
   ```python
   boxes = ['🟩' if g['result']=='W' else '🟥' for g in stats]
