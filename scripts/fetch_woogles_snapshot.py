@@ -3,7 +3,7 @@
 
 Runs from GitHub Actions (unrestricted egress) since some cloud agent environments
 can't reach woogles.io directly. Does NOT compute stats or build reports — that logic
-lives in .claude/skills/woogles-tournament-analysis/SKILL.md and is interpreted by the
+lives in .claude/skills/tournament-analysis/SKILL.md and is interpreted by the
 consumer of this snapshot, so report-format changes only ever need to happen in one place.
 """
 import json
