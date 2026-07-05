@@ -48,7 +48,7 @@ STATE_PATH = ".github/report-state.json"
 
 
 def read_skill_md():
-    with open(".claude/skills/woogles-tournament-analysis/SKILL.md") as f:
+    with open(".claude/skills/tournament-analysis/SKILL.md") as f:
         return f.read()
 
 
