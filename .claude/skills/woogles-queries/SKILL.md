@@ -91,6 +91,21 @@ VPN auto-reconnect and the duplicate-run lock the MCP path lacks. The MCP's only
 guard against orphaned heavy backends is the `statement_timeout` above, so bump it
 inline for a deliberately long query rather than removing it.
 
+## Scope: stay inside reporting/
+
+`reporting/` is Jesse's folder within the `liwords` repo — he owns it outright and
+uses it independently of the rest of the app. **Never let changes spill outside
+`reporting/`** (app code, other top-level dirs, root configs, etc.), even
+incidentally:
+- File edits, new scripts, cron/launchd automation, and generated artifacts
+  (CSVs, logs, `.env`-style credential files) all belong under `reporting/`.
+- When staging or committing, `git add` only paths under `reporting/` — never a
+  broad `git add -A`/`git add .` from the repo root.
+- If a PR or commit against `liwords` is ever needed for this work, its diff
+  should touch only `reporting/**`. If a task seems to require a change outside
+  `reporting/`, stop and check with Jesse before touching it — don't assume it's
+  in scope just because it's convenient.
+
 ## Viewing results beyond the terminal table
 
 For anything more than a glance, open a throwaway Jupyter notebook. Two ways:
