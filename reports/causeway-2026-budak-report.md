@@ -27,10 +27,10 @@
 
 | Rnd | Game | Opponent | Result | Cedric | Opp | Spread | Mistakes | Cedric Bingos | Missed Bingos | Opp Bingos | Cedric Blanks | Endgame Spread Lost | Win% Lost | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | [↗](https://woogles.io/game/S22b9eB6yHxsXMF9GnfXQ9) | Sultan Alieffany | W | 390 | 367 | +23 | 5.4 | 0 | 1 | 2 | 1 | 54 | 90.1% | errorful win; phony RIFED/RYU* (unchallenged); missed bingo #1 (REFRaI(N)(E)D); Sultan Alieffany phony VAL* |
-| 2 | [↗](https://woogles.io/game/jQZwe2c9cCC7J6ULg8mL22) | Amanda Mak | W | 483 | 427 | +56 | 4.6 | 3 | 1 | 2 | 2 | 63 | 32.9% | errorful win; phony URTICAE/DUI* (unchallenged); phony TUMORING*; missed bingo #2 (FLOU(R)ING) |
-| 28 | [↗](https://woogles.io/game/FHazSeTPhcM4Ysg9oyqVxf) | Rebecca Soble | W | 509 | 465 | +44 | 2.9 | 1 | 1 | 3 | 1 | 0 | 39.8% | phony EDICTING*; missed bingo #3 (INDI(R)ECT); Rebecca Soble missed O(V)ERLARD |
-| 32 | [↗](https://woogles.io/game/PyU3LBGHMxJjrQSbeMEdBx) | Rebecca Soble | W | 419 | 343 | +76 | 2.4 | 2 | 1 | 2 | 1 | 0 | 6.8% | phony MEETE/MA/EN/TI/EE* (unchallenged); missed bingo #4 (OUTWING); Rebecca Soble missed DENSEST |
+| 1 | [↗](https://woogles.io/anno/S22b9eB6yHxsXMF9GnfXQ9) | Sultan Alieffany | W | 390 | 367 | +23 | 5.4 | 0 | 1 | 2 | 1 | 54 | 90.1% | errorful win; phony RIFED/RYU* (unchallenged); missed bingo #1 (REFRaI(N)(E)D); Sultan Alieffany phony VAL* |
+| 2 | [↗](https://woogles.io/anno/jQZwe2c9cCC7J6ULg8mL22) | Amanda Mak | W | 483 | 427 | +56 | 4.6 | 3 | 1 | 2 | 2 | 63 | 32.9% | errorful win; phony URTICAE/DUI* (unchallenged); phony TUMORING*; missed bingo #2 (FLOU(R)ING) |
+| 28 | [↗](https://woogles.io/anno/FHazSeTPhcM4Ysg9oyqVxf) | Rebecca Soble | W | 509 | 465 | +44 | 2.9 | 1 | 1 | 3 | 1 | 0 | 39.8% | phony EDICTING*; missed bingo #3 (INDI(R)ECT); Rebecca Soble missed O(V)ERLARD |
+| 32 | [↗](https://woogles.io/anno/PyU3LBGHMxJjrQSbeMEdBx) | Rebecca Soble | W | 419 | 343 | +76 | 2.4 | 2 | 1 | 2 | 1 | 0 | 6.8% | phony MEETE/MA/EN/TI/EE* (unchallenged); missed bingo #4 (OUTWING); Rebecca Soble missed DENSEST |
 | **Avg** | | | | **450.2** | **400.5** | **+49.8** | **3.83** | **1.5** | **1.0** | **2.25** | **1.25** | **29.2** | **42.4%** | |
 
 ## Missed Bingos
