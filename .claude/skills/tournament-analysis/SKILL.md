@@ -54,7 +54,7 @@ response["history"]["last_known_racks"][]
 - `mistake_index` — the "Mistakes" score shown in the UI. **Null/absent for annotated games.** Always handle None gracefully.
 - `estimated_elo`
 
-**Opponent mistake_index as a full-annotation signal:** BestBot can only score the opponent's mistakes if their rack was known for every turn — which only happens when the game was annotated for both sides (not just Jesse's), or was livestreamed with full move data. A non-null `mistake_index` on the opponent's `player_summaries` entry is the signal to treat that game's opponent stats (mistake index, win% lost) as trustworthy; when it's null, skip opponent stats for that game entirely rather than computing a partial number.
+**Full annotation must be detected from rack completeness, NOT from mistake_index.** A non-null opponent `mistake_index` is **not** a reliable signal that the opponent's side was fully tracked — Woogles computes a mistake score even when it only knows the tiles the opponent *played* each turn (confirmed Causeway 2026: all 19 games had a non-null opponent mistake_index, but only the 3 games annotated for both sides had real full-rack data). In a partially-annotated game, the opponent's recorded `rack` on each turn is just their played tiles (2–6 letters), so the trustworthy signal is: **every opponent turn shows a full 7-tile rack**, allowing legitimately short racks only once the bag is empty (`tiles_in_bag == 0`). See `opp_racks_complete` in Step 5. Additionally the game must have concluded (`history["play_state"] == "GAME_OVER"`) — an in-progress or aborted game can carry stats that aren't meaningful final numbers. When a game fails either check, show "—" for that game's opponent stats rather than a partial number.
 
 ### turns[] fields
 - `player_index` — 0 or 1; use for reliable Jesse identification
@@ -365,6 +365,18 @@ def build_played_words(events):
         i += 1
     return moves
 
+def opp_racks_complete(analysis_turns, opp_idx):
+    """True iff the opponent's rack is fully known on every turn.
+
+    In a partially-annotated game (only Jesse's side tracked), the opponent's
+    recorded `rack` is just the tiles they played that turn — so any opponent
+    rack shorter than 7 while the bag still has tiles marks the game partial.
+    Short racks are legitimate only once the bag is empty (endgame)."""
+    return all(
+        len(t.get('rack') or '') == 7 or (t.get('tiles_in_bag') or 0) == 0
+        for t in analysis_turns if t.get('player_index') == opp_idx
+    )
+
 def compute_game(r):
     meta     = r['meta']
     history  = r['history']['history']
@@ -384,7 +396,9 @@ def compute_game(r):
 
     opp_summary        = next((s for s in analysis['player_summaries'] if not is_jesse_summary(s)), None)
     opp_mistake_index  = opp_summary['mistake_index'] if opp_summary else None
-    opp_fully_annotated = opp_mistake_index is not None  # opponent rack known every turn — see note above
+    game_is_over        = history.get('play_state') == 'GAME_OVER'
+    opp_fully_annotated = (opp_mistake_index is not None and game_is_over
+                           and opp_racks_complete(analysis['turns'], opp_idx))  # full 7-tile racks every opp turn AND game finished — see note above
 
     jesse_bingos = opp_bingos = 0
     for t in analysis['turns']:
@@ -709,7 +723,7 @@ No spreadsheet output (Jesse's preference as of June 2026).
 - **Phonies:** `is_phony` = word not in lexicon (games are configured for CSW — the lexicon Jesse always plays, confirmed via `history['lexicon']`, e.g. `CSW21`/`CSW24`); check it for BOTH players, not just Jesse (`analysis['turns'][i]['is_phony']` is the authoritative flag — don't infer phony-ness from the event log alone, since an *unchallenged* phony has no `PHONY_TILES_RETURNED` event and still scores). If `total_phonies == 0`, omit "Games per Phony Played" from the report. Every phony gets named in the per-game note with a trailing `*` (`phony WORD*`, or `phony WORD* (unchallenged)` if it wasn't caught); opponent phonies are attributed by the opponent's name from the Opponent column. **Multi-word plays:** when the play formed more than one word (`event['words_formed']` has >1 entry — e.g. a bingo crossing several tiles, or a short play forming a cross word), show ALL of them joined by `/` before the `*` (e.g. `GU/PU*`) — do NOT assume the primary/longest word is the invalid one. This bit Jesse: two "phonies" (GU, LINUX) turned out to be valid CSW words, and the actual violation was almost certainly the cross word (PU, NEEL) formed alongside them. Never assert which specific word was invalid; let Jesse read the full set and judge for himself.
 - **Missed bingo validation:** always cross-check `missed_bingo` against the history event rack. The analysis occasionally stores an incorrect rack, causing a false-positive (confirmed in Causeway R2: analysis showed BEEIORZ, actual was BEELORZ). If `validate_bingo(om, history_rack)` returns False, skip the entry.
 - **Nigel Richards' "missed" bingos:** when the opponent is Nigel Richards, phrase his passed-over bingos as "passed up" rather than "missed" in game notes (`game_note`'s `miss_verb` checks for `'nigel' in opp_name.lower()`) — he sees them and chooses not to play them, not a genuine oversight. Applies only to the opponent-attributed note text; Jesse's own missed-bingo wording and the Missed Bingos table (which only tracks Jesse's) are unaffected.
-- **Opponent mistake index / Win% Lost:** only trustworthy when `opp_fully_annotated` is True (opponent's `mistake_index` non-null in `player_summaries`) — i.e. the game was annotated for both sides or livestreamed with full rack data. Tournament-level averages (`avg_opp_mi`, `avg_opp_wpl`) must only include those games, not the full collection.
+- **Opponent mistake index / Win% Lost:** only trustworthy when `opp_fully_annotated` is True, which requires all three of: opponent's `mistake_index` non-null in `player_summaries`, the game actually finished (`history["play_state"] == "GAME_OVER"`), and **`opp_racks_complete` — a full 7-tile rack on every opponent turn (short racks allowed only when the bag is empty)**. The rack check is the one that actually discriminates: Woogles infers partial racks from played tiles and scores them anyway, so mistake_index is non-null even for single-side annotations (confirmed Causeway 2026 — 19/19 games had non-null opp mistake_index, only 3 were fully annotated). Tournament-level averages (`avg_opp_mi`, `avg_opp_wpl`) must only include `opp_fully_annotated` games, not the full collection.
 - **Board reconstruction:** `build_snapshots_and_racks` runs in ~2ms per 19-game tournament and uses zero Claude tokens. Prefer it over dictionary lookup for missed-bingo word resolution.
 - **Game URL:** `https://woogles.io/anno/<game_id>`
 - **Win/Loss Progression:** a single line of 🟩 (win) / 🟥 (loss) boxes, one per game in chronological order, no round numbers and no labels. Group into blocks of 5 separated by a space for readability (no separator within a block). Built directly from `stats` (already sorted by round):
