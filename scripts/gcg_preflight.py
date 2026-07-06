@@ -224,6 +224,15 @@ def scan_file(path):
         else:
             issues.append(('missing-player-headers', 'could not infer both players', False))
 
+    # unterminated game: proper GCG endings always finish with going-out
+    # bonus / rack-penalty lines. A file ending on a regular play imports as
+    # an UNFINISHED game, which blocks all further ImportGCG calls on the
+    # account until deleted. Flag it — the missing ending must be added by
+    # hand (or the file skipped).
+    if not END_RE.match(move_lines[-1]):
+        issues.append(('unterminated-game', 'file does not end with endgame '
+                       'bonus/penalty lines; would import as a stuck unfinished game', False))
+
     # endgame rack/sign mismatch (detection only — needs human judgment)
     m = END_RE.match(move_lines[-1])
     if m:
