@@ -26,8 +26,8 @@ Use the wrapper script — never PgAdmin's GUI runner, it's cumbersome and gives
 good way to view results:
 
 ```bash
-~/projects/liwords/reporting/run_query.sh reporting/omgwords/games_per_month.sql
-~/projects/liwords/reporting/run_query.sh reporting/omgwords/games_per_month.sql --no-open
+~/projects/liwords/reporting/scripts/run_query.sh reporting/omgwords/games_per_month.sql
+~/projects/liwords/reporting/scripts/run_query.sh reporting/omgwords/games_per_month.sql --no-open
 ```
 
 What it does:
@@ -119,8 +119,8 @@ df
 ```
 
 **Or query the DB directly** with the reusable helper
-`reporting/nb_helper.py` (read-only, 60s statement timeout, password from `~/.pgpass`;
-VPN must be up). Copy `reporting/query_scratch_template.ipynb` and:
+`reporting/scripts/nb_helper.py` (read-only, 60s statement timeout, password from `~/.pgpass`;
+VPN must be up). Copy `reporting/scripts/query_scratch_template.ipynb` and:
 
 ```python
 from nb_helper import run_sql, run_file
