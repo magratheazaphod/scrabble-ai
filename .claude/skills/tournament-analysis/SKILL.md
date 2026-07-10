@@ -170,8 +170,12 @@ Analysis takes 2–10 minutes per game (Monte-Carlo simulation). Queue all pendi
 #### Hitting the daily limit
 1. Stop requesting new analyses.
 2. Write a progress file at `.claude/skills/tournament-analysis/state/<collectionId>.json` recording which games are `COMPLETED`, which are pending, and which are analyzed but not yet aggregated.
-3. Tell Jesse how many are done and how many are waiting. Offer to set up a daily scheduled task via the `schedule` skill to resume automatically.
+3. Tell Jesse how many are done and how many are waiting. **Do not offer to set up a new scheduled task (`schedule` skill, `/loop`, a cloud routine, etc.) for this** — a daily resume-and-report pipeline already exists and requires no new setup (see "Existing automated pipeline" below). Just tell Jesse it'll pick this collection up automatically.
 4. On a resumed run, read the progress file and only request analysis for pending games.
+
+### Existing automated pipeline — don't build a new one
+
+`.github/workflows/woogles-report.yml` already runs a GitHub Actions cron multiple times a day (retrying every 30 min), calling `scripts/fetch_woogles_snapshot.py` to request analysis for any pending games across **every collection on Jesse's profile** (respecting the rolling 24h rate limit), then `scripts/generate_report_email.py` to build and email the report once a collection is fully analyzed. State lives in `.github/report-state.json` (committed to master) plus markers on the `woogles-data` branch. Any newly created collection is picked up automatically on the next run — no per-tournament setup, scheduled task, or cloud routine is ever needed to "resume" or "finish" analysis for a collection. If Jesse asks about a stalled/incomplete report, check this workflow's state/runs rather than proposing new automation.
 
 ### Step 4: Fetch stats for all games
 
