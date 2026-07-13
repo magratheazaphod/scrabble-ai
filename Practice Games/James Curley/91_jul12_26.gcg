@@ -1,0 +1,33 @@
+#character-encoding UTF-8
+#player1 James_Curley James Curley
+#player2 JD Jesse Day
+#description Practice game 91, 2026-07-12. Reconstructed from Jesse's scoresheet and final board photo.
+#note Board-true reconstruction (verified by exact-score joint solve + a clean 100/100 tile-bag audit) differs from the paper scoresheet in two places. (1) James's penultimate play was recorded as "VER" but the board tile is unambiguously E, not R: the word is VEE, crossing HEM at 14G. V and R share the same 1-point value, but VEE's true placement scores 23, not the 13 written on paper. (2) Jesse's final scoresheet line records an unexplained "+6" with no word attached; no placement exists that reconciles the tile bag if that +6 is included, so it is treated as a paper bookkeeping slip and omitted here - Jesse passes his last turn holding a single leftover D (his rack row for that turn, "ADHV", also proved one tile too many for the board-true AH play and is corrected to "ADH"). Net effect: Jesse's true final score is 400 (paper said 406), and James's is 448 (paper said 438) - the paper's own "+4 tiles" endgame box for James is confirmed correct (2x Jesse's true D leftover).
+>James_Curley: BI 8G BI +8 8
+>JD: QAT 7H QAT +24 24
+>James_Curley: KT I6 K.T +12 20
+>JD: INANER 9G INANER +34 58
+>James_Curley: RAGED 8K RAGED +29 49
+>JD: JINNS 10D JINNS +32 90
+>James_Curley: WOOL 10K WOOL +18 67
+>JD: EEL D10 .EEL +22 112
+>James_Curley: FUZL E7 FUZ.L +38 105
+>JD: RETOX D4 RETOX +62 174
+>James_Curley: PAROLIN M1 PAROLIN. +74 179
+>JD: IVY 14B IVY +33 207
+>James_Curley: ?NGOT?D C1 iNGOTeD +82 261
+>JD: COAY 1K CO.AY +39 246
+>James_Curley: AIGA E2 AIGA +20 281
+>JD: MU 2M .MU +23 269
+>James_Curley: WO 15A WO +17 298
+>JD: TROU 1E TROU +18 287
+>James_Curley: DIF N4 DIF +33 331
+>JD: P 6B P.. +10 297
+>James_Curley: IBICES A1 IBICES +44 375
+>JD: STERASE 12D .STERASE +77 374
+>James_Curley: HEM 13G HEM +33 408
+>JD: ADH L3 AH +26 400
+>James_Curley: UEVEE 6I .UE +13 421
+>JD: D - +0 400
+>James_Curley: VEE 14G VEE +23 444
+>James_Curley:  (D) +4 448
