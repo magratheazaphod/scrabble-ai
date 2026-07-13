@@ -1,8 +1,9 @@
 #character-encoding UTF-8
-#player1 James_Curley James Curley
-#player2 JD Jesse Day
-#description Practice game 91, 2026-07-12. Reconstructed from Jesse's scoresheet and final board photo.
-#note Board-true reconstruction (verified by exact-score joint solve + a clean 100/100 tile-bag audit) differs from the paper scoresheet in two places. (1) James's penultimate play was recorded as "VER" but the board tile is unambiguously E, not R: the word is VEE, crossing HEM at 14G. V and R share the same 1-point value, but VEE's true placement scores 23, not the 13 written on paper. (2) Jesse's final scoresheet line records an unexplained "+6" with no word attached; no placement exists that reconciles the tile bag if that +6 is included, so it is treated as a paper bookkeeping slip and omitted here - Jesse passes his last turn holding a single leftover D (his rack row for that turn, "ADHV", also proved one tile too many for the board-true AH play and is corrected to "ADH"). Net effect: Jesse's true final score is 400 (paper said 406), and James's is 448 (paper said 438) - the paper's own "+4 tiles" endgame box for James is confirmed correct (2x Jesse's true D leftover).
+#player1 JD Jesse Day
+#player2 James_Curley James Curley
+#description Practice game 91, 2026-07-12. Reconstructed (Opus) from Jesse's scoresheet and final board photo; replaces an earlier reconstruction.
+#note Board-true reconstruction verified by an exact-score joint solve and a clean 100/100 tile-bag audit. Jesse moved first and OPENED WITH AN EXCHANGE of L and W (scoresheet "x2"; the kept tiles AINRT + a drawn Q enabled QAT next turn) - so Jesse is player1 here. Two places differ from the paper record. (1) James's going-out play is VEE at 14H (the third E sits on the J14 triple-letter square; it crosses REV down column H and AME down column I), whose board-true value is 19, not the 13 written at the table - James under-scored it by 6. (VEE at 14G, which would score 23, is impossible: it forms the phony crossword EHV, and the R-overdraw in the tile bag rules out reading the word as VER.) (2) Jesse's scoresheet carries an unexplained final "+6" (paper total 406) with no word attached; with the board full at 100 tiles and Jesse holding a single leftover D, no placement can add 6, so it is a paper tally slip and Jesse's true final is 400. James goes out; Jesse's leftover D (2 pts) gives James +4. Net board-true result: Jesse 400, James 444 (paper had 406-438; a prior reconstruction had 400-448 from mis-placing VEE at 14G). Racks are declared as played tiles only (partial) mid-game, with true full racks in the endgame, as the Woogles importer requires.
+>JD: AILNRTW -LW +0 0
 >James_Curley: BI 8G BI +8 8
 >JD: QAT 7H QAT +24 24
 >James_Curley: KT I6 K.T +12 20
@@ -29,5 +30,5 @@
 >JD: ADH L3 AH +26 400
 >James_Curley: UEVEE 6I .UE +13 421
 >JD: D - +0 400
->James_Curley: VEE 14G VEE +23 444
->James_Curley:  (D) +4 448
+>James_Curley: VEE 14H VEE +19 440
+>James_Curley:  (D) +4 444

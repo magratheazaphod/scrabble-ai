@@ -15,6 +15,46 @@ Read the `gcg-upload` skill too: all its API mechanics, lexicon rules
 (Jesse = CSW, current edition; FIVE_POINT challenge), and endgame-line
 gotchas apply. This skill produces the `.gcg`; gcg-upload uploads it.
 
+**Model requirement: Opus-class only.** A Sonnet 5 background-subagent run
+(2026-07-13, game #91 / IMG_1518+IMG_1519, JD vs James Curley 2026-07-12)
+produced a finished-looking, score-consistent GCG that was nonetheless wrong
+in two concrete ways (see `known-issues.md` in this skill folder for the
+full writeup). The run technically "succeeded" — clean 100-tile bag audit,
+uploaded fine, Woogles accepted it — which is exactly the danger: a
+plausible-looking wrong answer that passes every mechanical check. By
+contrast, the very first game this skill ever produced (game #90 /
+IMG_1516+IMG_1517, same opponent, same day) was reconstructed successfully
+on Fable (2026-07-12) with no known errors — so this isn't "every non-Opus
+model fails," but Sonnet has a confirmed bad result on this task and Jesse
+wants the safer tier used going forward regardless. Per Jesse (2026-07-13):
+do not run this skill's reconstruction judgment (Steps 2–4 especially) on a
+Sonnet-tier model. When invoking via the `Agent` tool, pass `model: 'opus'`
+explicitly.
+
+**Cost benchmarks** (all game #91 / IMG_1518+IMG_1519, JD vs James Curley
+2026-07-12 — the same game, so these are directly comparable):
+
+- **Sonnet 5, full pipeline as one background subagent** (2026-07-13, through
+  Woogles upload + collection + comment): **~480k tokens, 232 tool calls,
+  ~83 minutes wall-clock**. Output was WRONG (see `known-issues.md`) despite a
+  clean 100-tile audit and a successful upload.
+- **Opus 4.8 rerun** (2026-07-13): OCR/transcription delegated to an Opus
+  subagent (Steps 1–3 only) — **~170k tokens, 48 tool calls, ~28 min** for
+  that subagent alone — with the orchestrating main agent (also Opus) doing the
+  solve, an independent photo re-check, GCG authoring/verification, the Woogles
+  replace, tracker, and commit on top (main-agent usage not separately metered,
+  but of the same rough order). This run CORRECTED all three Sonnet errors:
+  it recovered Jesse's dropped turn-1 exchange (LW), fixed the resulting player
+  order (Jesse actually moved first), and re-placed James's going-out VEE from
+  14G (23, forms the phony EHV) to 14H (19, forms REV/AME) — board-true final
+  Jesse 400 / James 444. New game: https://woogles.io/anno/cEcuuYnamuiLRVkwtHpWNp
+
+Treat the Sonnet figure as a lower bound on cost, not a validated number for a
+correct run. Budget accordingly when batching multiple games — this is not a
+cheap/quick operation per game even before accounting for a redo. Delegating
+just the OCR to a subagent (as in the Opus rerun) keeps the careful-reading
+work isolated and gives the main agent a second, independent look at the photos.
+
 **Core principle: never trust your eyes for placements — trust arithmetic.**
 Reading tile positions off a photo has ±1-column errors (parallax: tiles sit
 proud of the board and shift toward the camera center; handwriting is
@@ -55,7 +95,37 @@ Layout of his sheet (rotate so handwriting is upright):
 - Entries look like `WORD  score/cumulative`. A standalone `+5/cum` row is a
   five-point challenge bonus (opponent challenged a valid word). Underlined
   letters = blanks. The rack written on a `+5` row belongs to the FOLLOWING
-  move (Jesse recorded his fresh rack there). Dash rows are alignment filler.
+  move (Jesse recorded his fresh rack there).
+- **Watch for exchanges, especially on turn 1** — confirmed root cause of a
+  real bug (`known-issues.md`, game #91): a turn where a player exchanged
+  tiles instead of playing can look, at a glance, like a blank/dash row and
+  get silently skipped as "alignment filler." Jesse's own exchange notation
+  (not a dash): `xABCD` — an `x` followed by the specific tiles exchanged
+  (score is always 0, cumulative unchanged from the prior row), or more
+  commonly just a count — `x1`, `x2`, `x3`, up to `x7` — an `x` followed by
+  how many tiles he exchanged (his worst N) without recording which ones.
+  Either form is a real turn and MUST appear as its own event in the move
+  list/GCG (GCG exchange line: no score, `-` in place of coordinates/word —
+  see the `gcg-upload`/GCG spec for exact syntax) — never drop it or fold it
+  into an adjacent row.
+- **For a count-only exchange (`x1`/`x2`/`x3`/…), always try to work out
+  which tiles.** Don't stop at "he exchanged N tiles, unknown which" — the
+  specific tiles usually ARE recoverable even when not written down: take
+  the multiset intersection of the rack *before* the exchange and
+  Jesse's recorded rack on his *next* turn — those common tiles are what he
+  kept; whatever's left over from the pre-exchange rack (should be exactly N
+  tiles) is what he exchanged. Example (game #91, turn 1): pre-exchange rack
+  `AILNRTW`, sheet says `x2`, next recorded rack `AAINQRT` → intersection
+  `AINRT` (kept) → leftover from `AILNRTW` is `L`+`W` → he exchanged `LW`,
+  and the two new tiles drawn were the extra `A` and the `Q`. Only works
+  when the following turn's rack was actually recorded (not always true —
+  see the "rack written on a `+5` row belongs to the FOLLOWING move" note
+  above for where else a "next rack" can come from); if it wasn't, the
+  exchanged tiles genuinely aren't recoverable and that uncertainty should be
+  noted explicitly rather than guessed. Before treating any other dash/blank
+  cell as pure filler, also sanity-check that the *other* column's turn count
+  still reconciles — a missing played-nothing turn (exchange or pass) throws
+  off every move after it.
 - Bottom boxes: `+Tiles` (2× opponent's leftover added to the out-player),
   `-Time` (time penalty), `Total`. The blank-designation boxes in the tile
   tracking grid (e.g. `? S Y`) say what each blank was played as.
