@@ -43,11 +43,26 @@ explicitly.
   that subagent alone — with the orchestrating main agent (also Opus) doing the
   solve, an independent photo re-check, GCG authoring/verification, the Woogles
   replace, tracker, and commit on top (main-agent usage not separately metered,
-  but of the same rough order). This run CORRECTED all three Sonnet errors:
-  it recovered Jesse's dropped turn-1 exchange (LW), fixed the resulting player
-  order (Jesse actually moved first), and re-placed James's going-out VEE from
-  14G (23, forms the phony EHV) to 14H (19, forms REV/AME) — board-true final
-  Jesse 400 / James 444. New game: https://woogles.io/anno/cEcuuYnamuiLRVkwtHpWNp
+  but of the same rough order). This run fixed the two Sonnet errors it looked
+  for (recovered Jesse's dropped turn-1 exchange LW; fixed the player order —
+  Jesse moved first) **but introduced a NEW endgame error of its own**: it gave
+  Jesse's V to James. Jesse's scoresheet endgame reads "AH" then a lone "V +6";
+  the correct reading is that *Jesse* played the V (REV down column H, R from
+  ESTERASE + E from HEM, for 6) and James then merely added the two E's to make
+  VEE across for 13. The Opus run instead treated the whole of VEE as James's
+  single going-out play (mis-scored 19) and dismissed Jesse's "+6" as a paper
+  tally slip, landing on a wrong 400/444. Jesse corrected it; the true final is
+  **Jesse 406 / James 438** (the board itself was identical either way — only
+  who-owns-which-endgame-tile changed). Corrected game:
+  https://woogles.io/anno/iv6yiCLPJPptXGGWdH3CJu
+
+The lesson from the Opus miss: a "board-true" reconstruction that only
+reconciles by declaring a **table scoring error** (here, forcing VEE to a
+mismatched score AND deleting an unexplained +6) should be treated as a red
+flag, not a result — the true reconstruction of this game has **zero score
+mismatches**. Prefer the reading that makes every recorded score exact over
+one that "explains away" two anomalies at once. See the new endgame-ownership
+and zero-mismatch heuristics in Steps 2 and 4.
 
 Treat the Sonnet figure as a lower bound on cost, not a validated number for a
 correct run. Budget accordingly when batching multiple games — this is not a
@@ -269,7 +284,7 @@ automatically — no need to ask:
 
 ```bash
 python3 scripts/update_curley_tracker.py \
-    --gcg "Practice Games/YYYY-MM-DD James Curley.gcg" \
+    --gcg "Practice Games/James Curley/<N>_<mon><day>_<YY>.gcg" \
     --game-id <the game_id from the anno URL>
 ```
 
