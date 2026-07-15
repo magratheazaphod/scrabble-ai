@@ -5,6 +5,69 @@ The pre-tooling prose SKILL.md and original known-issues.md are preserved in
 `archive/` (Jesse's request: keep the old way for benchmarking/revert; the
 solver's pre-lexicon behavior is also still reachable via `--no-lexicon`).
 
+## 2026-07-15 — Game #90 re-run: tooling benchmark (CONTAMINATED — read the caveat)
+
+Re-ran the full scripted pipeline on IMG_1516+1517 (game #90, originally
+Fable's one-shot run) on Opus 4.8, main agent, at Jesse's request. Result:
+https://woogles.io/anno/MWnwzEBvrXRzJXkmFitLU4 — a one-off, deliberately NOT
+in the Curley collection, NOT in the tracker, and NOT in the OCR audit
+manifest (`.github/ocr-game-manifest.txt`), so it generates no audit noise. Board-true finals JD 499 / James 309.
+
+**Cost: ~55 tool calls for the pipeline proper, of which ~20 were photo ops (13
+image reads + 7 crop-generation runs).** (Excludes ~10 calls lost to an
+unrelated Bash-permission-classifier outage and a side question.) Against the
+#92 pre-tooling baseline of ~120 calls /
+~65 photo ops, that is the batch-read protocol working roughly as designed: the
+strips + nine closeups were read once, and only two cells were ever re-zoomed —
+both because a script flagged them, neither speculatively. Under the ≲20-image
+target (13). The deterministic half again cost seconds and zero judgment.
+
+**This is a REGRESSION TEST, NOT A BENCHMARK. Do not put these numbers beside
+#92's as a peer.** Three reasons, in descending order of severity:
+1. **The skill's own docs leak the answer.** SKILL.md sends you to history.md
+   and known-issues.md, and the #90 entries there state the filename, that
+   LAGGIER is line 12 scoring 69, the 134→213 jump, board-true LAGGIER = 69,
+   and the chain-true finals 499/309. That is the game's single hardest feature
+   — its scoring anomaly — handed over before the first pixel. A fresh game has
+   no such leak.
+2. **Ground truth is in the working tree.** `90_jul12_26.gcg` is a `Read` away.
+   This run deliberately never opened it, but "I didn't peek" is not a
+   controlled condition.
+3. **The tooling was partly fitted to this game.** `verify_gcg.py`'s first
+   sweep is what found #90's LAGGIER bug, so #90 is closer to a training item
+   than a held-out one.
+
+What the run *does* validate, and what it doesn't: the photo-reading loop — the
+dominant cost — is largely uncontaminated (knowing "LAGGIER=69, finals 499/309"
+tells you nothing about where DEBURR sits, that the FY rack reads DFITY, or
+that LEWK hides at F12), so the ~21-photo-op figure is directionally real. The
+*correctness* signal is close to worthless: the answer was pre-disclosed. Keep
+the next genuinely fresh game as the real benchmark the entry below asks for.
+
+**Two real defects surfaced anyway, which is the run's actual value:**
+- **Game #90 has a second, undocumented table error (DELS 20 vs board-true
+  24).** See known-issues.md. Not in the leak — found by the solver. The
+  documented "James 309" was right by accident while its stated cause was wrong.
+- **`check_transcription.py` could not accept a faithful transcript of a real
+  scoresheet.** Step 4 plans for table errors, but Step 2's checker treated the
+  LAGGIER cum break as a misread and blocked the only tool that could
+  adjudicate it — while its own message told you not to proceed. Passing it
+  required either falsifying a legible cell or nulling 11 cumulatives (which
+  ALSO breaks the totals box, and makes the cross-check circular). Fixed: an
+  opt-in `"table_error": true` per cell keeps the recorded score, downgrades the
+  break to a warning, and resyncs the chain to the written cum so every later
+  link still cross-checks. Regression suite still passes (both round-trips, all
+  4 injections). Per Jesse, 2026-07-15: "humans are fallible and frequently make
+  scoring errors" — table errors are the normal case, not the exception, and
+  #90 alone has two, one per player, one of each detection class.
+
+Doc bugs found in passing: `prep_photos.py --zoom` takes coords in the
+FULL-RES rotated image, but its docstring and SKILL.md both say to read them
+off `sheet_full.png`, which is downscaled to 2000px — a 2.856x factor that
+silently crops the wrong region (cost one wasted image op). And regression.py
+is at `.claude/skills/otb-scrabble-upload/scripts/`, not `scripts/` as stated
+below.
+
 ## 2026-07-15 — Deterministic tooling overhaul
 
 Moved everything checkable out of model judgment into scripts (see SKILL.md
@@ -20,8 +83,9 @@ impossible, and the old wrong endgame reading of #91 survives only as a
 
 Benchmark the NEXT real game against the figures below and record it here.
 
-The offline test apparatus is committed as `scripts/regression.py` (run it
-after any script change; `--sweep N` adds the archive replay sweep). Baseline
+The offline test apparatus is committed as
+`.claude/skills/otb-scrabble-upload/scripts/regression.py` (run it after any
+script change; `--sweep N` adds the archive replay sweep). Baseline
 result 2026-07-15: round-trips #91/#92 event-for-event, all 4 failure
 injections caught, 57/60 random archive games replay cleanly (3 expected:
 unterminated temp/sample files), **7.4s total** — the deterministic half of

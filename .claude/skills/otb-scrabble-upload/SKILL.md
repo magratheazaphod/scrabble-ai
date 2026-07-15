@@ -21,7 +21,7 @@ script for it, and hand-work is where every historical error came from.
 photos ─ prep_photos.py ─→ transcribe (YOU) ─ check_transcription.py (loop to PASS)
   ─→ board read (YOU) ─ otb_solver.py ─→ author_gcg.py
   ─→ verify_gcg.py + scripts/gcg_preflight.py --check
-  ─→ scripts/woogles_upload.py ─→ tracker (Step 7)
+  ─→ scripts/woogles_upload.py ─→ tracker (Step 7) ─→ audit (Step 8)
 ```
 
 Read the `gcg-upload` skill for API background and lexicon rules (Jesse =
@@ -69,8 +69,10 @@ layout.
 re-cropping — beat it):** read the numbered `strip_*.png` files ONCE top to
 bottom for the whole transcription, and the nine closeups ONCE for the board;
 after that, look at the photos again only for cells the checker flags
-(`--zoom x0,y0,x1,y1 --label <name>`, coords from `sheet_full.png` — crops
-come from the ORIGINAL photo; warps don't add detail) and for solver-finalist
+(`--zoom x0,y0,x1,y1 --label <name>` — crops come from the ORIGINAL photo;
+warps don't add detail. Coords are in the FULL-RES rotated image: read them off
+`sheet_full.png`, then SCALE UP by `long_side/2000` (~2.856 for a 5712px photo)
+or you will crop blank paper) and for solver-finalist
 disambiguation. Target ≲20 image reads per game.
 
 ## Step 2 — Transcribe the scoresheet into transcript.json
@@ -115,6 +117,18 @@ Fix every ERROR by re-reading the flagged cell (`--zoom`) — the messages say
 which cell and what value would reconcile. Heed WARNs (short racks,
 unrecoverable exchanges). **Do not proceed until PASS.** On PASS it emits the
 solver spec so the move list is never hand-built.
+
+**Players mis-score often — a cum break is NOT automatically a misread.** If
+re-reading shows both the score and the cum are unambiguous, the sheet's own
+arithmetic is wrong: mark that cell `"table_error": true` and the break
+downgrades to a warning, keeping the recorded score (the board is the arbiter,
+via the solver) and resyncing the chain to the written cum so every later link
+still cross-checks. Use it ONLY after re-reading — never to silence a misread.
+Never "fix" a cum by deriving it from the scores: that makes the cross-check
+circular and validates nothing. Note the two error classes are caught by
+different tools and one is invisible here: a wrong score carried consistently
+never breaks the chain, so only Step 4's solver finds it (game #90 has one of
+each — see known-issues.md).
 
 ## Step 3 — Read the final board (words + rows only)
 
@@ -191,9 +205,6 @@ and #92 files for tone); table-error `#note`s are added automatically.
    It preflights, re-runs `verify_gcg.py` as a hard gate (import is
    irreversible), imports (FIVE_POINT default), verifies the game finished
    server-side, adds it to the collection, and posts the event-0 comment.
-   A daily consistency audit (`scripts/audit_woogles_consistency.py`, run by
-   the woogles-report Action) then keeps tracker/live/repo in agreement —
-   deliberately-kept defects belong in its ALLOWLIST.
    Include the game # in chapter titles (several same-day chapters already
    exist without it and are ambiguous). Lexicon = CSW edition current at the
    time of play; it CANNOT be changed after import. If the account has stuck
@@ -219,6 +230,28 @@ fill in later automatically (the daily `woogles-report` GitHub Action runs
 `--enrich-collection`); to backfill one immediately once analyzed:
 `--enrich --game-id <id>`. Auth/setup: the script's docstring
 (`GOOGLE_SA_KEYFILE`, `CURLEY_TRACKER_SHEET_ID` in `.env`).
+
+## Step 8 — (James Curley only) consistency audit
+
+The audit belongs to THIS pipeline: it exists because an OCR reconstruction
+can be wrong in ways a Quackle export or live game can't, so only
+OCR-reconstructed games are ever audited — games uploaded by other means are
+trusted as uploaded. Close every Curley upload with:
+
+1. Append the game to `.github/ocr-game-manifest.txt`
+   (`<game_id>  # game #<N>, played YYYY-MM-DD`) and commit it with the .gcg.
+2. Run the audit on the game just uploaded:
+   ```bash
+   python3 scripts/audit_woogles_consistency.py --game-id <game_id>
+   ```
+   It replays the live game with the independent verifier and cross-checks
+   its finals against the tracker row and its events against the repo file.
+   Fix any issue before declaring the upload done.
+
+The daily `woogles-report` Action re-runs the same audit over every
+manifest-listed game, so later drift (a game-#90-style inconsistency) still
+surfaces within a day. Deliberately-kept defects belong in the script's
+ALLOWLIST, with a dated reason.
 
 ## Debugging import failures
 

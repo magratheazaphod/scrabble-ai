@@ -118,8 +118,11 @@ jobs:
           git diff --cached --quiet && echo "Nothing changed — nothing to record." || (git commit -m "Update snapshot / rate-limit / report-sent markers ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
 
       # Last on purpose: a failure here turns the workflow red (the alert)
-      # without blocking the report/marker steps above.
-      - name: Audit tracker / live-game / repo-file consistency
+      # without blocking the report/marker steps above. Scope: ONLY games the
+      # OTB photo/OCR pipeline reconstructed (listed in
+      # .github/ocr-game-manifest.txt) — games uploaded by other means are
+      # trusted as uploaded and never audited.
+      - name: Audit OCR-reconstructed games (tracker / live / repo consistency)
         if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
         env:
           WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}

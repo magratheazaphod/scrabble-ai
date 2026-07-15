@@ -1,0 +1,8 @@
+# Games reconstructed from paper scoresheet + board photos by the
+# /otb-scrabble-upload OCR pipeline. ONLY these games are audited by
+# scripts/audit_woogles_consistency.py — games uploaded by other means
+# (Quackle self-exports, live Woogles play) are trusted as uploaded.
+# The pipeline appends one line per upload:  <game_id>  # game #<N>, notes
+9G2uCPfVaXKhXpT9tCR84w  # game #90, played 2026-07-12 (LAGGIER defect — allowlisted in the audit)
+iv6yiCLPJPptXGGWdH3CJu  # game #91, played 2026-07-12
+HKCMAaDXSdDeBMHkNbQPXN  # game #92, played 2026-07-12

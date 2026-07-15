@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
-"""Audit tracker ↔ live-Woogles ↔ repo-file consistency for Curley games.
+"""Audit tracker ↔ live-Woogles ↔ repo-file consistency for OCR-reconstructed
+Curley games.
 
-For every Curley-tracker row that has a game id:
+SCOPE (per Jesse, 2026-07-15): only games the /otb-scrabble-upload OCR
+pipeline reconstructed from paper photos are audited — they are the ones
+where a transcription/solver error can exist. Games uploaded by any other
+means (Quackle self-exports, live Woogles play) are trusted as uploaded and
+never audited. The audited set is the id list in .github/ocr-game-manifest.txt,
+which the OCR pipeline appends to after each upload.
+
+For each audited game (which must have a Curley-tracker row):
   1. fetch the live GCG (GetGCG) and replay it with verify_gcg's engine —
      the live game must replay cleanly;
   2. the live final scores must match the tracker's me/jc cells;
@@ -11,17 +19,22 @@ For every Curley-tracker row that has a game id:
      rewrites nicks; racks are multisets).
 
 Motivation: game #90 carried a 10-point live-vs-placements inconsistency for
-two days before an unrelated sweep caught it. This audit runs at the end of
-the daily woogles-report workflow so that class of drift surfaces within a
-day. Known, documented, deliberately-kept defects are allowlisted below.
+two days before an unrelated sweep caught it. Known, documented,
+deliberately-kept defects are allowlisted below.
 
-Usage: python3 scripts/audit_woogles_consistency.py
+Usage:
+  python3 scripts/audit_woogles_consistency.py
+      sweep every game in the OCR manifest (the daily woogles-report workflow
+      runs this last);
+  python3 scripts/audit_woogles_consistency.py --game-id <id>
+      audit one game — the OCR pipeline's final step, right after the upload,
+      tracker phase-1 update, and manifest append.
 Exit 0 = no unexpected discrepancies (allowlisted ones are reported as such).
 
 Env: WOOGLES_API_KEY, GOOGLE_SA_KEYFILE, CURLEY_TRACKER_SHEET_ID (all as in
 update_curley_tracker.py; .env at repo root is honored).
 """
-import sys, os, json, glob, tempfile
+import sys, os, json, glob, argparse, tempfile
 
 import requests
 
@@ -32,6 +45,8 @@ sys.path.insert(0, os.path.join(REPO, '.claude', 'skills', 'otb-scrabble-upload'
 from update_curley_tracker import load_dotenv, open_worksheet, build_header_map
 import verify_gcg as vg
 from otb_solver import LEXICON_PATH, load_lexicon
+
+MANIFEST_PATH = os.path.join(REPO, '.github', 'ocr-game-manifest.txt')
 
 # game_id -> reason a replay failure / mismatch is expected and accepted
 ALLOWLIST = {
@@ -65,13 +80,36 @@ def jesse_side(cums):
     return (je[0] if je else None), (opp[0] if opp else None)
 
 
+def load_manifest():
+    """Game ids of OCR-reconstructed uploads — the only games ever audited."""
+    ids = []
+    if os.path.exists(MANIFEST_PATH):
+        for line in open(MANIFEST_PATH):
+            line = line.split('#', 1)[0].strip()
+            if line:
+                ids.append(line)
+    return ids
+
+
 def main():
+    ap = argparse.ArgumentParser(description='Audit OCR-reconstructed Curley games.')
+    ap.add_argument('--game-id',
+                    help='audit only this game (the OCR pipeline runs this right '
+                         'after upload + tracker update + manifest append); '
+                         'default: sweep every game in the OCR manifest')
+    args = ap.parse_args()
+
     load_dotenv(os.path.join(REPO, '.env'))
     key = os.environ.get('WOOGLES_API_KEY', '').strip()
     if not key:
         sys.exit('WOOGLES_API_KEY not set')
     hdrs = {'Content-Type': 'application/json', 'X-Api-Key': key}
     lex = load_lexicon() if os.path.exists(LEXICON_PATH) else None
+
+    targets = [args.game_id] if args.game_id else load_manifest()
+    if not targets:
+        print(f'OCR manifest ({MANIFEST_PATH}) is empty or missing — nothing to audit.')
+        return
 
     ws = open_worksheet()
     rows = ws.get_all_values()
@@ -82,14 +120,24 @@ def main():
     gnum_col = next((i + 1 for i, h in enumerate(rows[0])
                      if h.strip().lower() in ('game #', 'game#', 'game number')), None)
 
-    issues, allowed, ok = [], [], 0
+    gid_col = field_col['game_id']
+    tracker = {}  # game_id -> (row_index, row)
     for ridx, row in enumerate(rows[1:], start=2):
+        rgid = row[gid_col - 1].strip() if gid_col <= len(row) else ''
+        if rgid:
+            tracker[rgid] = (ridx, row)
+
+    issues, allowed, ok = [], [], 0
+    for gid in targets:
+        if gid not in tracker:
+            issues.append(f'{gid}: no tracker row — run update_curley_tracker.py '
+                          'phase 1 (or fix the OCR manifest entry)')
+            continue
+        ridx, row = tracker[gid]
+
         def cell(f):
             c = field_col.get(f)
             return row[c - 1].strip() if c and c <= len(row) else ''
-        gid = cell('game_id')
-        if not gid:
-            continue
         gnum = row[gnum_col - 1].strip() if gnum_col and gnum_col <= len(row) else ''
         label = f'row {ridx} (game #{gnum or "?"}, {gid})'
 
@@ -133,7 +181,8 @@ def main():
         else:
             issues.append(f'{label}: ' + '; '.join(problems))
 
-    print(f'{ok} game(s) fully consistent; {len(allowed)} allowlisted; {len(issues)} issue(s).')
+    print(f'{ok} OCR game(s) fully consistent; {len(allowed)} allowlisted; '
+          f'{len(issues)} issue(s).')
     for a in allowed:
         print('  allowed:', a)
     for i in issues:
