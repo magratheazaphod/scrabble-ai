@@ -20,6 +20,13 @@ impossible, and the old wrong endgame reading of #91 survives only as a
 
 Benchmark the NEXT real game against the figures below and record it here.
 
+The offline test apparatus is committed as `scripts/regression.py` (run it
+after any script change; `--sweep N` adds the archive replay sweep). Baseline
+result 2026-07-15: round-trips #91/#92 event-for-event, all 4 failure
+injections caught, 57/60 random archive games replay cleanly (3 expected:
+unterminated temp/sample files), **7.4s total** — the deterministic half of
+the pipeline costs seconds and zero tokens.
+
 - Immediately caught on first sweep: game #90's LAGGIER cum inconsistency
   (see known-issues.md) — a 10-point error that had sat unnoticed in a
   "known-good" game.
