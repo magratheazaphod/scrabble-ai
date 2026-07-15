@@ -32,6 +32,26 @@ BASE = 'https://woogles.io/api'
 - **Challenge rule: always `ChallengeRule_FIVE_POINT`** (CSW tournaments use the 5-point challenge rule).
 - **The lexicon and challenge rule CANNOT be edited after the game is created, and finished games CANNOT be deleted via the API** (`DeleteAnnotatedGame` returns `"you cannot delete a game that is already done"` for any completed game). There is also no working way to hide a wrongly-created game — `SetAnnotatedGamePrivacy` is currently a no-op stub on the server. **Get the lexicon right before calling `ImportGCG`** — there is no clean undo. If genuinely unsure, ask Jesse rather than guessing.
 
+## Preferred path: the scripted uploader
+
+As of 2026-07-15 the whole upload tail (preflight → ImportGCG → verify
+finished server-side → collection add → comment) is one script — use it
+instead of re-implementing the `requests` calls below:
+
+```bash
+python3 scripts/woogles_upload.py "path/to/game.gcg" --lexicon CSW21 \
+    --collection "Austin One-Day Aug '23" --chapter "Round 4 - JD vs Becky Dyer" \
+    [--comment "..."] [--create-collection] [--dry-run] [--cleanup]
+```
+
+It refuses to import when preflight fails (heal first, per below), verifies
+the game actually finished (a stuck-unfinished game blocks all future
+imports), only creates a collection when `--create-collection` is passed
+(confirm public/private with Jesse for a brand-new one), and `--cleanup`
+deletes stuck unfinished games (it cannot touch finished ones). The sections
+below remain the reference for lexicon choice, healing rules, and manual
+debugging.
+
 ## Before uploading: ALWAYS run the pre-flight scanner first
 
 ```bash
