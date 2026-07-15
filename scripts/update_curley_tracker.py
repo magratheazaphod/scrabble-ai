@@ -252,6 +252,25 @@ def enrichment_from_report_state(game_id, path=REPORT_STATE_PATH):
 # --------------------------------------------------------------------------- #
 # Google Sheet I/O
 # --------------------------------------------------------------------------- #
+def _retry(fn, *args, **kwargs):
+    """Retry a gspread call with exponential backoff on Sheets API 429s — the
+    bulk archive backfill fires enough per-game reads to trip the per-minute
+    read quota, and a 429 there must never be mistaken for 'no row exists'."""
+    import gspread
+    import time
+
+    delay = 5
+    for attempt in range(6):
+        try:
+            return fn(*args, **kwargs)
+        except gspread.exceptions.APIError as e:
+            if "429" not in str(e) or attempt == 5:
+                raise
+            print(f"    (Sheets API rate limited, retrying in {delay}s...)", file=sys.stderr)
+            time.sleep(delay)
+            delay = min(delay * 2, 60)
+
+
 def open_worksheet():
     """Authorize via the service account and return the target worksheet."""
     import gspread  # lazy: dry-run needs neither the dep nor credentials
@@ -298,7 +317,7 @@ def build_header_map(header_row):
 
 def find_row_for_game(ws, game_col, game_id):
     """Return the 1-based row index whose game_id cell == game_id, or None."""
-    for i, val in enumerate(ws.col_values(game_col), start=1):
+    for i, val in enumerate(_retry(ws.col_values, game_col), start=1):
         if i == 1:
             continue  # header
         if val.strip() == game_id:
@@ -308,7 +327,7 @@ def find_row_for_game(ws, game_col, game_id):
 
 def find_row_for_game_number(ws, game_num_col, n):
     """Return the 1-based row index whose 'Game #' cell == n, or None."""
-    for i, val in enumerate(ws.col_values(game_num_col), start=1):
+    for i, val in enumerate(_retry(ws.col_values, game_num_col), start=1):
         if i == 1:
             continue  # header
         if val.strip() == str(n):
@@ -322,7 +341,7 @@ def next_empty_slot(ws, score_col):
     "Game #" is pre-numbered down the column, but the result FORMULAS are not
     dragged into blank rows, so write_new_game() re-creates them for the row.
     """
-    return len(ws.col_values(score_col)) + 1
+    return len(_retry(ws.col_values, score_col)) + 1
 
 
 def locate_formula_cols(header):
@@ -381,7 +400,7 @@ def write_new_game(ws, field_col, fcols, row, fields):
     if cb and me and jc:  # combined = me + jc
         cells.append({"range": a1(cb), "values": [[f"={letter(me)}{row}+{letter(jc)}{row}"]]})
 
-    ws.batch_update(cells, value_input_option="USER_ENTERED")
+    _retry(ws.batch_update, cells, value_input_option="USER_ENTERED")
     return cells
 
 
@@ -394,7 +413,7 @@ def apply_fields(ws, field_col, ncols, row_index, fields):
         for field, value in fields.items():
             if field in field_col:
                 row[field_col[field] - 1] = "" if value is None else str(value)
-        ws.append_row(row, value_input_option="USER_ENTERED")
+        _retry(ws.append_row, row, value_input_option="USER_ENTERED")
         return "appended"
 
     cells = []
@@ -404,7 +423,7 @@ def apply_fields(ws, field_col, ncols, row_index, fields):
         a1 = gu.rowcol_to_a1(row_index, field_col[field])
         cells.append({"range": a1, "values": [["" if value is None else str(value)]]})
     if cells:
-        ws.batch_update(cells, value_input_option="USER_ENTERED")
+        _retry(ws.batch_update, cells, value_input_option="USER_ENTERED")
     return f"updated row {row_index}"
 
 
@@ -471,7 +490,7 @@ def main(argv):
         return 0
 
     ws = open_worksheet()
-    header = ws.row_values(1)
+    header = _retry(ws.row_values, 1)
     field_col = report_mapping(ws, fields)
     row_index = find_row_for_game(ws, field_col["game_id"], args.game_id)
 
@@ -494,7 +513,7 @@ def main(argv):
 
 def report_mapping(ws, fields):
     """Print and return the field->column mapping; abort if there's no key column."""
-    header = ws.row_values(1)
+    header = _retry(ws.row_values, 1)
     field_col, _ = build_header_map(header)
     print(f"\nsheet: {ws.spreadsheet.title!r} / {ws.title!r}  ({len(header)} columns)")
     print("column mapping:")
@@ -515,7 +534,7 @@ def backfill_by_game_number(game_num, fields, dry_run):
     or misnumbered archive file before it corrupts the sheet), then write ONLY the
     game id. Refuses if the row already has one, or if scores don't match."""
     ws = open_worksheet()
-    header = ws.row_values(1)
+    header = _retry(ws.row_values, 1)
     field_col = report_mapping(ws, fields)
     fcols = locate_formula_cols(header)
     if fcols["game_num"] is None:
@@ -525,7 +544,7 @@ def backfill_by_game_number(game_num, fields, dry_run):
     if row_index is None:
         sys.exit(f"no row found for Game #{game_num}.")
 
-    existing = ws.row_values(row_index)
+    existing = _retry(ws.row_values, row_index)
 
     def cell(field):
         col = field_col.get(field)
@@ -568,7 +587,7 @@ def run_enrich_collection(dry_run):
 
     ws = open_worksheet()
     field_col = report_mapping(ws, next(iter(table.values())))
-    ncols = len(ws.row_values(1))
+    ncols = len(_retry(ws.row_values, 1))
     enriched = skipped = 0
     for gid, fields in table.items():
         row_index = find_row_for_game(ws, field_col["game_id"], gid)
