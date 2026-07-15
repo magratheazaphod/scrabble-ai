@@ -44,8 +44,26 @@ server-side replay all confirmed. What made it clean, per that session: tile
 point-value subscripts to disambiguate glyphs, CSW lexicon checks on every
 read, treating non-wordy candidates (a bogus "RR") as misreads. Those tactics
 are now Steps 2–3 guidance; the lexicon audit is mechanical in the solver.
-Exact token/time figures weren't metered; wall-clock tail: GCG written
-21:06, committed 21:10.
+
+**Performance (measured from the run itself, Opus 4.8 main-agent, manual
+pre-tooling pipeline):** no token metering available, but **~120 tool calls
+total, of which ~65 were scoresheet/board photo crop+read cycles** (≈37 image
+views + ≈28 crop-generation runs). That photo-reading loop was the entire
+cost — everything downstream (solver, lexicon audit, GCG author, preflight,
+import, tracker, git) was ~30 calls and ran first-try. Work spanned two
+sessions over 2026-07-13→15 (interrupted by a usage limit, so wall-clock
+isn't a clean single-run figure; active work a few hours). Where the photo
+iteration concentrated: parallax column disambiguation, locating QUATE (Q on
+the O8 triple, first misread as G), and resolving SOREE-vs-SORE and RE-vs-RR
+(lexicon + point-value subscripts). First solver run was 0-mismatch; preflight
+caught exactly one authoring typo (`..MA`→`...MA` play-through); first import
+succeeded and finished clean. Contrast the Sonnet #91 run below (~480k tokens,
+232 tool calls, ~83 min, wrong twice): this Opus run was correct and roughly
+half the tool calls — but the ~65-call manual photo loop is precisely the
+model-judgment half the new scripts can't remove, only guardrail. A future
+run should beat ~65 image ops by batching crops more aggressively up front
+(read the whole board at grid resolution once, zoom only the genuinely
+ambiguous tiles) rather than re-cropping region by region as I did.
 
 ## 2026-07-13 — Game #91: the two bad reconstructions and the corrected one
 
