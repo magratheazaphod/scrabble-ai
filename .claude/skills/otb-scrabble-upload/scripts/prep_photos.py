@@ -14,9 +14,13 @@ Scoresheet:
                                 overlap) — READ THESE ONCE, top to bottom,
                                 for the transcription; batching beats
                                 re-cropping region by region
-  - --zoom crops a region (coords in the ROTATED image, as read from
-    sheet_full.png) for re-reading a cell the CHECKER flagged; --label names
-    it. Zoom only checker-flagged cells, not speculatively.
+  - --zoom crops a region for re-reading a cell the CHECKER flagged; --label
+    names it. Zoom only checker-flagged cells, not speculatively.
+    COORDS ARE IN THE FULL-RESOLUTION ROTATED IMAGE, *not* in sheet_full.png:
+    sheet_full.png is downscaled to 2000px on its long side, so coords read off
+    it must be SCALED UP by (long side of the rotated original)/2000 — e.g. a
+    5712x4284 rotated photo needs x2.856. Skipping that silently crops a blank
+    region of the page.
 
 Board:
   python3 prep_photos.py board IMG_1521.jpeg --outdir OUT --corners-probe

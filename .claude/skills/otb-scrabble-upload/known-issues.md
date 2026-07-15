@@ -3,6 +3,35 @@
 (Resolved-incident history lives in `history.md`; the 2026-07-14 version of
 this file is preserved in `archive/`.)
 
+## OPEN — Game #90 has a SECOND, undocumented table error: DELS (found 2026-07-15)
+
+Found by the benchmark re-run of IMG_1516+1517 (history.md). The entry below
+attributes the whole board-true delta to LAGGIER, but that is arithmetically
+impossible: **the LAGGIER mis-add is entirely in JD's column and cannot move
+James's score.** James's paper finals (297 + 8 tiles = 305) reach the
+chain-true 309 quoted below only because of a separate error:
+
+**`DELS` (James, L1) is recorded as 20; board-true is 24** — D on the L1
+double-letter, S on the L4 double-word, plus the EM/LO/SI cross-words. Two
+independent solver runs agree, the cell was re-read at zoom (it is
+unambiguously "20"), and with DELS=24 the 100-tile bag audit closes and 24 of
+25 moves match their recorded score exactly. James's paper cumulatives run 4
+low from DELS onward.
+
+So game #90 contains **two independent table errors, one per player** — and
+they are of the two *different* classes (see `check_transcription.py`'s
+`table_error` docs): LAGGIER breaks the cum chain but its score is board-true
+(checker catches it, solver does not); DELS's score is wrong but carried
+consistently, so the chain never breaks (solver catches it, checker cannot).
+
+The `309` figure below was therefore right by accident of arithmetic while its
+stated cause was wrong. **Open question for Jesse:** the live game #90 and its
+2026-07-15 corrective comment describe only the LAGGIER error; the comment is
+incomplete and arguably misleading about James's score. Decide whether to post
+a follow-up comment there. The clean board-true reconstruction is live at
+https://woogles.io/anno/MWnwzEBvrXRzJXkmFitLU4 (benchmark upload, deliberately
+outside the collection/tracker).
+
 ## RESOLVED (by comment) — Game #90: 10-point cum inconsistency at LAGGIER
 
 Found 2026-07-14 by the new `verify_gcg.py`; Jesse confirmed 2026-07-15 it

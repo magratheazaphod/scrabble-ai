@@ -52,6 +52,19 @@ Optional per word entry, filled in from the board photo (Step 3): "dir" ("H"|"V"
 "score" may be omitted for x/pass rows (defaults 0). "cum" may be null if
 genuinely unreadable — that link of the chain is skipped, not guessed.
 
+  "table_error": true   the score and cum in this cell were BOTH re-read and are
+            unambiguous, and they still do not reconcile — i.e. the player's own
+            arithmetic is wrong (they wrote one score and added another). Players
+            do this often, so a faithful transcript of a real sheet must be able
+            to say so: the break downgrades to a warning, the recorded score is
+            kept (the solver adjudicates it against the board, which is the only
+            arbiter), and the chain resyncs to the WRITTEN cum so every later link
+            still cross-checks. Use ONLY after re-reading the cell — never to
+            silence a misread. Note this class is invisible to the solver (the
+            recorded score is board-true); the converse class — a wrong score
+            carried consistently, so the chain never breaks — is invisible to the
+            checker and only the solver catches it.
+
 Exit 0 with "PASS" if no errors (warnings allowed); exit 1 listing violations.
 """
 import sys, os, json, re
@@ -127,10 +140,20 @@ def check(t):
                 e['cum'] = prev
                 continue
             if prev + score != cum:
-                errors.append(
-                    f"row {i+1} {p}: cumulative break: {prev} + {score} != {cum} "
-                    f"(if cum is right the score reads {cum - prev}; "
-                    f"if score is right the cum reads {prev + score} — re-read that cell)")
+                msg = (f"row {i+1} {p}: cumulative break: {prev} + {score} != {cum} "
+                       f"(if cum is right the score reads {cum - prev}; "
+                       f"if score is right the cum reads {prev + score} — re-read that cell)")
+                if e.get('table_error'):
+                    # Declared table error: both cells re-read and unambiguous, so
+                    # the SHEET's arithmetic is wrong, not the transcription. Keep
+                    # the recorded score (the solver adjudicates it against the
+                    # board) and resync the chain to the written cum so every
+                    # later link still cross-checks.
+                    warnings.append(msg.replace(' — re-read that cell)', ')')
+                                    + " — DECLARED table_error: score kept, chain "
+                                      "resynced to the written cum")
+                else:
+                    errors.append(msg)
                 prev = cum  # resync so one bad cell doesn't cascade
             else:
                 prev = cum
