@@ -190,6 +190,24 @@ leaving VSCode.
   `WHERE` filter as early as possible in the CTE chain rather than filtering after a
   join, and check `EXPLAIN` for a seq scan where an index scan should apply.
 
+### Benchmark reference: `omgwords/games_per_month.sql`
+
+Whole-history full run (seq scan of all ~12M `games` + two `users` LEFT JOINs +
+HashAggregate by month), measured with `EXPLAIN (ANALYZE, BUFFERS)` on 2026-07-12:
+
+- **Baseline** (bot flags, end-reason buckets — one `game_request` deref): **~176 s**.
+- **+ rated / CSW-vs-NWL / language columns** (3-4 extra `game_request` JSONB key
+  derefs per row): **~212 s**, i.e. **+~35 s (~20%)**.
+- Adding the two variant columns (`zomgwords`/`wordsmog`, board-layout + variant
+  derefs) is the same class of per-row JSONB lookup, so expect a similar small
+  marginal bump, not a step change.
+
+Takeaway: extra `->>`/`->` extractions on the *already-loaded* `game_request` JSONB
+are cheap relative to the scan+join, but they are not free — each key adds a per-row
+deref over 12M rows (~10 s each here). The scan/join dominates; the plan shape is
+unchanged. Single-run numbers with `EXPLAIN ANALYZE` timing overhead, so treat as
+±10% and re-measure before optimizing.
+
 ## Connection details (for reference, not to be duplicated elsewhere)
 
 - Host `10.0.0.76:5432`, db `liwords`, user `jesse`, reached only over the "Woogles"

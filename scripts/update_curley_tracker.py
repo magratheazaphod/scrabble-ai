@@ -63,7 +63,7 @@ COLUMN_ALIASES = {
     "date": ["date", "game date", "date played", "played"],
     "jesse_score": ["me", "jesse", "jesse score", "my score", "magrathean"],
     "opp_score": ["jc", "curley", "curley score", "opp score", "opponent score", "them"],
-    "game_id": ["game id", "game_id", "woogles id", "id", "uuid", "gameid"],
+    "game_id": ["game id", "woogles game id", "game_id", "woogles id", "id", "uuid", "gameid"],
     # phase 2 (enrichment) - only written if Jesse adds these columns later
     "mistakes": ["mistakes", "mistakes score", "avg mistakes", "mistake score"],
     "jesse_bingos": ["my bingos", "jesse bingos", "bingos"],

@@ -2,6 +2,9 @@
 __pycache__/
 *.pyc
 .env
+.secrets/
 data/
+board-pictures/
+.claude/skills/tournament-analysis/state/
 .Rhistory
 scripts/safety-net.log

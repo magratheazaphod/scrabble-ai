@@ -80,6 +80,20 @@ jobs:
           git diff --cached --quiet || git commit -m "Update report state ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git push origin HEAD:master
 
+      - name: Enrich the Curley tracker sheet with fresh analysis
+        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
+        env:
+          CURLEY_SA_KEY_JSON: ${{ secrets.CURLEY_SA_KEY_JSON }}
+          CURLEY_TRACKER_SHEET_ID: ${{ secrets.CURLEY_TRACKER_SHEET_ID }}
+        run: |
+          if [ -z "$CURLEY_SA_KEY_JSON" ] || [ -z "$CURLEY_TRACKER_SHEET_ID" ]; then
+            echo "Curley tracker secrets not configured — skipping enrichment."
+            exit 0
+          fi
+          printf '%s' "$CURLEY_SA_KEY_JSON" > "$RUNNER_TEMP/curley-sa.json"
+          GOOGLE_SA_KEYFILE="$RUNNER_TEMP/curley-sa.json" \
+            python scripts/update_curley_tracker.py --enrich-collection --skip-if-unconfigured
+
       - name: Publish fresh snapshot, rate-limit, and send-status markers to woogles-data branch
         run: |
           cp data/rate-limited-until.txt /tmp/rate-limited-until.txt

@@ -13,7 +13,18 @@ exceptions near the endgame (see the CRITICAL pitfall below).
 
 Read the `gcg-upload` skill too: all its API mechanics, lexicon rules
 (Jesse = CSW, current edition; FIVE_POINT challenge), and endgame-line
-gotchas apply. This skill produces the `.gcg`; gcg-upload uploads it.
+gotchas apply. This skill produces the `.gcg`; gcg-upload uploads it. Also use
+the `lexicon-lookup` skill throughout to validate every word against CSW (never
+trust your own sense of validity — Step 3).
+
+**Clean end-to-end on Opus 4.8, game #92** (IMG_1520+IMG_1521, JD vs James
+Curley 2026-07-12 → https://woogles.io/anno/HKCMAaDXSdDeBMHkNbQPXN): main-agent
+Opus doing all transcription/solve/GCG/upload inline (no subagent). The solver
+hit a **0-mismatch** solution on the first run and all 35 board words validated
+in CSW24 — the target quality bar. What made it clean: leaning on tile
+point-value subscripts to disambiguate letters, CSW lexicon checks to resolve
+every ambiguous read, and treating any "non-wordy" candidate (a bogus `RR`) as a
+misread rather than a play. See the new tactics in Steps 2–3.
 
 **Model requirement: Opus-class only.** A Sonnet 5 background-subagent run
 (2026-07-13, game #91 / IMG_1518+IMG_1519, JD vs James Curley 2026-07-12)
@@ -43,11 +54,26 @@ explicitly.
   that subagent alone — with the orchestrating main agent (also Opus) doing the
   solve, an independent photo re-check, GCG authoring/verification, the Woogles
   replace, tracker, and commit on top (main-agent usage not separately metered,
-  but of the same rough order). This run CORRECTED all three Sonnet errors:
-  it recovered Jesse's dropped turn-1 exchange (LW), fixed the resulting player
-  order (Jesse actually moved first), and re-placed James's going-out VEE from
-  14G (23, forms the phony EHV) to 14H (19, forms REV/AME) — board-true final
-  Jesse 400 / James 444. New game: https://woogles.io/anno/cEcuuYnamuiLRVkwtHpWNp
+  but of the same rough order). This run fixed the two Sonnet errors it looked
+  for (recovered Jesse's dropped turn-1 exchange LW; fixed the player order —
+  Jesse moved first) **but introduced a NEW endgame error of its own**: it gave
+  Jesse's V to James. Jesse's scoresheet endgame reads "AH" then a lone "V +6";
+  the correct reading is that *Jesse* played the V (REV down column H, R from
+  ESTERASE + E from HEM, for 6) and James then merely added the two E's to make
+  VEE across for 13. The Opus run instead treated the whole of VEE as James's
+  single going-out play (mis-scored 19) and dismissed Jesse's "+6" as a paper
+  tally slip, landing on a wrong 400/444. Jesse corrected it; the true final is
+  **Jesse 406 / James 438** (the board itself was identical either way — only
+  who-owns-which-endgame-tile changed). Corrected game:
+  https://woogles.io/anno/iv6yiCLPJPptXGGWdH3CJu
+
+The lesson from the Opus miss: a "board-true" reconstruction that only
+reconciles by declaring a **table scoring error** (here, forcing VEE to a
+mismatched score AND deleting an unexplained +6) should be treated as a red
+flag, not a result — the true reconstruction of this game has **zero score
+mismatches**. Prefer the reading that makes every recorded score exact over
+one that "explains away" two anomalies at once. See the new endgame-ownership
+and zero-mismatch heuristics in Steps 2 and 4.
 
 Treat the Sonnet figure as a lower bound on cost, not a validated number for a
 correct run. Budget accordingly when batching multiple games — this is not a
@@ -126,6 +152,25 @@ Layout of his sheet (rotate so handwriting is upright):
   cell as pure filler, also sanity-check that the *other* column's turn count
   still reconciles — a missing played-nothing turn (exchange or pass) throws
   off every move after it.
+- **A dash in a play column is not always an exchange** (Jesse, game #92): it
+  can also mark the row Jesse split out for a `+5` challenge bonus. When Jesse
+  successfully forces the opponent to leave a valid word up (he challenges, it
+  holds), he records the `+5` on its own row and puts a dash in his own play
+  column for that row (he didn't play — he challenged). So a dash paired with an
+  adjacent `+5` row in the *other* column = "I challenged the opponent's last
+  word and it held" (opponent +5), NOT an exchange. Game #92 had exactly this:
+  two dashes in Jesse's column, each immediately above a James `+5` row (Jesse
+  challenged HACKIES and INSIGNE, both valid). Distinguish the two dash meanings
+  by looking for a neighbouring `+5`: `+5` nearby ⇒ challenge; `x`/count with a
+  0-score, unchanged-cumulative row ⇒ exchange.
+- **A challenged-OFF phony scores 0 and is NOT on the final board.** If the
+  opponent's word shows a 0 (cumulative unchanged) and you can't find it on the
+  board, it was a phony they played that got challenged off — it consumed their
+  turn (tiles returned to rack, no net draw). Represent it in the GCG as a
+  **pass** (state-equivalent: 0 points, no board change), and ALWAYS add a game
+  comment naming the phony (e.g. "James played the phony GINNIES here, challenged
+  off"), since its board location usually isn't recoverable from the photo. See
+  Step 5.
 - Bottom boxes: `+Tiles` (2× opponent's leftover added to the out-player),
   `-Time` (time penalty), `Total`. The blank-designation boxes in the tile
   tracking grid (e.g. `? S Y`) say what each blank was played as.
@@ -143,6 +188,31 @@ position are reliable; exact start offsets are not — leave those to the
 solver. Note bear-icon tiles = blanks (record their cells). Note any tiles
 sitting OFF the board in the photo — that's a player's unplayed leftover rack
 (cross-check: 2× its value = the +Tiles box).
+
+**Use the tile point-value subscripts to disambiguate letters** (Jesse's tip,
+confirmed invaluable on game #92). Every tile prints its point value in the
+bottom-right corner, always the same per letter, so when a glyph is ambiguous
+the subscript settles it: `C`=3 vs `O`=1 (a round tile reading "1" is O, not C);
+`Q`=10 vs `G`=2 (a rounded tile on a triple-word reading "10" is Q — that's how
+QUATE's Q was found); `V`=4 vs `U`=1; `X`=8; `Z`=10; `J`=8; `K`=5. A blank shows
+a bear icon and NO subscript, so a lettered tile with a visible number is never a
+blank. Crop tight and upscale from the ORIGINAL photo (not the global warp) to
+read a subscript — the source file has the resolution; a bigger warp does not add
+detail. There are only 2 blanks in the bag total: if your reading needs a 3rd,
+something is misread.
+
+**Validate every board word against CSW before trusting it** (Jesse's standing
+rule — do NOT rely on your own sense of validity; `SOREE`, `HAOMA`, `MUCIGENS`,
+`QUATE`, `XU` are all valid and "look wrong"). Use the `/lexicon-lookup` skill
+(`check_words.py`, default CSW24). Two payoffs: (1) resolving an ambiguous read —
+enumerate candidate spellings, keep the one that is BOTH lexicon-valid AND fits
+the board/scores (on game #92 this turned a misread "SCREE"→the real `SOREE`, and
+caught that "RR" could not be a word); (2) an end-of-solve audit — extract every
+maximal horizontal/vertical run (len ≥ 2) from the solved board and check them
+all; any invalid run that wasn't a deliberately-played, challenged-off phony
+means a misread. A nonsense candidate like `RR` is itself the red flag: a phony a
+strong player actually plays still looks "wordy" — Jesse would never lay down
+`RR`, so that read was wrong (it was `RE` in bad, time-pressured handwriting).
 
 Every scoresheet word must appear on the board; board letter-runs not in any
 move list (e.g. EMU/LOT/SI formed across MOITHER/DELS/HUT) are cross-words
@@ -198,8 +268,21 @@ overdraws), and the final board — **diff that board against the photo**.
   `L...`), lowercase for blanks (`sONNETS`, `.yLVINES`).
 - Racks: Jesse's from the sheet (`ENNOST?`); opponent's = played tiles only
   (partial), EXCEPT near the endgame (next section). Bingo scores include +50.
-- Challenge bonus on its own line right after the play, rack = post-draw rack
-  (Jesse writes it on the +5 sheet row): `>JD: AAFHJNR (challenge) +5 218`.
+- Challenge bonus on its own line right after the challenged play, rack =
+  post-draw rack (the challenged player's rack for their NEXT move — with partial
+  racks, reuse that next move's rack string on both the `(challenge)` line and the
+  next play line, mirroring the sheet): `>JD: AAFHJNR (challenge) +5 218`. Note
+  the `+5` goes to the player whose word was challenged-and-upheld; on game #92
+  Jesse challenged James's HACKIES and INSIGNE, so each `+5` is on James's side.
+- **Challenged-off phony → represent as a pass** (`>Player: RACK - +0 cum`,
+  literal dash for the word). State-equivalent to the real event (0 points, tiles
+  returned, no net draw), and it's the only option when the phony's board
+  location isn't recoverable. The rack you know: it's exactly the tiles of the
+  phony they tried (e.g. GINNIES). **You MUST add a game comment naming the phony
+  on that passed turn** (Jesse's standing request) so the record isn't silently
+  lossy — e.g. "Turn 8 (James) shown as a pass: he laid the phony GINNIES, which
+  Jesse challenged off." Do NOT omit the turn entirely — that desyncs alternation
+  and shifts every later move.
 - Endgame, player X goes out and player Y holds tiles:
   `>X:  (YLEFTOVER) +2N cumX` (empty rack field, two spaces — see gcg-upload).
 - Time penalty (after the end-rack line): `>JD: DIT (time) -10 509`.
@@ -269,7 +352,7 @@ automatically — no need to ask:
 
 ```bash
 python3 scripts/update_curley_tracker.py \
-    --gcg "Practice Games/YYYY-MM-DD James Curley.gcg" \
+    --gcg "Practice Games/James Curley/<N>_<mon><day>_<YY>.gcg" \
     --game-id <the game_id from the anno URL>
 ```
 
