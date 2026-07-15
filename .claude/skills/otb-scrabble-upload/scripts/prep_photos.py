@@ -8,10 +8,15 @@ Scoresheet:
       [--zoom x0,y0,x1,y1 --label turn12]
   - rotates upright (default: 90° if the photo is landscape; if the output
     reads upside-down, rerun with --rotate 270), writes:
-      sheet_full.png            the rotated sheet
-      sheet_left.png/right.png  left/right halves at 2x (the two play columns)
+      sheet_full.png            the rotated sheet (overview)
+      sheet_left.png/right.png  left/right halves (the two play columns)
+      strip_NN_*.png            full-width horizontal strips (default 6, 10%
+                                overlap) — READ THESE ONCE, top to bottom,
+                                for the transcription; batching beats
+                                re-cropping region by region
   - --zoom crops a region (coords in the ROTATED image, as read from
-    sheet_full.png) at 3x for re-reading an ambiguous cell; --label names it.
+    sheet_full.png) for re-reading a cell the CHECKER flagged; --label names
+    it. Zoom only checker-flagged cells, not speculatively.
 
 Board:
   python3 prep_photos.py board IMG_1521.jpeg --outdir OUT --corners-probe
@@ -20,10 +25,12 @@ Board:
     playing grid (pixel coords) off these, then:
   python3 prep_photos.py board IMG_1521.jpeg --outdir OUT \
       --corners NWx,NWy,SWx,SWy,SEx,SEy,NEx,NEy
-  - writes board_grid.png: perspective-warped to 1500x1500 with red gridlines
-    every 100px and row (1-15) / column (A-O) labels. Expect ±0.3 cell drift:
-    rows/words are reliable, exact column offsets are NOT — leave placement
-    to the solver. Premium squares are parallax-free anchors.
+  - writes board_grid.png (1500x1500 warp, red 15x15 grid with row/column
+    labels) plus closeup_r*_c*.png: nine 5x5-cell blocks at ~200px/cell,
+    enough to read tile point-value subscripts — read all nine once instead
+    of zooming tile by tile. Expect ±0.3 cell drift: rows/words are reliable,
+    exact column offsets are NOT — leave placement to the solver. Premium
+    squares are parallax-free anchors.
 """
 import sys, os, argparse
 from PIL import Image, ImageDraw
@@ -65,6 +72,16 @@ def scoresheet(args):
     for name, box in (('left', (0, 0, img.width // 2, img.height)),
                       ('right', (img.width // 2, 0, img.width, img.height))):
         save(fit(img.crop(box), 2800), args.outdir, f'sheet_{name}.png')
+    # horizontal strips (full width, 10% overlap) — read these ONCE, top to
+    # bottom, for the row-by-row transcription; they are sharper than the
+    # halves and batching them beats re-cropping region by region
+    n = args.strips
+    step = img.height / n
+    for i in range(n):
+        y0 = max(0, int(i * step - 0.05 * step))
+        y1 = min(img.height, int((i + 1) * step + 0.05 * step))
+        save(fit(img.crop((0, y0, img.width, y1)), 2800), args.outdir,
+             f'strip_{i+1:02d}_y{y0}-{y1}.png')
 
 
 def board(args):
@@ -102,6 +119,20 @@ def board(args):
         d.text((i * 100 + 42, 2), chr(65 + i), fill='red')      # columns A-O
         d.text((2, i * 100 + 42), str(i + 1), fill='red')       # rows 1-15
     save(warped, args.outdir, 'board_grid.png')
+    # close-ups: a 3000px warp sliced into 3x3 blocks of 5x5 cells (1000px
+    # each, ~200px/cell — enough to read tile point-value subscripts). Read
+    # all nine once instead of zooming tile by tile; they cover the board.
+    big = img.transform((3000, 3000), Image.QUAD, q, Image.BICUBIC)
+    d = ImageDraw.Draw(big)
+    for i in range(16):
+        d.line([(i * 200, 0), (i * 200, 3000)], fill='red', width=1)
+        d.line([(0, i * 200), (3000, i * 200)], fill='red', width=1)
+    for br in range(3):
+        for bc in range(3):
+            block = big.crop((bc * 1000, br * 1000, (bc + 1) * 1000, (br + 1) * 1000))
+            rows_ = f"{br*5+1}-{br*5+5}"
+            cols_ = f"{chr(65+bc*5)}-{chr(65+bc*5+4)}"
+            save(block, args.outdir, f'closeup_r{rows_}_c{cols_}.png')
 
 
 def main():
@@ -110,6 +141,8 @@ def main():
     ap.add_argument('image')
     ap.add_argument('--outdir', required=True)
     ap.add_argument('--rotate', type=int, choices=[0, 90, 180, 270])
+    ap.add_argument('--strips', type=int, default=6,
+                    help='number of full-width scoresheet strips (default 6)')
     ap.add_argument('--zoom')
     ap.add_argument('--label')
     ap.add_argument('--corners-probe', action='store_true')

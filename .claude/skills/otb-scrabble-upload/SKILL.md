@@ -57,14 +57,21 @@ python3 $P/prep_photos.py board IMG_B.jpeg --outdir <scratch> --corners-probe
 python3 $P/prep_photos.py board IMG_B.jpeg --outdir <scratch> --corners NWx,NWy,SWx,SWy,SEx,SEy,NEx,NEy
 ```
 
-Check `sheet_full.png` is upright (rerun with `--rotate` if not); transcribe
-from `sheet_left/right.png`. Read the grid's four outer corner pixel coords
-off `board_coords.png`, then the `--corners` run gives `board_grid.png`
-(labeled 15×15). Expect ±0.3 cell drift — rows/words reliable, columns NOT.
+Check `sheet_full.png` is upright (rerun with `--rotate` if not). Read the
+grid's four outer corner pixel coords off `board_coords.png`, then the
+`--corners` run gives `board_grid.png` (labeled 15×15) **plus nine
+`closeup_r*_c*.png` blocks at ~200px/cell — tile point-value subscripts are
+readable there**. Expect ±0.3 cell drift — rows/words reliable, columns NOT.
 Premium squares are parallax-free anchors; confirm the board is standard
-layout. Re-read any ambiguous scoresheet cell with
-`--zoom x0,y0,x1,y1 --label <name>` (coords from `sheet_full.png`); crops
-come from the ORIGINAL photo — warps don't add detail.
+layout.
+
+**Batch-read protocol (the #92 baseline was ~65 photo ops, mostly reactive
+re-cropping — beat it):** read the numbered `strip_*.png` files ONCE top to
+bottom for the whole transcription, and the nine closeups ONCE for the board;
+after that, look at the photos again only for cells the checker flags
+(`--zoom x0,y0,x1,y1 --label <name>`, coords from `sheet_full.png` — crops
+come from the ORIGINAL photo; warps don't add detail) and for solver-finalist
+disambiguation. Target ≲20 image reads per game.
 
 ## Step 2 — Transcribe the scoresheet into transcript.json
 
