@@ -1,0 +1,32 @@
+#character-encoding UTF-8
+#player1 JC JC
+#player2 JD JD
+>JC: AL 8H AL +4 4
+>JD: EEIRRTU J7 RUE +6 6
+>JC: ADEEILS 10G DEISEAL +66 70
+>JD: AEIIORT 9F IO +7 13
+>JC: AFOTY M9 F.OATY +32 102
+>JD: AAEGIRT 8A AIGRET +26 39
+#note need to keep fishing here
+>JC: GPW 12L G.WP +26 128
+>JD: ABDOQSV B6 QA.D +34 73
+>JC: EIMOSTV 11B MOTIVES +80 208
+>JD: ABBNOSV 12A BOBA +34 107
+#note BOBAS for better defense and reaching for a blank?
+>JC: HLU A12 .UHL +27 235
+>JD: DIINNSV C3 DIVIN. +38 145
+>JC: ?EEENPS 13C ExPENSE +82 317
+#note ensweep
+>JD: EENOSTU 5C .ENTOUSE +72 217
+#note have to at least consider fishing the E for AUTOPENS instead of bingoing
+>JC: LOW O12 .LOW +27 344
+>JD: DEFHNXZ 4B F.Z +52 269
+>JC: GIIJMNO J1 OJIM. +30 374
+>JD: DEHIKNX 1J .XHIDE +63 332
+>JC: ?ACGINY N1 .eCAYING +82 456
+#note GYNAECIA/IF
+>JD: CKNRRTT G3 TR.CK +17 349
+>JC: AAEORRU O7 AURA +23 479
+>JD: NNRT D4 ..N +24 373
+>JC: EOR 14E ORE +15 494
+>JC:  (NRT) +6 500

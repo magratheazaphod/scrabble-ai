@@ -1,0 +1,33 @@
+#character-encoding UTF-8
+#player1 James_Curley James Curley
+#player2 JD JD
+>James_Curley: AEHNV 8D HAVEN +30 30
+>JD: ADFLLMR 7G FALL +23 23
+#note should put this on row 9, harder to overlap.
+>James_Curley: CEINW 9G WINCE +31 61
+>JD: DDDMRSU L9 RUDD +23 46
+>James_Curley: EELRSX E5 REL.XES +56 117
+>JD: ABDIMST D8 .ABIT +35 81
+>James_Curley: PUY 13L YUP +26 143
+>JD: DIMSTTT C11 MITT +19 100
+>James_Curley: AACENST C2 CATENAS +82 225
+>JD: BDELOST O8 BOLDEST +92 192
+>James_Curley: HOOP N6 POOH +24 249
+>JD: AADEGIO O1 ADAGIO +34 226
+>James_Curley: EIVW F3 VIEW +33 282
+>JD: EFGIKMN N1 KIF +37 263
+#note KNIFED is way better with both blanks unseen.
+>James_Curley: NO 14M NO. +16 298
+>JD: AEGMNOZ F10 ZO +71 334
+>James_Curley: ?AEIINS 15C SENArII +78 376
+>JD: AEEGGMN 14F MEGA +29 363
+#note maybe MAGG? The G looks like it's going to be a big anchor here.
+>James_Curley: ?EOOQRR 12F OOR +16 392
+#note RESHAVEN...
+>JD: EGIJNUY 8A UN...... +42 405
+#note UNSHAVEN looks least worst, the other option is trying to block QAT with YE D3, but it feels like that only wins if you have Q without U or blank
+>James_Curley: ?EEQRRT A7 Q.iETER +16 408
+#note REQUITE is indeed a good play to block JUTE, only loses by 1.
+>JD: EGIJRUY 4A JU.E +38 443
+>James_Curley: R 8M R.. +5 413
+>James_Curley:  (GIRY) +16 429

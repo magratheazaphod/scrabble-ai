@@ -1,0 +1,33 @@
+#character-encoding UTF-8
+#player1 JD JD
+#player2 James_Curley James Curley
+>JD: AEGIIUY -AGIIUY +0 0
+>James_Curley: AACUV 8D VACUA +28 28
+>JD: DEEFNPT 9G PED +20 20
+>James_Curley: EILOORT D7 O.ERTOIL +72 100
+>JD: EFNNORT C1 FORNENT +75 95
+>James_Curley: AGJS 15A JAGS +52 152
+>JD: CHILLMQ B10 CHIML. +38 133
+>James_Curley: FRTY 2B F.RTY +38 190
+>JD: ?AELOPQ 12A Q. +21 154
+#note burning the blank for OPAQUE is not much worse
+>James_Curley: AIIMNST 1E ANIMIST +84 274
+#note TITANISM
+>JD: ?AELOPU F8 .OPULAtE +74 228
+#note SCOPULAE slightly better
+>James_Curley: EIKLW 4A WI.KEL +34 308
+>James_Curley: EIKLW --  -34 274
+>JD: AEEIOSY C9 YAE +30 258
+>James_Curley: AEIKLTW 4A WI.K +30 304
+>JD: DEIIORS 10I IODISER +65 323
+>James_Curley: ?AEILNU O6 LEmU.IAN +74 378
+>JD: EEEGOTZ A3 T.EEZE +54 377
+>James_Curley: DENOO 11H ODEON +27 405
+>JD: BGORUVW L7 VOW..G +28 405
+>James_Curley: ERSX H11 .XERS +60 465
+>JD: ABBDGRU K1 .UGRA +12 417
+#note must block HAINT, best block is BUBA at N3
+>James_Curley: AHINT 2J H.IA +28 493
+>JD: BBD M2 .BB +14 431
+>James_Curley: NT N9 N.T +7 500
+>James_Curley:  (D) +4 504

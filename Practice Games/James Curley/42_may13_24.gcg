@@ -1,0 +1,40 @@
+#character-encoding UTF-8
+#player1 James_Curley James Curley
+#player2 JD JD
+>James_Curley: ABINRST -B +0 0
+>JD: ABEMRTT -BT +0 0
+>James_Curley: AINRSTV -V +0 0
+>JD: AEMRTTV -TV +0 0
+>James_Curley: AINRSTY -Y +0 0
+>JD: AEILMRT 8D MALTIER +74 74
+>James_Curley: AIMNRST 7I MARTINS +72 72
+>JD: ?CENOPU O4 CON.PUEd +92 166
+>JD: ?EGLNOT (challenge) +5 171
+#note PUTCHEON looks totally unfamiliar (a synonym for PUTCHER which also looks weird)
+>James_Curley: AWW N10 WAW +31 103
+>JD: ?EGLNOT E5 GEL.TiON +82 253
+>James_Curley: GSTUY D11 GUSTY +33 136
+>JD: AAIIRUV 6I UVA +35 288
+>James_Curley: ENQU 15A QUE. +48 184
+>JD: AEHIIRR 13I HAIRIER +88 376
+#note luckbox
+>James_Curley: BKLN K11 BL.NK +22 206
+>JD: DGIINOT G6 DI.TOING +64 440
+>James_Curley: BOO 15H BOO. +30 236
+>JD: AACJLOP 5K JAP +44 484
+>James_Curley: DEFO C10 DEFO +30 266
+>JD: AACDDLO 4J DADO +33 517
+>James_Curley: EHR M9 REH +18 284
+>JD: ACEILTY 15H ....LICE +51 568
+>JD: AEOTXYZ (challenge) +5 573
+>James_Curley: EEFIIRZ M3 F.. +16 300
+>JD: AEOTXYZ B14 Y. +10 583
+#note AXEL looks pretty genius, setting up the Z and forcing you to give up on bingoing to block.
+>James_Curley: EV J6 ...VE +13 313
+>JD: AEEOTXZ 7C ZO. +26 609
+#note can just play AXEL again, although without the same "poisoned pawn" upside.
+>James_Curley: AEINRSS F13 AS +7 320
+>JD: AEEITX C5 TI. +12 621
+#note TAXI at 3G would block RISEN at F2 which is top out.
+>James_Curley: EINRS D1 RINSE +16 336
+>James_Curley:  (AEEX) +22 358

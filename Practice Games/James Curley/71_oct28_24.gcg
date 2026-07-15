@@ -1,0 +1,56 @@
+#character-encoding UTF-8
+#player1 James_Curley James Curley
+#player2 JD JD
+>James_Curley: DEFLT 8D DELFT +22 22
+>JD: AEEHIPR D1 PIERHEA. +84 84
+>James_Curley: AEESSY 1D .AYEE +30 52
+>JD: EEGOOTX E5 OX +37 121
+>James_Curley: OZ C3 ZO +46 98
+>JD: EEGNOST F5 GO +24 145
+#note or GOEL
+>James_Curley: GSY 4B G..SY +26 124
+>JD: EEENRST 2F ENTREES +72 217
+>James_Curley: AIINRRS L2 .IR +6 130
+>JD: AIINTUV 5I UNAI +12 229
+#note Q prefers VIA or VAIN in same spot
+>James_Curley: ADINNRS 7H INNARDS +63 193
+>JD: ?EGILTV K1 V.G +10 239
+#note TIG or VIGS seem to sim better due to blocking the S
+>James_Curley: AHI 8M AHI +26 219
+>JD: ?EILNOT 9I mOLINET +70 309
+>James_Curley: FIJU 10F FUJI +23 242
+>JD: KOOPRRT 11G PORK +25 334
+#note or TORPOR
+>James_Curley: ADW 2A WAD. +29 271
+>JD: ACILORT 12D CAROLI +37 371
+>James_Curley: BEEIMSV -7 +0 271
+>JD: AABENOT 1A AB +31 402
+>James_Curley: E H10 ...E +11 282
+>JD: ABENOTU 13E BEN. +20 422
+#note Q loves BENE. saves QUOTA, blocks.
+>James_Curley: W F12 ..W +14 296
+>JD: AIMOTUV 14D VA. +14 436
+#note Q loves GAVOT B4 as a counter-threat
+>James_Curley: ?DEMOSU 15F SMOUtED +90 386
+>James_Curley: LQT (challenge) +5 391
+>JD: CIMOTTU E11 C... +16 452
+>James_Curley: LQT 3K ..T +8 399
+>JD: IMOTTU 13E ....T +13 465
+>JD: IMOTTU --  -13 452
+>James_Curley: LQ 7C L. +3 402
+>JD: IMOTTU N7 ...T +9 461
+>James_Curley: Q -  +0 402
+>JD: IMOTU J5 .U. +5 466
+>James_Curley: Q -  +0 402
+>JD: IMOT 6J .M +9 475
+>James_Curley: Q -  +0 402
+>JD: IOT 11G ....O +22 497
+>JD: IOT --  -22 475
+>James_Curley: Q -  +0 402
+>JD: IOT 14J IT +9 484
+>James_Curley: Q -  +0 402
+>JD: O N6 O.... +10 494
+>JD: O --  -10 484
+>James_Curley: Q -  +0 402
+>JD: O B4 .O +3 487
+>JD:  (Q) +20 507

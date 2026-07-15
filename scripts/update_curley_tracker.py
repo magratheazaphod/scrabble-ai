@@ -44,10 +44,11 @@ import sys
 CURLEY_COLLECTION_UUID = "55b29df3-10fd-471b-9e87-135ed5bbb2f6"
 REPORT_STATE_PATH = ".github/report-state.json"
 
-# Who is who in the GCG. Jesse's nick is always "JD" (see otb-scrabble-upload).
-JESSE_NICKS = {"jd"}
-JESSE_NAMES = {"jesse day", "jesse"}
-CURLEY_NAMES = {"james curley", "james_curley"}
+# Who is who in the GCG. Jesse's nick is usually "JD" (see otb-scrabble-upload),
+# but the historical Quackle archive uses several older self-export conventions.
+JESSE_NICKS = {"jd", "jessed", "jesseday", "jesse"}
+JESSE_NAMES = {"jesse day", "jesse", "jd", "jessed", "jesseday"}
+CURLEY_NAMES = {"james curley", "james_curley", "jamesc", "jc", "james"}
 
 # Canonical field -> acceptable header texts (compared lowercased/stripped,
 # exact match, so "score" never collides with "opp score"). Extend freely once
@@ -305,6 +306,16 @@ def find_row_for_game(ws, game_col, game_id):
     return None
 
 
+def find_row_for_game_number(ws, game_num_col, n):
+    """Return the 1-based row index whose 'Game #' cell == n, or None."""
+    for i, val in enumerate(ws.col_values(game_num_col), start=1):
+        if i == 1:
+            continue  # header
+        if val.strip() == str(n):
+            return i
+    return None
+
+
 def next_empty_slot(ws, score_col):
     """First data row (>=2) whose 'me' score cell is empty — the next game slot.
 
@@ -408,6 +419,12 @@ def main(argv):
     ap = argparse.ArgumentParser(description="Update the Curley tracker sheet.")
     ap.add_argument("--gcg", help="path to the .gcg file (phase 1)")
     ap.add_argument("--game-id", help="Woogles game/anno id (the row key)")
+    ap.add_argument("--game-num", type=int,
+                    help="backfill mode: locate the existing pre-scored row by its 'Game #' "
+                         "(instead of matching/appending by game id), validate the .gcg's "
+                         "final scores against that row's me/jc, and write ONLY the game id. "
+                         "Refuses to run if the row already has a game id, or if the scores "
+                         "don't match. For the historical-archive backfill, not new games.")
     ap.add_argument("--enrich", action="store_true",
                     help="phase 2: fill one game's analysis columns from report-state.json")
     ap.add_argument("--enrich-collection", action="store_true",
@@ -440,11 +457,14 @@ def main(argv):
         if not args.gcg or not args.game_id:
             ap.error("--gcg and --game-id are required for a phase-1 update")
         fields = parse_gcg(args.gcg, args.game_id)
-        phase = "phase 1"
+        phase = "phase 1" if args.game_num is None else f"backfill Game #{args.game_num}"
 
     print(f"[{phase}] game {args.game_id}")
     for k, v in fields.items():
         print(f"    {k:22} {v}")
+
+    if args.game_num is not None:
+        return backfill_by_game_number(args.game_num, fields, args.dry_run)
 
     if args.dry_run:
         print("\n(dry run - sheet not touched)")
@@ -485,6 +505,52 @@ def report_mapping(ws, fields):
         sys.exit("The sheet has no game-id column, so rows can't be keyed/deduped. "
                  "Add a column (e.g. 'Game ID') or set CURLEY_TRACKER_COLUMN_MAP.")
     return field_col
+
+
+def backfill_by_game_number(game_num, fields, dry_run):
+    """Historical-archive backfill: the row for `game_num` already has hand-entered
+    date/me/jc (and working W/L formulas) from years of manual tracking, just no
+    game id yet. Locate it by 'Game #' (not by game id — there isn't one), verify
+    the .gcg's final scores match what's already in the row (catches a mislabeled
+    or misnumbered archive file before it corrupts the sheet), then write ONLY the
+    game id. Refuses if the row already has one, or if scores don't match."""
+    ws = open_worksheet()
+    header = ws.row_values(1)
+    field_col = report_mapping(ws, fields)
+    fcols = locate_formula_cols(header)
+    if fcols["game_num"] is None:
+        sys.exit("no 'Game #' column found — can't locate the row for --game-num.")
+
+    row_index = find_row_for_game_number(ws, fcols["game_num"], game_num)
+    if row_index is None:
+        sys.exit(f"no row found for Game #{game_num}.")
+
+    existing = ws.row_values(row_index)
+
+    def cell(field):
+        col = field_col.get(field)
+        return existing[col - 1].strip() if col and len(existing) >= col else ""
+
+    existing_gid = cell("game_id")
+    if existing_gid:
+        sys.exit(f"row {row_index} (Game #{game_num}) already has a game id "
+                 f"({existing_gid}) — refusing to overwrite.")
+
+    for field, label in (("jesse_score", "me"), ("opp_score", "jc")):
+        existing_val = cell(field)
+        if existing_val and existing_val.isdigit() and int(existing_val) != fields[field]:
+            sys.exit(f"score mismatch at row {row_index} (Game #{game_num}): sheet "
+                     f"{label}={existing_val} vs .gcg={fields[field]} — this file may be "
+                     f"mislabeled/misnumbered. Not writing anything.")
+
+    if dry_run:
+        print(f"\n(dry run) would backfill game id into row {row_index} "
+              f"(Game #{game_num}); scores match.")
+        return 0
+
+    apply_fields(ws, field_col, len(header), row_index, {"game_id": fields["game_id"]})
+    print(f"\nbackfilled game id into row {row_index} (Game #{game_num}).")
+    return 0
 
 
 def run_enrich_collection(dry_run):
