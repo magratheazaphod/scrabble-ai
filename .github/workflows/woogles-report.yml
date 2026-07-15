@@ -116,3 +116,21 @@ jobs:
             git add -f data/last-report-sent.txt data/woogles-snapshot.json
           fi
           git diff --cached --quiet && echo "Nothing changed — nothing to record." || (git commit -m "Update snapshot / rate-limit / report-sent markers ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
+
+      # Last on purpose: a failure here turns the workflow red (the alert)
+      # without blocking the report/marker steps above.
+      - name: Audit tracker / live-game / repo-file consistency
+        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
+        env:
+          WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
+          CURLEY_SA_KEY_JSON: ${{ secrets.CURLEY_SA_KEY_JSON }}
+          CURLEY_TRACKER_SHEET_ID: ${{ secrets.CURLEY_TRACKER_SHEET_ID }}
+        run: |
+          if [ -z "$CURLEY_SA_KEY_JSON" ] || [ -z "$CURLEY_TRACKER_SHEET_ID" ]; then
+            echo "Curley tracker secrets not configured — skipping audit."
+            exit 0
+          fi
+          git checkout master  # the marker step above leaves us on woogles-data
+          printf '%s' "$CURLEY_SA_KEY_JSON" > "$RUNNER_TEMP/curley-sa.json"
+          GOOGLE_SA_KEYFILE="$RUNNER_TEMP/curley-sa.json" \
+            python scripts/audit_woogles_consistency.py

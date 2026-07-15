@@ -44,9 +44,12 @@ python3 scripts/woogles_upload.py "path/to/game.gcg" --lexicon CSW21 \
     [--comment "..."] [--create-collection] [--dry-run] [--cleanup]
 ```
 
-It refuses to import when preflight fails (heal first, per below), verifies
-the game actually finished (a stuck-unfinished game blocks all future
-imports), only creates a collection when `--create-collection` is passed
+It refuses to import when preflight fails (heal first, per below) or when the
+independent replay verifier (`verify_gcg.py`) finds the file doesn't replay
+cleanly — for a historical file with a known, documented defect pass
+`--verify-warn-only`. It also verifies the game actually finished (a
+stuck-unfinished game blocks all future imports), only creates a collection
+when `--create-collection` is passed
 (confirm public/private with Jesse for a brand-new one), and `--cleanup`
 deletes stuck unfinished games (it cannot touch finished ones). The sections
 below remain the reference for lexicon choice, healing rules, and manual

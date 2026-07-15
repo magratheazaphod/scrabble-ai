@@ -62,6 +62,9 @@ def main():
     ap.add_argument('--comment')
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--cleanup', action='store_true')
+    ap.add_argument('--verify-warn-only', action='store_true',
+                    help='downgrade a verify_gcg replay failure to a warning — ONLY for '
+                         'historical files with known, documented defects (e.g. game #90)')
     args = ap.parse_args()
 
     if args.collection and not args.chapter:
@@ -75,6 +78,23 @@ def main():
         sys.exit('preflight FAILED — heal the file first (gcg_preflight.py without --check '
                  'writes .healed.gcg copies); upload the healed content and notify Jesse '
                  'per the gcg-upload skill.')
+
+    # 1b. independent replay verification (import is irreversible — this is the
+    # last gate where a defective file can be stopped)
+    verify = os.path.join(REPO, '.claude', 'skills', 'otb-scrabble-upload',
+                          'scripts', 'verify_gcg.py')
+    if os.path.exists(verify):
+        v = subprocess.run([sys.executable, verify, args.gcg], capture_output=True, text=True)
+        print(v.stdout.strip())
+        if v.returncode != 0:
+            if args.verify_warn_only:
+                print('verify_gcg FAILED — proceeding anyway (--verify-warn-only).')
+            else:
+                sys.exit('verify_gcg FAILED — the file does not replay cleanly; fix it before '
+                         'uploading. For a historical file with a known, documented defect, '
+                         'rerun with --verify-warn-only.')
+    else:
+        print(f'WARNING: {verify} not found — skipping replay verification.')
 
     gcg_contents = open(args.gcg, encoding='utf-8').read()
     n_events = sum(1 for l in gcg_contents.splitlines() if l.startswith('>'))

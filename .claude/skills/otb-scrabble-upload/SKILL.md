@@ -188,8 +188,12 @@ and #92 files for tone); table-error `#note`s are added automatically.
        --chapter "YYYY-MM-DD - JD vs James Curley (Game <N>)" \
        --comment "<reconstruction notes>"
    ```
-   It preflights, imports (FIVE_POINT default), verifies the game finished
+   It preflights, re-runs `verify_gcg.py` as a hard gate (import is
+   irreversible), imports (FIVE_POINT default), verifies the game finished
    server-side, adds it to the collection, and posts the event-0 comment.
+   A daily consistency audit (`scripts/audit_woogles_consistency.py`, run by
+   the woogles-report Action) then keeps tracker/live/repo in agreement —
+   deliberately-kept defects belong in its ALLOWLIST.
    Include the game # in chapter titles (several same-day chapters already
    exist without it and are ambiguous). Lexicon = CSW edition current at the
    time of play; it CANNOT be changed after import. If the account has stuck
