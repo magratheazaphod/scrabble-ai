@@ -81,11 +81,8 @@ def resolve_subject_identity(results):
     return {"nickname": key, "real_name": real_name}
 
 
-def main():
-    target_username = os.environ.get("TARGET_USERNAME", "").strip()
-    target_collection_uuid = os.environ.get("TARGET_COLLECTION_UUID", "").strip()
-    one_off = bool(target_username or target_collection_uuid)
-
+def enumerate_collections(target_username, target_collection_uuid):
+    """Return the list of {uuid, title} collections to snapshot for this run."""
     if target_collection_uuid:
         # A specific collection was named directly (e.g. from a woogles.io URL) —
         # skip listing the owner's collections entirely and fetch just this one.
@@ -94,186 +91,219 @@ def main():
             {"collection_uuid": target_collection_uuid},
         )
         col_title = col_resp.get("collection", {}).get("title", "Untitled collection")
-        collections = [{"uuid": target_collection_uuid, "title": col_title}]
         print(f"One-off snapshot for collection: {col_title} ({target_collection_uuid})", file=sys.stderr)
-    else:
-        user_uuid = resolve_user_uuid(target_username) if target_username else DEFAULT_USER_UUID
-        if target_username:
-            print(f"One-off snapshot for username: {target_username} ({user_uuid})", file=sys.stderr)
+        return [{"uuid": target_collection_uuid, "title": col_title}]
 
-        collections = []
-        offset = 0
-        while True:
-            resp = post(
-                "collections_service.CollectionsService/GetUserCollections",
-                {"user_uuid": user_uuid, "limit": 50, "offset": offset},
-            )
-            batch = resp.get("collections", [])
-            collections.extend(batch)
-            if len(batch) < 50:
-                break
-            offset += 50
+    user_uuid = resolve_user_uuid(target_username) if target_username else DEFAULT_USER_UUID
+    if target_username:
+        print(f"One-off snapshot for username: {target_username} ({user_uuid})", file=sys.stderr)
 
+    collections, offset = [], 0
+    while True:
+        resp = post(
+            "collections_service.CollectionsService/GetUserCollections",
+            {"user_uuid": user_uuid, "limit": 50, "offset": offset},
+        )
+        batch = resp.get("collections", [])
+        collections.extend(batch)
+        if len(batch) < 50:
+            break
+        offset += 50
+    return collections
+
+
+def read_rate_limit_marker(now):
+    if not os.path.exists(RATE_LIMIT_MARKER_PATH):
+        return None
+    with open(RATE_LIMIT_MARKER_PATH) as f:
+        raw = f.read().strip()
+    if not raw:
+        return None
+    known_until = datetime.fromisoformat(raw)
+    return known_until if known_until > now else None
+
+
+def scan_collection(col, rate_limited):
+    """Read-only pass over one collection: classify every game by what it needs.
+    Consumes NO analysis quota (GetAnalysisStatus and GetGameHistory are both reads).
+
+    Per-game state:
+      done     — COMPLETED; full analysis available.
+      skip     — terminally un-analyzable (phantom game_id, etc.); reportable-safe.
+      requeue  — analysis FAILED; skip-for-report, but Phase 2 fires a force=True
+                 re-analysis so a game whose data Jesse has since corrected heals.
+      request  — never analyzed (NOT_FOUND, real game); needs a fresh request.
+      wait     — already queued/in-progress on Woogles; blocks reportability, no request.
+    """
+    col_resp = post(
+        "collections_service.CollectionsService/GetCollection",
+        {"collection_uuid": col["uuid"]},
+    )
+    games = col_resp.get("collection", {}).get("games", [])
+    if not games:
+        return None
+
+    state = {}
+    for g in games:
+        gid = g["game_id"]
+        status = post(
+            "analysis_service.AnalysisService/GetAnalysisStatus",
+            {"game_id": gid},
+        ).get("status")
+        if status == "COMPLETED":
+            state[gid] = "done"
+        elif status == "FAILED":
+            state[gid] = "requeue"
+        elif status == "NOT_FOUND":
+            # NOT_FOUND usually just means "never requested". But it can also be a
+            # phantom: a chapter whose game_id points to a game Woogles has no record
+            # of (a GCG import that silently failed), which never becomes reportable
+            # and would otherwise wedge the whole collection. When we still have quota
+            # this run, Phase 2's request will 400 on a phantom and catch it there
+            # (no read wasted). But when we're already rate-limited, Phase 2 is
+            # skipped — so probe read-only with GetGameHistory, which errors on a
+            # phantom, to disambiguate without spending any quota.
+            if rate_limited:
+                try:
+                    post("game_service.GameMetadataService/GetGameHistory", {"game_id": gid})
+                    state[gid] = "request"
+                except requests.exceptions.HTTPError as e:
+                    if e.response is not None and e.response.status_code == 400:
+                        print(
+                            f"  {col['title']}: skipping {g['chapter_title']} — no such "
+                            f"game on Woogles ({e.response.text.strip()})",
+                            file=sys.stderr,
+                        )
+                        state[gid] = "skip"
+                    else:
+                        raise
+            else:
+                state[gid] = "request"
+        else:
+            # Any other (non-terminal) status means Woogles already has this game
+            # queued or running — no new request needed, but it isn't done yet.
+            state[gid] = "wait"
+    return {"uuid": col["uuid"], "title": col["title"], "games": games, "state": state}
+
+
+def needs_quota(entry):
+    """How many games in this collection still need an analysis request (a quota slot)."""
+    return sum(1 for s in entry["state"].values() if s in ("request", "requeue"))
+
+
+def main():
+    target_username = os.environ.get("TARGET_USERNAME", "").strip()
+    target_collection_uuid = os.environ.get("TARGET_COLLECTION_UUID", "").strip()
+    one_off = bool(target_username or target_collection_uuid)
+
+    collections = enumerate_collections(target_username, target_collection_uuid)
     print(f"Collections found: {len(collections)}", file=sys.stderr)
 
     now = datetime.now(timezone.utc)
-    blocked_until = None
-    if os.path.exists(RATE_LIMIT_MARKER_PATH):
-        with open(RATE_LIMIT_MARKER_PATH) as f:
-            raw = f.read().strip()
-        if raw:
-            known_until = datetime.fromisoformat(raw)
-            if known_until > now:
-                blocked_until = known_until
-
-    results, pending = [], []
+    blocked_until = read_rate_limit_marker(now)
     rate_limited = blocked_until is not None
     first_request_at = None
     if rate_limited:
         print(
-            f"Known rate-limited until {blocked_until.isoformat()} — skipping new "
-            "analysis requests this run (still checking status of pending games)",
+            f"Known rate-limited until {blocked_until.isoformat()} — spending no new "
+            "analysis quota this run (still scanning statuses so completed games and "
+            "phantoms are picked up)",
             file=sys.stderr,
         )
 
+    # --- Phase 1: scan every collection (read-only, no quota) so Phase 2 can route
+    # the day's limited analysis quota deliberately instead of letting whichever
+    # collection the API lists first drain it.
+    scanned = []
     for col in collections:
-        col_uuid, col_title = col["uuid"], col["title"]
-        print(f"--- {col_title} ---", file=sys.stderr)
-        col_resp = post(
-            "collections_service.CollectionsService/GetCollection",
-            {"collection_uuid": col_uuid},
-        )
-        games = col_resp.get("collection", {}).get("games", [])
-        if not games:
-            continue
+        print(f"--- scanning {col['title']} ---", file=sys.stderr)
+        entry = scan_collection(col, rate_limited)
+        if entry is not None:
+            scanned.append(entry)
 
-        skipped_ids = set()
-        analyzed_ids = set()
-        for g in games:
-            status_resp = post(
-                "analysis_service.AnalysisService/GetAnalysisStatus",
-                {"game_id": g["game_id"]},
+    # --- Phase 2: spend the analysis quota on the collections CLOSEST TO DONE first.
+    # Sorting by how many games still need a request (then by total size) means a
+    # nearly-finished tournament gets completed — and its report generated — before a
+    # big backlog like the Curley practice games consumes the whole daily quota.
+    def issue(gid, force, entry, g):
+        """Request analysis for one game; update its state and the rate-limit marker.
+        Returns False once the daily cap is hit (caller stops issuing)."""
+        nonlocal rate_limited, blocked_until, first_request_at
+        request_sent_at = datetime.now(timezone.utc)
+        try:
+            r = post(
+                "analysis_service.AnalysisService/RequestAnalysis",
+                {"game_id": gid, "force": force},
             )
-            status = status_resp.get("status")
-            if status == "COMPLETED":
-                analyzed_ids.add(g["game_id"])
-                continue
-            if status == "FAILED":
-                # Woogles' analysis worker ran this game and errored out (e.g. a
-                # malformed annotation — a rack with more than 7 tiles). From the
-                # status alone we can't tell "permanently broken" from "Jesse has
-                # since corrected the game data and this cached failure is stale"
-                # (the FAILED result sticks until the game is re-analyzed). So do
-                # BOTH: (1) skip it for THIS report so one bad game can't wedge the
-                # whole collection in "pending", and (2) fire a force=True
-                # re-analysis (quota permitting) so a corrected game heals itself
-                # and rejoins the report on a later run. A still-broken game simply
-                # re-fails and stays skipped — no wedge either way. force=True is
-                # required: force=False returns the cached FAILED without re-running.
-                skipped_ids.add(g["game_id"])
-                err = status_resp.get("error_message", "").strip()
-                if rate_limited:
-                    print(
-                        f"  Skipping {g['chapter_title']} for this report "
-                        f"(analysis FAILED: {err}); requeue deferred — rate limited",
-                        file=sys.stderr,
-                    )
-                    continue
-                request_sent_at = datetime.now(timezone.utc)
-                try:
-                    rr = post(
-                        "analysis_service.AnalysisService/RequestAnalysis",
-                        {"game_id": g["game_id"], "force": True},
-                    )
-                except requests.exceptions.HTTPError:
-                    # Any request error here is non-fatal — the game is already
-                    # skipped for reporting; we just don't get to requeue it.
-                    print(
-                        f"  Skipping {g['chapter_title']} for this report "
-                        f"(analysis FAILED: {err}); requeue request errored",
-                        file=sys.stderr,
-                    )
-                    continue
-                rs = rr.get("status", "UNKNOWN")
-                if rs == "RATE_LIMITED":
-                    anchor = first_request_at if first_request_at else request_sent_at
-                    blocked_until = anchor + timedelta(hours=24)
-                    rate_limited = True
-                    print(
-                        f"  Rate limited — stopping new requests until {blocked_until.isoformat()}",
-                        file=sys.stderr,
-                    )
-                elif rs == "SUCCESS" and first_request_at is None:
-                    first_request_at = request_sent_at
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and e.response.status_code == 400:
+                # Phantom game — Woogles has no record of this game_id at all.
                 print(
-                    f"  Skipping {g['chapter_title']} for this report "
-                    f"(analysis FAILED: {err}); re-requested (force) → {rs}",
+                    f"  {entry['title']}: skipping {g['chapter_title']} — "
+                    f"{e.response.text.strip()}",
                     file=sys.stderr,
                 )
-                continue
-            # NOT_FOUND usually just means "no analysis requested yet" — the normal
-            # state for any never-analyzed game. But it can also be a phantom game:
-            # a chapter whose game_id points to a game Woogles has no record of
-            # (e.g. a GCG import that silently failed), which likewise never becomes
-            # reportable. RequestAnalysis 400s on a phantom *before* consuming any
-            # quota, so we still probe NOT_FOUND games even while rate-limited —
-            # otherwise a phantom can wedge a collection until some far-off
-            # unthrottled run happens to reach it before the daily quota runs out.
-            if rate_limited and status != "NOT_FOUND":
-                continue
-            request_sent_at = datetime.now(timezone.utc)
-            try:
-                r = post(
-                    "analysis_service.AnalysisService/RequestAnalysis",
-                    {"game_id": g["game_id"], "force": False},
-                )
-            except requests.exceptions.HTTPError as e:
-                if e.response is not None and e.response.status_code == 400:
-                    # Phantom game — Woogles has no record of this game_id at all.
-                    print(
-                        f"  Skipping {g['chapter_title']}: RequestAnalysis rejected "
-                        f"the game ({e.response.text.strip()})",
-                        file=sys.stderr,
-                    )
-                    skipped_ids.add(g["game_id"])
-                    continue
-                raise
-            s = r.get("status", "UNKNOWN")
-            if s == "RATE_LIMITED":
-                if not rate_limited:
-                    # First time we've hit the cap this run — anchor the 24h window
-                    # on the first successful request (the oldest one actually
-                    # counted), not on now; see comment above.
-                    anchor = first_request_at if first_request_at else request_sent_at
-                    blocked_until = anchor + timedelta(hours=24)
-                    print(
-                        f"  Rate limited — stopping new requests until {blocked_until.isoformat()}",
-                        file=sys.stderr,
-                    )
-                    rate_limited = True
-                # else: already known rate-limited; we only probed this NOT_FOUND
-                # game to rule out a phantom. It's a real pending game, so leave the
-                # existing blocked_until / marker untouched and move on.
-            elif s in SKIP_STATUSES:
-                print(f"  Skipping {g['chapter_title']}: {s}", file=sys.stderr)
-                skipped_ids.add(g["game_id"])
-            else:
-                if s == "SUCCESS" and first_request_at is None:
-                    first_request_at = request_sent_at
-                print(f"  {s}: {g['chapter_title']}", file=sys.stderr)
-
-        reportable_ids = analyzed_ids | skipped_ids
-        if len(reportable_ids) < len(games):
-            pending.append(
-                {"title": col_title, "done": len(reportable_ids), "total": len(games)}
+                entry["state"][gid] = "skip"
+                return True
+            raise
+        s = r.get("status", "UNKNOWN")
+        if s == "RATE_LIMITED":
+            # Anchor the 24h window on the first successful request of this run (the
+            # oldest one actually counted), not on now — see the module comment.
+            anchor = first_request_at if first_request_at else request_sent_at
+            blocked_until = anchor + timedelta(hours=24)
+            rate_limited = True
+            print(
+                f"  Daily analysis limit reached — no more requests until {blocked_until.isoformat()}",
+                file=sys.stderr,
             )
-            print(f"  {len(reportable_ids)}/{len(games)} done — deferred", file=sys.stderr)
+            return False
+        if s == "SUCCESS" and first_request_at is None:
+            first_request_at = request_sent_at
+        if force:
+            # a FAILED requeue stays skip-for-report regardless of the response
+            print(f"  {entry['title']}: re-requested (force) {g['chapter_title']} → {s}", file=sys.stderr)
+        elif s in SKIP_STATUSES:
+            print(f"  {entry['title']}: skipping {g['chapter_title']} — {s}", file=sys.stderr)
+            entry["state"][gid] = "skip"
+        else:
+            entry["state"][gid] = "wait"
+            print(f"  {entry['title']}: {s} — {g['chapter_title']}", file=sys.stderr)
+        return True
+
+    if rate_limited:
+        print("Rate-limited — deferring all new analysis requests to a later run.", file=sys.stderr)
+    else:
+        for entry in sorted(scanned, key=lambda e: (needs_quota(e), len(e["games"]))):
+            if needs_quota(entry) == 0:
+                continue
+            print(f"--- requesting analysis: {entry['title']} ({needs_quota(entry)} to go) ---", file=sys.stderr)
+            gmap = {g["game_id"]: g for g in entry["games"]}
+            # Heal FAILED games (requeue) first, then the never-analyzed ones.
+            ordered = [gid for gid, s in entry["state"].items() if s == "requeue"]
+            ordered += [gid for gid, s in entry["state"].items() if s == "request"]
+            for gid in ordered:
+                if not issue(gid, entry["state"][gid] == "requeue", entry, gmap[gid]):
+                    break
+            if rate_limited:
+                print("Quota exhausted — remaining collections deferred to a later run.", file=sys.stderr)
+                break
+
+    # --- Phase 3: assemble the snapshot. A collection is reportable once every game
+    # is done/skip/requeue — nothing left to request and nothing waiting in the queue.
+    results, pending = [], []
+    for entry in scanned:
+        state, games = entry["state"], entry["games"]
+        reportable_ids = {gid for gid, s in state.items() if s in ("done", "skip", "requeue")}
+        if len(reportable_ids) < len(games):
+            pending.append({"title": entry["title"], "done": len(reportable_ids), "total": len(games)})
+            print(f"  {entry['title']}: {len(reportable_ids)}/{len(games)} reportable — deferred", file=sys.stderr)
             continue
 
         game_entries = []
         for g in games:
-            if g["game_id"] in skipped_ids:
-                continue
+            if state[g["game_id"]] != "done":
+                continue  # skipped / requeued (FAILED) games carry no reportable data
             analysis = post(
                 "analysis_service.AnalysisService/GetAnalysisResult",
                 {"game_id": g["game_id"]},
@@ -284,8 +314,8 @@ def main():
             )
             game_entries.append({"meta": g, "analysis": analysis, "history": history})
 
-        results.append({"uuid": col_uuid, "title": col_title, "games": game_entries})
-        print(f"  Snapshot ready: {len(game_entries)} games", file=sys.stderr)
+        results.append({"uuid": entry["uuid"], "title": entry["title"], "games": game_entries})
+        print(f"  {entry['title']}: snapshot ready — {len(game_entries)} games", file=sys.stderr)
 
     output = {"collections": results, "pending": pending}
     if one_off:
