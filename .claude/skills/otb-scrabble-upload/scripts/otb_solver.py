@@ -159,8 +159,32 @@ def candidates(board, move, exact=True, lex=True):
         out.append((r, c, dr, dc, res[1], res[0]))
     return out
 
-def solve(moves, max_mismatch=2):
+def tile_key(ch):
+    return '?' if ch.islower() else ch
+
+
+def solve(moves, max_mismatch=2, leftover='', bag_prune=True):
+    """Joint backtracking search over start offsets.
+
+    The tile distribution is a HARD CONSTRAINT, pruned inside the search rather
+    than audited afterwards: at no point in a game can the board hold more
+    copies of a tile than the bag contains, and the loser's unplayed leftover is
+    never on the board at any time either — so board(t) + leftover <= DIST holds
+    for every t. Without this prune the search happily returns physically
+    impossible boards that merely score correctly (game #90: LEWK placed at L10,
+    requiring a second K, when the true placement is F12 — it scores 11 either
+    way, so score matching alone cannot separate them).
+
+    bag_prune=False re-runs the search ignoring the distribution. That is NOT a
+    fallback for producing an answer — it is a DIAGNOSTIC: if a placement exists
+    only when the bag is ignored, the overdrawn tile names a MISREAD LETTER
+    (Jesse, 2026-07-15: a bag failure is usually a misread, not a bad
+    placement). main() uses it to turn a bare "no solution" back into that
+    pointer, which is the information the pre-prune post-hoc audit used to give.
+    """
     solutions = []
+    used = Counter()
+    left = Counter(leftover.upper())
     def rec(idx, board, placements, mism):
         if len(mism) > max_mismatch or len(solutions) >= 20:
             return
@@ -174,6 +198,10 @@ def solve(moves, max_mismatch=2):
         else:
             flagged = False
         for r, c, dr, dc, placed, sc in cands:
+            add = Counter(tile_key(ch) for _, _, ch in placed)
+            if bag_prune and any(used[k] + add[k] + left[k] > DIST[k] for k in add):
+                continue  # would overdraw the bag — physically impossible
+            used.update(add)
             for rr, cc, ch in placed: board[(rr, cc)] = ch
             placements.append((r, c, dr, dc, placed, sc))
             if flagged: mism.append(idx)
@@ -181,6 +209,7 @@ def solve(moves, max_mismatch=2):
             if flagged: mism.pop()
             placements.pop()
             for rr, cc, ch in placed: del board[(rr, cc)]
+            used.subtract(add)
     rec(0, {}, [], [])
     return solutions
 
@@ -202,10 +231,35 @@ def main():
                      "(pass --no-lexicon to solve without word validation)")
     spec = json.load(open(args[0]))
     moves = spec['moves']
-    sols = solve(moves)
+    sols = solve(moves, leftover=spec.get('leftover', ''))
     if not sols:
         print("NO SOLUTION with <=2 mismatches. Re-check scoresheet transcription:")
         print("run cumulative arithmetic on every column; re-read ambiguous digits.")
+        # Was the TILE BAG the binding constraint? If a placement exists once the
+        # distribution is ignored, the overdrawn tile names a misread letter --
+        # a far sharper pointer than "first stuck move", so check it first.
+        loose = solve(moves, leftover=spec.get('leftover', ''), bag_prune=False)
+        if loose:
+            pl, _mm = min(loose, key=lambda s: len(s[1]))
+            b = {}
+            for r, c, dr, dc, placed, sc in pl:
+                for rr, cc, ch in placed: b[(rr, cc)] = ch
+            total = (Counter(tile_key(ch) for ch in b.values())
+                     + Counter(spec.get('leftover', '').upper()))
+            over = {k: total[k]-DIST[k] for k in total if total[k] > DIST[k]}
+            unseen = {k: DIST[k]-total[k] for k in DIST if DIST[k] > total[k]}
+            if over or sum(total.values()) != 100:
+                print()
+                print(f"CAUSE: a placement DOES exist, but only by overdrawing the bag — "
+                      f"{sum(total.values())}/100 accounted; overdrawn: {over or 'none'}; "
+                      f"never-seen: {unseen or 'none'}.")
+                print("That is the signature of a MISREAD TILE, not a bad placement: the board "
+                      "cannot hold more copies of a letter than the bag contains.")
+                print("Re-read the letters of the words using the overdrawn tile(s) — a "
+                      "never-seen tile of similar shape is the likely true reading. Point-value "
+                      "subscripts disambiguate: C3/O1, Q10/G2, V4/U1, M3/W4; a blank shows a "
+                      "bear icon and NO subscript, and only 2 blanks exist.")
+                return
         # report deepest reachable prefix
         board = {}
         for i, m in enumerate(moves):
