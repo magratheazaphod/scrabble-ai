@@ -159,19 +159,57 @@ def main():
                 analyzed_ids.add(g["game_id"])
                 continue
             if status == "FAILED":
-                # Woogles' analysis worker tried this game and terminally gave up
-                # (e.g. a malformed annotation — a rack with more than 7 tiles).
-                # It will never reach COMPLETED and re-requesting won't change that,
-                # so treat it like any other un-analyzable game instead of letting
-                # one broken game wedge the whole collection in "pending" forever.
-                # Runs off the read-only status call, so it resolves even while
-                # rate-limited (no quota, no RequestAnalysis needed).
+                # Woogles' analysis worker ran this game and errored out (e.g. a
+                # malformed annotation — a rack with more than 7 tiles). From the
+                # status alone we can't tell "permanently broken" from "Jesse has
+                # since corrected the game data and this cached failure is stale"
+                # (the FAILED result sticks until the game is re-analyzed). So do
+                # BOTH: (1) skip it for THIS report so one bad game can't wedge the
+                # whole collection in "pending", and (2) fire a force=True
+                # re-analysis (quota permitting) so a corrected game heals itself
+                # and rejoins the report on a later run. A still-broken game simply
+                # re-fails and stays skipped — no wedge either way. force=True is
+                # required: force=False returns the cached FAILED without re-running.
+                skipped_ids.add(g["game_id"])
+                err = status_resp.get("error_message", "").strip()
+                if rate_limited:
+                    print(
+                        f"  Skipping {g['chapter_title']} for this report "
+                        f"(analysis FAILED: {err}); requeue deferred — rate limited",
+                        file=sys.stderr,
+                    )
+                    continue
+                request_sent_at = datetime.now(timezone.utc)
+                try:
+                    rr = post(
+                        "analysis_service.AnalysisService/RequestAnalysis",
+                        {"game_id": g["game_id"], "force": True},
+                    )
+                except requests.exceptions.HTTPError:
+                    # Any request error here is non-fatal — the game is already
+                    # skipped for reporting; we just don't get to requeue it.
+                    print(
+                        f"  Skipping {g['chapter_title']} for this report "
+                        f"(analysis FAILED: {err}); requeue request errored",
+                        file=sys.stderr,
+                    )
+                    continue
+                rs = rr.get("status", "UNKNOWN")
+                if rs == "RATE_LIMITED":
+                    anchor = first_request_at if first_request_at else request_sent_at
+                    blocked_until = anchor + timedelta(hours=24)
+                    rate_limited = True
+                    print(
+                        f"  Rate limited — stopping new requests until {blocked_until.isoformat()}",
+                        file=sys.stderr,
+                    )
+                elif rs == "SUCCESS" and first_request_at is None:
+                    first_request_at = request_sent_at
                 print(
-                    f"  Skipping {g['chapter_title']}: analysis FAILED "
-                    f"({status_resp.get('error_message', '').strip()})",
+                    f"  Skipping {g['chapter_title']} for this report "
+                    f"(analysis FAILED: {err}); re-requested (force) → {rs}",
                     file=sys.stderr,
                 )
-                skipped_ids.add(g["game_id"])
                 continue
             # NOT_FOUND usually just means "no analysis requested yet" — the normal
             # state for any never-analyzed game. But it can also be a phantom game:

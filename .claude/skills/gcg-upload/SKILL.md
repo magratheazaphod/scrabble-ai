@@ -74,6 +74,16 @@ Live-verified findings (2026-07-06), superseding some earlier notes below:
 - **Stuck-unfinished games ARE deletable**: `DeleteAnnotatedGame` succeeds on a game stuck by the challenge bug — only *finished* games are undeletable. If you hit the bug, delete the stuck game_id immediately and re-import healed content.
 - **Delete-probe trick**: calling `DeleteAnnotatedGame` on a game tells you its state — `400 "you cannot delete a game that is already done"` means it finished properly. Never probe a game you aren't willing to lose: if it's unfinished, the probe deletes it.
 
+### Racks with more than 7 tiles — reconstruct from the play
+
+A `>Player: RACK POS WORD +score cum` line whose rack field has **more than 7 tiles** is a transcription error (extra letters typed into the rack). It imports fine but the analysis worker rejects it — `GetAnalysisStatus` returns `FAILED` with `error_message` like `turn N: rack "ADEEEILRSXY" has 11 tiles, max is 7`, which then blocks that game from ever completing (and, since the report pipeline defers a collection until every game is analysis-complete, silently drops the whole collection from the daily report — see the parent project's report-collection-jam notes).
+
+**The played tiles are always a subset of the true rack, so the play tells you what the rack should have been.** The cleanest case: when that turn's move is a **bingo that uses all 7 tiles** (a `TILE_PLACEMENT_MOVE` whose word has exactly 7 letters placed — no `.` playthroughs — and no lowercase blanks), the rack is *exactly* the tiles of the played word. Real example (King's Cup 2019 Rd 8 vs Hubert Wee, confirmed 2026-07-16): `>Hubert_Wee: ADEEEILRSXY 3G DEISEAL +94 469` — the play `DEISEAL` is a clean 7-tile bingo, so his rack could only have been its tiles, `ADEEILS`. Correcting the rack field to `ADEEILS` (leaving move, score, and cumulative untouched) makes the game analyze.
+
+Caveats when the play is *not* a full 7-tile bingo: the rack still must contain every non-`.` tile of the word (with lowercase = a blank `?`), but the remaining leftover tiles can't be recovered from the play alone — reconstruct those from the next turn's rack / bag state, or ask Jesse. Only ever edit the rack field; never touch the move, score, or cumulative. This defect isn't auto-healed by `gcg_preflight.py` (it's caught server-side at analysis time, not at parse time), so fix it by hand.
+
+After correcting an already-uploaded game in place, its cached `FAILED` analysis result stays stale until you re-run analysis with `RequestAnalysis {..., "force": true}` (plain `force:false` returns the cached failure without re-running).
+
 ### Jesse must be notified of every healed game (mandatory)
 
 Whenever a game is uploaded from healed content (i.e. the scanner changed anything about the file), Jesse wants to know so he can review it. Two channels, both required:
