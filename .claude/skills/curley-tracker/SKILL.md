@@ -14,6 +14,13 @@ formula-preserving row writer).
 - **Auth:** service account via `GOOGLE_SA_KEYFILE`; sheet id in `.env` as
   `CURLEY_TRACKER_SHEET_ID`. All Sheets calls must go through the script's
   `_retry()` — the per-minute read quota trips easily on batch work.
+- **Layout (since 2026-07-16):** Sheet1 = A-J core (Game #, game id, date,
+  recorded scores, formula cols), K = free-text Notes (Jesse's margin notes —
+  never overwrite), L-S = the 8 stats columns. A separate **Summary** tab
+  holds the averages/aggregates panel (formulas referencing Sheet1). The
+  game-id cells are `=HYPERLINK("https://woogles.io/anno/<id>","<id>")` —
+  clickable, but every reader sees the bare id (formatted value = label);
+  writers must use the script's `game_id_cell()` helper, never a bare id.
 - **Collection:** "James Curley practice games", uuid
   `55b29df3-10fd-471b-9e87-135ed5bbb2f6`. Lexicon CSW21 before 2025-01-01,
   CSW24 after (Jesse is always CSW, never NWL). Chapter naming:

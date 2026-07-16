@@ -314,6 +314,11 @@ def game_stats_from_api(game_id):
 # --------------------------------------------------------------------------- #
 # Google Sheet I/O
 # --------------------------------------------------------------------------- #
+def game_id_cell(gid):
+    """The game-id cell is a HYPERLINK to the annotated game, labeled with the
+    bare id — so it's clickable for Jesse while every reader (col_values /
+    get_all_values return the formatted label) still sees just the id."""
+    return f'=HYPERLINK("https://woogles.io/anno/{gid}","{gid}")'
 def _retry(fn, *args, **kwargs):
     """Retry a gspread call with exponential backoff on Sheets API 429s — the
     bulk archive backfill fires enough per-game reads to trip the per-minute
@@ -447,7 +452,9 @@ def write_new_game(ws, field_col, fcols, row, fields):
     # raw inputs (date, me, jc, game_id) via the resolved field columns
     for field in ("date", "jesse_score", "opp_score", "game_id"):
         if field in field_col and field in fields:
-            cells.append({"range": a1(field_col[field]), "values": [[str(fields[field])]]})
+            value = (game_id_cell(fields[field]) if field == "game_id"
+                     else str(fields[field]))
+            cells.append({"range": a1(field_col[field]), "values": [[value]]})
 
     me, jc, gn, w, hp, cb, ll = (fcols.get(k) for k in
                                  ("me", "jc", "game_num", "w", "helper", "combined", "l"))
@@ -471,11 +478,16 @@ def apply_fields(ws, field_col, ncols, row_index, fields):
     """Append (row_index None) or update the given canonical fields in place."""
     import gspread.utils as gu
 
+    def cell_value(field, value):
+        if value is None:
+            return ""
+        return game_id_cell(value) if field == "game_id" else str(value)
+
     if row_index is None:
         row = [""] * ncols
         for field, value in fields.items():
             if field in field_col:
-                row[field_col[field] - 1] = "" if value is None else str(value)
+                row[field_col[field] - 1] = cell_value(field, value)
         _retry(ws.append_row, row, value_input_option="USER_ENTERED")
         return "appended"
 
@@ -484,7 +496,7 @@ def apply_fields(ws, field_col, ncols, row_index, fields):
         if field not in field_col:
             continue
         a1 = gu.rowcol_to_a1(row_index, field_col[field])
-        cells.append({"range": a1, "values": [["" if value is None else str(value)]]})
+        cells.append({"range": a1, "values": [[cell_value(field, value)]]})
     if cells:
         _retry(ws.batch_update, cells, value_input_option="USER_ENTERED")
     return f"updated row {row_index}"
