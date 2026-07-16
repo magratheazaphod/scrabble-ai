@@ -85,6 +85,8 @@ jobs:
         env:
           CURLEY_SA_KEY_JSON: ${{ secrets.CURLEY_SA_KEY_JSON }}
           CURLEY_TRACKER_SHEET_ID: ${{ secrets.CURLEY_TRACKER_SHEET_ID }}
+          # enrichment now pulls stats straight from the Woogles analysis API
+          WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
         run: |
           if [ -z "$CURLEY_SA_KEY_JSON" ] || [ -z "$CURLEY_TRACKER_SHEET_ID" ]; then
             echo "Curley tracker secrets not configured — skipping enrichment."

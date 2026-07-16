@@ -13,13 +13,20 @@ they always land on the same row:
     Writes date, both scores, result, spread. Needs no network beyond Sheets.
     Idempotent: re-running updates the same row instead of duplicating it.
 
-  Phase 2 - enrich once the game has been BestBot-analyzed and the reporting
-  pipeline has regenerated .github/report-state.json:
+  Phase 2 - enrich once the game has been BestBot-analyzed:
       python3 scripts/update_curley_tracker.py --enrich \
           --game-id 9G2uCPfVaXKhXpT9tCR84w
-    Fills the analysis columns (mistakes score, bingos, blanks, endgame spread
-    lost, win% lost, notes) by parsing the per-game table the
-    tournament-analysis pipeline already produces. Nothing is recomputed here.
+    Fills the per-player analysis columns (bingos, blanks drawn, win% lost,
+    mistake index — JD and James each) straight from the Woogles analysis API,
+    the same GetAnalysisResult/GetGameHistory calls the tournament-analysis
+    skill uses. A player's four cells are left blank unless their side of the
+    game was FULLY annotated: game over, mistake_index present, and a full
+    7-tile rack on every one of their turns (short racks allowed only once the
+    bag is empty) — Woogles scores partially-known racks anyway, so
+    mistake_index being non-null is NOT sufficient (per tournament-analysis).
+    --enrich-collection does the same for every row that has a game id,
+    skipping rows already filled; the woogles-report.yml workflow runs it
+    after each report refresh, so newly analyzed games fill in automatically.
 
 Auth: a Google service account (mirrors the WOOGLES_API_KEY-in-.env pattern).
 Point GOOGLE_SA_KEYFILE at its JSON key and share the Curley tracker (Editor)
@@ -40,10 +47,6 @@ import os
 import re
 import sys
 
-# The James Curley practice-games collection, per .github/report-state.json.
-CURLEY_COLLECTION_UUID = "55b29df3-10fd-471b-9e87-135ed5bbb2f6"
-REPORT_STATE_PATH = ".github/report-state.json"
-
 # Who is who in the GCG. Jesse's nick is usually "JD" (see otb-scrabble-upload),
 # but the historical Quackle archive uses several older self-export conventions.
 JESSE_NICKS = {"jd", "jessed", "jesseday", "jesse"}
@@ -62,21 +65,34 @@ CURLEY_NAMES = {"james curley", "james_curley", "jamesc", "jc", "james"}
 COLUMN_ALIASES = {
     # phase 1 (from the .gcg) - the only cells we write per game
     "date": ["date", "game date", "date played", "played"],
-    "jesse_score": ["me", "jesse", "jesse score", "my score", "magrathean"],
-    "opp_score": ["jc", "curley", "curley score", "opp score", "opponent score", "them"],
+    # "recorded score" headers (2026-07-15): the sheet keeps the score as recorded
+    # at the table, which may legitimately differ from what the GCG replays to.
+    "jesse_score": ["me", "jesse", "jesse score", "my score", "magrathean",
+                    "jd recorded score", "jd recorded"],
+    "opp_score": ["jc", "curley", "curley score", "opp score", "opponent score", "them",
+                  "james recorded score", "james recorded"],
     "game_id": ["game id", "woogles game id", "game_id", "woogles id", "id", "uuid", "gameid"],
-    # phase 2 (enrichment) - only written if Jesse adds these columns later
-    "mistakes": ["mistakes", "mistakes score", "avg mistakes", "mistake score"],
-    "jesse_bingos": ["my bingos", "jesse bingos", "bingos"],
-    "opp_bingos": ["jc bingos", "opp bingos", "opponent bingos", "curley bingos"],
-    "jesse_blanks": ["my blanks", "jesse blanks", "blanks", "blanks drawn"],
-    "endgame_spread_lost": ["endgame spread lost", "endgame spread", "endgame"],
-    "winpct_lost": ["win% lost", "win pct lost", "winpct lost", "win % lost"],
-    "notes": ["notes", "note", "comment", "comments"],
+    # phase 2 (enrichment) - per-player BestBot analysis stats
+    "jesse_bingos": ["jd bingos", "my bingos", "jesse bingos", "bingos"],
+    "opp_bingos": ["james bingos", "jc bingos", "opp bingos", "opponent bingos", "curley bingos"],
+    "jesse_blanks": ["jd blanks", "my blanks", "jesse blanks", "blanks", "blanks drawn"],
+    "opp_blanks": ["james blanks", "jc blanks", "opp blanks", "opponent blanks"],
+    "winpct_lost": ["jd win% lost", "win% lost", "win pct lost", "winpct lost", "win % lost"],
+    "opp_winpct_lost": ["james win% lost", "jc win% lost", "opp win% lost"],
+    "mistakes": ["jd mistake index", "mistakes", "mistakes score", "avg mistakes", "mistake score"],
+    "opp_mistakes": ["james mistake index", "jc mistake index", "opp mistakes", "opp mistake index"],
 }
 
-PHASE2_FIELDS = ["mistakes", "jesse_bingos", "opp_bingos", "jesse_blanks",
-                 "endgame_spread_lost", "winpct_lost", "notes"]
+# The 8 enrichment cells, in sheet order; and the header written when the sheet
+# doesn't have a column for one yet (matching the "JD/James recorded score" style).
+STATS_FIELDS = ["jesse_bingos", "opp_bingos", "jesse_blanks", "opp_blanks",
+                "winpct_lost", "opp_winpct_lost", "mistakes", "opp_mistakes"]
+STATS_HEADERS = {
+    "jesse_bingos": "JD bingos", "opp_bingos": "James bingos",
+    "jesse_blanks": "JD blanks", "opp_blanks": "James blanks",
+    "winpct_lost": "JD win% lost", "opp_winpct_lost": "James win% lost",
+    "mistakes": "JD mistake index", "opp_mistakes": "James mistake index",
+}
 
 
 # --------------------------------------------------------------------------- #
@@ -182,71 +198,117 @@ def mdy(iso_date):
 
 
 # --------------------------------------------------------------------------- #
-# Enrichment parsing (phase 2) - reuse the reporting pipeline's per-game table
+# Enrichment (phase 2) - per-player BestBot stats straight from the Woogles API
+# (the same GetAnalysisResult / GetGameHistory calls tournament-analysis uses)
 # --------------------------------------------------------------------------- #
-# Header text in the report_md table -> canonical enrichment field.
-REPORT_COL_MAP = {
-    "mistakes": "mistakes",
-    "jesse bingos": "jesse_bingos",
-    "opp bingos": "opp_bingos",
-    "jesse blanks": "jesse_blanks",
-    "endgame spread lost": "endgame_spread_lost",
-    "win% lost": "winpct_lost",
-    "notes": "notes",
-}
+WOOGLES_BASE = "https://woogles.io/api"
+
+JESSE_SUMMARY_NAMES = {"jd", "jessed", "jesseday", "jesse", "dayjesse"}
 
 
-def _split_md_row(line):
-    cells = line.strip().strip("|").split("|")
-    return [c.strip() for c in cells]
+def woogles_rpc(endpoint, body):
+    """POST to a Woogles RPC, retrying transient 429/5xx with backoff."""
+    import random
+    import time
 
+    import requests
 
-def parse_report_table(path=REPORT_STATE_PATH):
-    """Parse the JC collection's per-game analysis table from report-state.json.
-
-    Returns {game_id: enrichment_dict} for every analyzed game found, or {} if
-    there's no report yet.
-    """
-    if not os.path.exists(path):
-        return {}
-    state = json.load(open(path))
-    entry = state.get(CURLEY_COLLECTION_UUID)
-    if not entry or "report_md" not in entry:
-        return {}
-    lines = entry["report_md"].splitlines()
-
-    # Locate the per-game table: the header row is the one naming "Mistakes".
-    header_cells = col_index = None
-    for i, line in enumerate(lines):
-        if "|" in line and "mistakes" in line.lower() and "jesse bingos" in line.lower():
-            header_cells = [c.lower() for c in _split_md_row(line)]
-            col_index = i
-            break
-    if header_cells is None:
-        return {}
-
-    field_by_col = {idx: REPORT_COL_MAP[h] for idx, h in enumerate(header_cells)
-                    if h in REPORT_COL_MAP}
-    game_col = header_cells.index("game") if "game" in header_cells else None
-
-    out = {}
-    for line in lines[col_index + 2:]:  # skip the |---| separator
-        if "|" not in line:
-            break
-        cells = _split_md_row(line)
-        if game_col is None or game_col >= len(cells):
+    hdrs = {"Content-Type": "application/json"}
+    key = os.environ.get("WOOGLES_API_KEY", "").strip()
+    if key:
+        hdrs["X-Api-Key"] = key
+    for attempt in range(4):
+        r = requests.post(f"{WOOGLES_BASE}/{endpoint}", json=body, headers=hdrs, timeout=30)
+        if r.status_code == 429 or r.status_code >= 500:
+            if attempt == 3:
+                r.raise_for_status()
+            time.sleep((2 ** attempt) + random.uniform(0, 0.5))
             continue
-        m = re.search(r"/game/([A-Za-z0-9_-]+)", cells[game_col])
-        if not m:  # the trailing "Avg" row has no game link
+        r.raise_for_status()
+        return r.json()
+
+
+def _is_jesse_player(p):
+    nick = (p.get("nickname") or "").lower().replace("_", "")
+    real = (p.get("real_name") or "").lower()
+    return nick in ("jd", "jessed", "jesseday", "jesse") or "jesse" in real
+
+
+def _blanks_drawn(events, last_racks, idx):
+    """Blanks that passed through player idx's rack: played (lowercase tile),
+    exchanged ('?'), or still held at the end. Plays that were challenged off
+    are skipped — those tiles went back and are counted when actually used."""
+    total = 0
+    for i, ev in enumerate(events):
+        if ev.get("player_index") != idx:
             continue
-        out[m.group(1)] = {field: cells[idx] for idx, field in field_by_col.items()
-                           if idx < len(cells)}
-    return out
+        if ev.get("type") == "TILE_PLACEMENT_MOVE":
+            if i + 1 < len(events) and events[i + 1].get("type") == "PHONY_TILES_RETURNED":
+                continue
+            total += sum(1 for c in (ev.get("played_tiles") or "") if c.islower())
+        elif ev.get("type") == "EXCHANGE":
+            total += (ev.get("exchanged") or "").count("?")
+    if len(last_racks) > idx and last_racks[idx]:
+        total += last_racks[idx].count("?")
+    return total
 
 
-def enrichment_from_report_state(game_id, path=REPORT_STATE_PATH):
-    """Enrichment dict for one game, or None if it isn't in the report yet."""
-    return parse_report_table(path).get(game_id)
+def _racks_complete(turns, idx):
+    """True iff player idx's rack is fully known on every turn — a full 7-tile
+    rack, or a short rack only once the bag is empty. Woogles infers partial
+    racks from played tiles and scores them anyway, so this (not a non-null
+    mistake_index) is the signal that the side was fully annotated."""
+    return all(
+        len(t.get("rack") or "") == 7 or (t.get("tiles_in_bag") or 0) == 0
+        for t in turns if t.get("player_index") == idx
+    )
+
+
+def game_stats_from_api(game_id):
+    """The 8 enrichment fields for one game, or None if not yet analyzed.
+
+    A side that wasn't fully annotated gets None for all four of its fields
+    (cells stay blank), per Jesse 2026-07-15."""
+    status = woogles_rpc("analysis_service.AnalysisService/GetAnalysisStatus",
+                         {"game_id": game_id}).get("status")
+    if status != "COMPLETED":
+        return None
+    analysis = woogles_rpc("analysis_service.AnalysisService/GetAnalysisResult",
+                           {"game_id": game_id})["result"]
+    history = woogles_rpc("game_service.GameMetadataService/GetGameHistory",
+                          {"game_id": game_id})["history"]
+
+    players = history.get("players") or []
+    jesse_idx = next((i for i, p in enumerate(players) if _is_jesse_player(p)), None)
+    if jesse_idx is None or len(players) != 2:
+        print(f"    {game_id}: could not identify Jesse among {players} — skipping stats")
+        return None
+    turns = analysis.get("turns") or []
+    events = history.get("events") or []
+    last_racks = history.get("last_known_racks") or []
+    game_over = history.get("play_state") == "GAME_OVER"
+
+    mistake_by_side = {}
+    for s in analysis.get("player_summaries") or []:
+        name = (s.get("player_name") or "").lower().replace("_", "")
+        mistake_by_side[name in JESSE_SUMMARY_NAMES] = s.get("mistake_index")
+
+    side_fields = {True: ("jesse_bingos", "jesse_blanks", "winpct_lost", "mistakes"),
+                   False: ("opp_bingos", "opp_blanks", "opp_winpct_lost", "opp_mistakes")}
+    fields = {}
+    for is_jesse, (f_bingos, f_blanks, f_wpl, f_mi) in side_fields.items():
+        idx = jesse_idx if is_jesse else 1 - jesse_idx
+        mi = mistake_by_side.get(is_jesse)
+        if not (game_over and mi is not None and _racks_complete(turns, idx)):
+            fields.update({f_bingos: None, f_blanks: None, f_wpl: None, f_mi: None})
+            continue
+        fields[f_bingos] = sum(1 for t in turns
+                               if t.get("player_index") == idx and t.get("played_is_bingo"))
+        fields[f_blanks] = _blanks_drawn(events, last_racks, idx)
+        fields[f_wpl] = round(sum(t.get("win_prob_loss") or 0 for t in turns
+                                  if t.get("player_index") == idx) * 100, 1)
+        fields[f_mi] = round(mi, 2)
+    return fields
 
 
 # --------------------------------------------------------------------------- #
@@ -285,9 +347,10 @@ def open_worksheet():
         sys.exit("CURLEY_TRACKER_SHEET_ID (or _URL) is not set.")
 
     gc = gspread.service_account(filename=keyfile)
-    sh = gc.open_by_key(sid)
+    sh = _retry(gc.open_by_key, sid)
     tab = os.environ.get("CURLEY_TRACKER_WORKSHEET", "").strip()
-    return sh.worksheet(tab) if tab else sh.sheet1
+    # worksheet()/sheet1 fetch spreadsheet metadata — also a quota-counted read
+    return _retry(sh.worksheet, tab) if tab else _retry(lambda: sh.sheet1)
 
 
 def build_header_map(header_row):
@@ -358,8 +421,8 @@ def locate_formula_cols(header):
 
     cols = {
         "game_num": find("game #", "game#", "game number"),
-        "me": find("me", "jesse", "my score"),
-        "jc": find("jc", "curley", "opp score"),
+        "me": find("me", "jesse", "my score", "jd recorded score"),
+        "jc": find("jc", "curley", "opp score", "james recorded score"),
         "w": find("w", "win", "wins"),
         "l": find("l", "loss", "losses"),
         "combined": find("combined", "total"),
@@ -444,6 +507,12 @@ def main(argv):
                          "final scores against that row's me/jc, and write ONLY the game id. "
                          "Refuses to run if the row already has a game id, or if the scores "
                          "don't match. For the historical-archive backfill, not new games.")
+    ap.add_argument("--allow-score-mismatch", action="store_true",
+                    help="with --game-num: tolerate the sheet's recorded scores differing "
+                         "from the .gcg's replayed scores. Per Jesse (2026-07-15) the sheet "
+                         "keeps the score as recorded at the table; the GCG is what the tiles "
+                         "actually add up to, and the two may legitimately disagree. The "
+                         "sheet's scores are never overwritten — only the game id is written.")
     ap.add_argument("--enrich", action="store_true",
                     help="phase 2: fill one game's analysis columns from report-state.json")
     ap.add_argument("--enrich-collection", action="store_true",
@@ -466,10 +535,14 @@ def main(argv):
     if args.enrich:
         if not args.game_id:
             ap.error("--game-id is required with --enrich")
-        fields = enrichment_from_report_state(args.game_id)
-        if fields is None:
-            print(f"No analysis row for {args.game_id} in {REPORT_STATE_PATH} yet "
-                  f"(game not analyzed / report not regenerated). Nothing to enrich.")
+        stats = game_stats_from_api(args.game_id)
+        if stats is None:
+            print(f"{args.game_id}: BestBot analysis not completed yet — nothing to enrich.")
+            return 0
+        fields = {k: v for k, v in stats.items() if v is not None}
+        if not fields:
+            print(f"{args.game_id}: analyzed, but neither side was fully annotated — "
+                  f"stats cells stay blank.")
             return 0
         phase = "enrich"
     else:
@@ -483,7 +556,8 @@ def main(argv):
         print(f"    {k:22} {v}")
 
     if args.game_num is not None:
-        return backfill_by_game_number(args.game_num, fields, args.dry_run)
+        return backfill_by_game_number(args.game_num, fields, args.dry_run,
+                                       args.allow_score_mismatch)
 
     if args.dry_run:
         print("\n(dry run - sheet not touched)")
@@ -492,12 +566,14 @@ def main(argv):
     ws = open_worksheet()
     header = _retry(ws.row_values, 1)
     field_col = report_mapping(ws, fields)
+    if args.enrich:
+        ensure_stats_columns(ws, field_col, header, dry_run=False)
     row_index = find_row_for_game(ws, field_col["game_id"], args.game_id)
 
     if args.enrich:
         if row_index is None:
             sys.exit(f"No existing row for {args.game_id}; run phase 1 (--gcg) first.")
-        apply_fields(ws, field_col, len(header), row_index, fields)
+        apply_fields(ws, field_col, len(header) + len(STATS_FIELDS), row_index, fields)
         print(f"\nupdated row {row_index}.")
         return 0
 
@@ -526,13 +602,16 @@ def report_mapping(ws, fields):
     return field_col
 
 
-def backfill_by_game_number(game_num, fields, dry_run):
+def backfill_by_game_number(game_num, fields, dry_run, allow_score_mismatch=False):
     """Historical-archive backfill: the row for `game_num` already has hand-entered
     date/me/jc (and working W/L formulas) from years of manual tracking, just no
     game id yet. Locate it by 'Game #' (not by game id — there isn't one), verify
     the .gcg's final scores match what's already in the row (catches a mislabeled
     or misnumbered archive file before it corrupts the sheet), then write ONLY the
-    game id. Refuses if the row already has one, or if scores don't match."""
+    game id. Refuses if the row already has one, or if scores don't match —
+    unless --allow-score-mismatch, in which case the sheet keeps its recorded
+    scores (they are the score as kept at the table, which may differ from what
+    the tiles replay to) and only the game id is written."""
     ws = open_worksheet()
     header = _retry(ws.row_values, 1)
     field_col = report_mapping(ws, fields)
@@ -558,9 +637,14 @@ def backfill_by_game_number(game_num, fields, dry_run):
     for field, label in (("jesse_score", "me"), ("opp_score", "jc")):
         existing_val = cell(field)
         if existing_val and existing_val.isdigit() and int(existing_val) != fields[field]:
+            if allow_score_mismatch:
+                print(f"    note: sheet {label}={existing_val} vs .gcg={fields[field]} — "
+                      f"keeping the sheet's recorded score (--allow-score-mismatch).")
+                continue
             sys.exit(f"score mismatch at row {row_index} (Game #{game_num}): sheet "
                      f"{label}={existing_val} vs .gcg={fields[field]} — this file may be "
-                     f"mislabeled/misnumbered. Not writing anything.")
+                     f"mislabeled/misnumbered. Not writing anything. "
+                     f"(--allow-score-mismatch overrides, keeping the sheet's numbers.)")
 
     if dry_run:
         print(f"\n(dry run) would backfill game id into row {row_index} "
@@ -572,33 +656,84 @@ def backfill_by_game_number(game_num, fields, dry_run):
     return 0
 
 
-def run_enrich_collection(dry_run):
-    """Enrich every analyzed JC game that already has a row in the sheet."""
-    table = parse_report_table()
-    if not table:
-        print(f"No analyzed JC games in {REPORT_STATE_PATH} yet — nothing to enrich.")
-        return 0
-    print(f"[enrich-collection] {len(table)} analyzed game(s) in the report.")
+def ensure_stats_columns(ws, field_col, header, dry_run):
+    """Make sure the sheet has a column for every stats field, appending headers
+    (in STATS_FIELDS order) after the last header cell for any that are missing.
+    Updates field_col in place."""
+    import gspread.utils as gu
+
+    missing = [f for f in STATS_FIELDS if f not in field_col]
+    if not missing:
+        return
+    start = len(header) + 1
+    cells = [{"range": gu.rowcol_to_a1(1, start + i), "values": [[STATS_HEADERS[f]]]}
+             for i, f in enumerate(missing)]
     if dry_run:
-        for gid, fields in table.items():
-            print(f"  {gid}: {fields}")
-        print("\n(dry run - sheet not touched)")
-        return 0
+        print(f"(dry run) would add header column(s): {[STATS_HEADERS[f] for f in missing]}")
+    else:
+        _retry(ws.batch_update, cells, value_input_option="USER_ENTERED")
+        print(f"added header column(s): {[STATS_HEADERS[f] for f in missing]}")
+    for i, f in enumerate(missing):
+        field_col[f] = start + i
+
+
+def run_enrich_collection(dry_run):
+    """Fill the per-player stats cells for every row that has a game id.
+
+    One read of the whole sheet, one Woogles API sweep (only for rows whose
+    stats cells are all still empty), one batch write. Games not yet
+    BestBot-analyzed stay blank and are retried on the next run; a row with
+    any stats cell already filled is considered done and never re-fetched
+    (its remaining blanks mean that side wasn't fully annotated)."""
+    import gspread.utils as gu
+    from concurrent.futures import ThreadPoolExecutor
 
     ws = open_worksheet()
-    field_col = report_mapping(ws, next(iter(table.values())))
-    ncols = len(_retry(ws.row_values, 1))
-    enriched = skipped = 0
-    for gid, fields in table.items():
-        row_index = find_row_for_game(ws, field_col["game_id"], gid)
-        if row_index is None:
-            print(f"  {gid}: no row yet — skipped")
-            skipped += 1
+    rows = _retry(ws.get_all_values)
+    header = rows[0]
+    field_col, _ = build_header_map(header)
+    if "game_id" not in field_col:
+        sys.exit("The sheet has no game-id column — can't key rows for enrichment.")
+    ensure_stats_columns(ws, field_col, header, dry_run)
+
+    gid_col = field_col["game_id"]
+    todo = []
+    for ridx, row in enumerate(rows[1:], start=2):
+        gid = row[gid_col - 1].strip() if len(row) >= gid_col else ""
+        if not gid:
             continue
-        apply_fields(ws, field_col, ncols, row_index, fields)
-        print(f"  {gid}: enriched row {row_index}")
-        enriched += 1
-    print(f"\nenriched {enriched}, skipped {skipped} (no row yet).")
+        filled = any((row[field_col[f] - 1].strip() if len(row) >= field_col[f] else "")
+                     for f in STATS_FIELDS)
+        if filled:
+            continue
+        todo.append((ridx, gid))
+    print(f"[enrich-collection] {len(todo)} row(s) with a game id and no stats yet.")
+    if not todo:
+        return 0
+
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        all_stats = list(ex.map(lambda t: game_stats_from_api(t[1]), todo))
+
+    cells, enriched, pending = [], 0, 0
+    for (ridx, gid), stats in zip(todo, all_stats):
+        if stats is None:
+            pending += 1
+            continue
+        wrote = False
+        for f, v in stats.items():
+            if v is None or f not in field_col:
+                continue
+            cells.append({"range": gu.rowcol_to_a1(ridx, field_col[f]), "values": [[str(v)]]})
+            wrote = True
+        print(f"  {gid}: row {ridx} " +
+              ("enriched" if wrote else "analyzed but no side fully annotated"))
+        enriched += 1 if wrote else 0
+    if dry_run:
+        print(f"\n(dry run) would write {len(cells)} cell(s).")
+        return 0
+    if cells:
+        _retry(ws.batch_update, cells, value_input_option="USER_ENTERED")
+    print(f"\nenriched {enriched} game(s); {pending} still awaiting BestBot analysis.")
     return 0
 
 
