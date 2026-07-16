@@ -158,10 +158,30 @@ def main():
             if status == "COMPLETED":
                 analyzed_ids.add(g["game_id"])
                 continue
-            # NOT_FOUND here just means "no analysis requested yet" — the normal
-            # state for any never-analyzed game, not evidence the game is missing.
-            # Fall through to RequestAnalysis as usual.
-            if rate_limited:
+            if status == "FAILED":
+                # Woogles' analysis worker tried this game and terminally gave up
+                # (e.g. a malformed annotation — a rack with more than 7 tiles).
+                # It will never reach COMPLETED and re-requesting won't change that,
+                # so treat it like any other un-analyzable game instead of letting
+                # one broken game wedge the whole collection in "pending" forever.
+                # Runs off the read-only status call, so it resolves even while
+                # rate-limited (no quota, no RequestAnalysis needed).
+                print(
+                    f"  Skipping {g['chapter_title']}: analysis FAILED "
+                    f"({status_resp.get('error_message', '').strip()})",
+                    file=sys.stderr,
+                )
+                skipped_ids.add(g["game_id"])
+                continue
+            # NOT_FOUND usually just means "no analysis requested yet" — the normal
+            # state for any never-analyzed game. But it can also be a phantom game:
+            # a chapter whose game_id points to a game Woogles has no record of
+            # (e.g. a GCG import that silently failed), which likewise never becomes
+            # reportable. RequestAnalysis 400s on a phantom *before* consuming any
+            # quota, so we still probe NOT_FOUND games even while rate-limited —
+            # otherwise a phantom can wedge a collection until some far-off
+            # unthrottled run happens to reach it before the daily quota runs out.
+            if rate_limited and status != "NOT_FOUND":
                 continue
             request_sent_at = datetime.now(timezone.utc)
             try:
@@ -171,9 +191,7 @@ def main():
                 )
             except requests.exceptions.HTTPError as e:
                 if e.response is not None and e.response.status_code == 400:
-                    # Collection lists a game_id Woogles has no record of at all
-                    # (e.g. a GCG import that silently failed) — skip instead of
-                    # crashing the whole run.
+                    # Phantom game — Woogles has no record of this game_id at all.
                     print(
                         f"  Skipping {g['chapter_title']}: RequestAnalysis rejected "
                         f"the game ({e.response.text.strip()})",
@@ -184,15 +202,20 @@ def main():
                 raise
             s = r.get("status", "UNKNOWN")
             if s == "RATE_LIMITED":
-                # Anchor on the first successful request of this run (the oldest one
-                # actually counted in the window), not on now — see comment above.
-                anchor = first_request_at if first_request_at else request_sent_at
-                blocked_until = anchor + timedelta(hours=24)
-                print(
-                    f"  Rate limited — stopping new requests until {blocked_until.isoformat()}",
-                    file=sys.stderr,
-                )
-                rate_limited = True
+                if not rate_limited:
+                    # First time we've hit the cap this run — anchor the 24h window
+                    # on the first successful request (the oldest one actually
+                    # counted), not on now; see comment above.
+                    anchor = first_request_at if first_request_at else request_sent_at
+                    blocked_until = anchor + timedelta(hours=24)
+                    print(
+                        f"  Rate limited — stopping new requests until {blocked_until.isoformat()}",
+                        file=sys.stderr,
+                    )
+                    rate_limited = True
+                # else: already known rate-limited; we only probed this NOT_FOUND
+                # game to rule out a phantom. It's a real pending game, so leave the
+                # existing blocked_until / marker untouched and move on.
             elif s in SKIP_STATUSES:
                 print(f"  Skipping {g['chapter_title']}: {s}", file=sys.stderr)
                 skipped_ids.add(g["game_id"])
