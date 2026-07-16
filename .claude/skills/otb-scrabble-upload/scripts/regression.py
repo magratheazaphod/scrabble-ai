@@ -18,8 +18,8 @@ What it checks (exit 0 = all green):
    bad runs actually went wrong, and require the guards to catch each one:
    - drop the game #91 opening exchange     -> checker must FAIL (turn counts)
    - shorten a mid-game rack (AEINNNR bug)  -> checker must WARN
-   - the wrong VEE endgame reading (#91)    -> solver's best solution must
-     carry >=1 mismatch and print the red-flag warning
+   - the wrong VEE endgame reading (#91)    -> solver must REJECT it outright
+     (it needs a 3rd V) and name the overdrawn V as the misread pointer
    - an invalid word at exact score         -> solver must reject via lexicon
 3. --sweep N (optional, slower): verify_gcg over N seeded-random archive
    games; failures must be the known-defective classes only (unterminated
@@ -191,10 +191,18 @@ def main():
     spec['leftover'] = 'DV'
     json.dump(spec, open(path('inj_vee.json'), 'w'))
     r = run('otb_solver.py', path('inj_vee.json'))
-    if 'minimal 0 mismatch' in r.stdout or 'WARNING: no zero-mismatch' not in r.stdout:
-        failures.append('injection: wrong VEE endgame reading not red-flagged by solver')
-    print('injection wrong-VEE-endgame:', 'red-flagged'
-          if 'WARNING: no zero-mismatch' in r.stdout else 'MISSED')
+    # The wrong reading hands James the V that was really Jesse's, so the board
+    # would need a third V. Since the tile distribution became a SEARCH
+    # constraint (2026-07-15) this is rejected outright instead of surviving as
+    # a flagged-but-plausible solution — and the overdrawn tile names the very
+    # one whose ownership was misjudged. Require the rejection AND the pointer:
+    # the old assertion (a red-flag warning on a returned solution) was the
+    # weaker guarantee that the real #91 run rationalised away.
+    if 'NO SOLUTION' not in r.stdout or "overdrawn: {'V': 1}" not in r.stdout:
+        failures.append('injection: wrong VEE endgame reading not rejected by the bag '
+                        'constraint with an overdrawn-V pointer')
+    print('injection wrong-VEE-endgame:', 'rejected + V pointer'
+          if "overdrawn: {'V': 1}" in r.stdout else 'MISSED')
 
     json.dump({'moves': [{'player': 'JD', 'word': 'XQ', 'score': 36, 'dir': 'H', 'row': 8}],
                'leftover': ''}, open(path('inj_lex.json'), 'w'))
