@@ -5,7 +5,7 @@ description: Pull BestBot-analyzed stats (mistakes score, scores, bingos, blanks
 
 # Woogles.io Tournament Analysis
 
-Jesse Day (woogles.io username `magrathean`, in-game display names vary: "Jesse Day", "JD", "JesseD") plays tournaments on woogles.io and groups the games for each tournament into a **collection**. This skill turns a collection into a stats report: record, scores, mistakes score, bingos, blanks drawn, endgame spread lost, win% lost, phonies, and missed bingos.
+Jesse Day (woogles.io username `magrathean`, in-game display names vary: "Jesse Day", "Jesse", "JD", "JesseD") plays tournaments on woogles.io and groups the games for each tournament into a **collection**. This skill turns a collection into a stats report: record, scores, mistakes score, bingos, blanks drawn, endgame spread lost, win% lost, phonies, and missed bingos.
 
 ## Auth
 
@@ -201,9 +201,17 @@ def is_jesse(p):
     uid  = (p.get('user_id')  or '').lower()
     return nick in ('jd', 'jessed', 'jesseday') or 'jesse' in real or uid == 'magrathean'
 
-def is_jesse_summary(s):
-    n = (s.get('player_name') or '').lower().replace('_', '')
-    return n in ('jd', 'jessed', 'jesseday', 'dayjesse')
+def summary_for_index(analysis, player_index):
+    """Select a `player_summaries` entry by turn `player_index`, not by name.
+    `player_summaries` only carries `player_name` (a nickname that varies —
+    "JD", "JesseDay", bare "Jesse"), so an allowlist silently drops variants it
+    omits (this dropped Jesse's mistake score in 18 King's Cup 2019 games). Turns
+    carry both `player_name` and `player_index` and match summaries exactly, so
+    pair them to tie the summary to the already-robust `jesse_idx`/`opp_idx`."""
+    names_at_index = {t['player_name'] for t in analysis['turns']
+                      if t.get('player_index') == player_index}
+    return next((s for s in analysis['player_summaries']
+                 if s.get('player_name') in names_at_index), None)
 
 def format_real_name(r):
     if not r:
@@ -395,10 +403,10 @@ def compute_game(r):
     opp_name    = get_opp_name(meta, history['players'], jesse_idx)
     game_url    = f'https://woogles.io/anno/{meta["game_id"]}'
 
-    summary      = next((s for s in analysis['player_summaries'] if is_jesse_summary(s)), None)
+    summary      = summary_for_index(analysis, jesse_idx)
     mistake_index = summary['mistake_index'] if summary else None
 
-    opp_summary        = next((s for s in analysis['player_summaries'] if not is_jesse_summary(s)), None)
+    opp_summary        = summary_for_index(analysis, opp_idx)
     opp_mistake_index  = opp_summary['mistake_index'] if opp_summary else None
     game_is_over        = history.get('play_state') == 'GAME_OVER'
     opp_fully_annotated = (opp_mistake_index is not None and game_is_over
@@ -547,7 +555,7 @@ check_phony_words(stats)
 
 Run this once, right after `stats` is built — `game_note` (Step 7) reads `invalid_words` off each phony entry.
 
-If `is_jesse_summary` finds nothing, print the actual `player_name` values and adjust before rerunning.
+If `summary_for_index` returns None for either side, print `analysis['turns']` names alongside `player_summaries` names — they should match exactly — before rerunning.
 
 ### Step 6: Aggregate
 
