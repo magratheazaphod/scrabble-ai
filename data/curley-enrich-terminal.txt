@@ -1,0 +1,7 @@
+# Games with nothing for --enrich-collection to write, and no prospect
+# of that changing on its own: analyzed but with neither side fully
+# annotated, or a permanently FAILED analysis (a malformed upload).
+# Re-examine them all with --recheck-terminal.
+HKCMAaDXSdDeBMHkNbQPXN
+RrdW7rTCj3DX5a7BHGh5Fy
+iv6yiCLPJPptXGGWdH3CJu
