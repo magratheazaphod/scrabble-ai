@@ -35,6 +35,77 @@ SKIP_STATUSES = {"NOT_A_PLAYER", "GAME_NOT_ENDED", "INVALID_VARIANT"}
 # way (e.g. another contributor's worker picking up the backlog).
 RATE_LIMIT_MARKER_PATH = "data/rate-limited-until.txt"
 
+# A FAILED analysis is almost always a permanent defect in the uploaded game
+# ('turn 18: rack "AAGIIKSUUY" has 10 tiles, max is 7' — a malformed GCG), not a
+# transient queue problem. Re-requesting it every run spends a quota slot out of
+# a 15/day rolling budget to reproduce the identical error, forever.
+#
+# So remember each failure, and re-request only when something could plausibly
+# have changed. The reliable signal is the game history itself: repairing a game
+# means re-uploading it, which changes its events — and GetGameHistory is a
+# read, so checking costs no quota. (Status alone can't tell us: after Jesse
+# repaired a game on 2026-07-22 it still reported the old FAILED status with the
+# old error until a force re-request was actually issued.) The day-based retry
+# is a backstop for fixes on Woogles' side, which no local signal can see.
+FAILED_STATE_PATH = "data/failed-analysis.json"
+FAILED_RETRY_DAYS = 7
+
+
+def load_failed_state():
+    if not os.path.exists(FAILED_STATE_PATH):
+        return {}
+    try:
+        with open(FAILED_STATE_PATH) as f:
+            state = json.load(f)
+        return state if isinstance(state, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def save_failed_state(state):
+    os.makedirs(os.path.dirname(FAILED_STATE_PATH), exist_ok=True)
+    with open(FAILED_STATE_PATH, "w") as f:
+        json.dump(state, f, indent=1, sort_keys=True)
+
+
+def history_fingerprint(game_id):
+    """Hash of a game's events — changes exactly when the game is re-uploaded or
+    edited. None if the history can't be read (then we never hold the game back)."""
+    import hashlib
+
+    try:
+        history = post(
+            "game_service.GameMetadataService/GetGameHistory", {"game_id": game_id}
+        ).get("history") or {}
+    except requests.exceptions.HTTPError:
+        return None
+    events = history.get("events") or []
+    material = json.dumps(
+        [[e.get("type"), e.get("rack"), e.get("position"), e.get("played_tiles"),
+          e.get("score"), e.get("cumulative")] for e in events],
+        sort_keys=True,
+    )
+    return hashlib.sha1(material.encode()).hexdigest()
+
+
+def failed_needs_request(game_id, error, now, failed_state):
+    """(should_request, why) for a game whose analysis is FAILED."""
+    prev = failed_state.get(game_id)
+    fingerprint = history_fingerprint(game_id)
+    info = {"error": error, "history": fingerprint}
+    if prev is None:
+        return True, "first failure seen", info
+    if fingerprint is None or prev.get("history") != fingerprint:
+        return True, "game changed since it last failed", info
+    last = prev.get("last_requested")
+    try:
+        age_days = (now - datetime.fromisoformat(last)).days if last else None
+    except (TypeError, ValueError):
+        age_days = None
+    if age_days is None or age_days >= FAILED_RETRY_DAYS:
+        return True, f"last retried {age_days if age_days is not None else 'unknown'} days ago", info
+    return False, f"unchanged since it failed {age_days}d ago: {error or 'no reason given'}", info
+
 
 def post(endpoint, body):
     r = requests.post(f"{BASE}/{endpoint}", json=body, headers=HDRS)
@@ -123,15 +194,18 @@ def read_rate_limit_marker(now):
     return known_until if known_until > now else None
 
 
-def scan_collection(col, rate_limited):
+def scan_collection(col, rate_limited, now, failed_state):
     """Read-only pass over one collection: classify every game by what it needs.
     Consumes NO analysis quota (GetAnalysisStatus and GetGameHistory are both reads).
 
     Per-game state:
       done     — COMPLETED; full analysis available.
       skip     — terminally un-analyzable (phantom game_id, etc.); reportable-safe.
-      requeue  — analysis FAILED; skip-for-report, but Phase 2 fires a force=True
-                 re-analysis so a game whose data Jesse has since corrected heals.
+      requeue  — analysis FAILED and something has changed since; skip-for-report, but
+                 Phase 2 fires a force=True re-analysis so a game whose data Jesse has
+                 since corrected heals.
+      hold     — analysis FAILED and nothing has changed since it last failed; identical
+                 to requeue for reporting, but spends no quota re-proving the failure.
       request  — never analyzed (NOT_FOUND, real game); needs a fresh request.
       wait     — already queued/in-progress on Woogles; blocks reportability, no request.
     """
@@ -143,17 +217,28 @@ def scan_collection(col, rate_limited):
     if not games:
         return None
 
-    state = {}
+    state, failed_info = {}, {}
     for g in games:
         gid = g["game_id"]
-        status = post(
+        st = post(
             "analysis_service.AnalysisService/GetAnalysisStatus",
             {"game_id": gid},
-        ).get("status")
+        )
+        status = st.get("status")
         if status == "COMPLETED":
             state[gid] = "done"
+            failed_state.pop(gid, None)  # healed — forget it ever failed
         elif status == "FAILED":
-            state[gid] = "requeue"
+            error = (st.get("error_message") or "").strip()
+            retry, why, info = failed_needs_request(gid, error, now, failed_state)
+            failed_info[gid] = info
+            state[gid] = "requeue" if retry else "hold"
+            if retry:
+                print(f"  {col['title']}: {g['chapter_title']} analysis FAILED, will retry "
+                      f"— {why}", file=sys.stderr)
+            else:
+                print(f"  {col['title']}: holding {g['chapter_title']} — {why}",
+                      file=sys.stderr)
         elif status == "NOT_FOUND":
             # NOT_FOUND usually just means "never requested". But it can also be a
             # phantom: a chapter whose game_id points to a game Woogles has no record
@@ -183,11 +268,15 @@ def scan_collection(col, rate_limited):
             # Any other (non-terminal) status means Woogles already has this game
             # queued or running — no new request needed, but it isn't done yet.
             state[gid] = "wait"
-    return {"uuid": col["uuid"], "title": col["title"], "games": games, "state": state}
+    return {"uuid": col["uuid"], "title": col["title"], "games": games,
+            "state": state, "failed_info": failed_info}
 
 
 def needs_quota(entry):
-    """How many games in this collection still need an analysis request (a quota slot)."""
+    """How many games in this collection still need an analysis request (a quota slot).
+
+    'hold' games are deliberately excluded: they failed and nothing has changed, so
+    they need no slot and must not make a finished collection look unfinished."""
     return sum(1 for s in entry["state"].values() if s in ("request", "requeue"))
 
 
@@ -200,6 +289,7 @@ def main():
     print(f"Collections found: {len(collections)}", file=sys.stderr)
 
     now = datetime.now(timezone.utc)
+    failed_state = load_failed_state()
     blocked_until = read_rate_limit_marker(now)
     rate_limited = blocked_until is not None
     first_request_at = None
@@ -217,7 +307,7 @@ def main():
     scanned = []
     for col in collections:
         print(f"--- scanning {col['title']} ---", file=sys.stderr)
-        entry = scan_collection(col, rate_limited)
+        entry = scan_collection(col, rate_limited, now, failed_state)
         if entry is not None:
             scanned.append(entry)
 
@@ -261,7 +351,12 @@ def main():
         if s == "SUCCESS" and first_request_at is None:
             first_request_at = request_sent_at
         if force:
-            # a FAILED requeue stays skip-for-report regardless of the response
+            # a FAILED requeue stays skip-for-report regardless of the response.
+            # Record the attempt so an unchanged game isn't re-requested next run.
+            failed_state[gid] = {**entry["failed_info"].get(gid, {}),
+                                 "last_requested": request_sent_at.isoformat(),
+                                 "chapter": g.get("chapter_title", ""),
+                                 "collection": entry["title"]}
             print(f"  {entry['title']}: re-requested (force) {g['chapter_title']} → {s}", file=sys.stderr)
         elif s in SKIP_STATUSES:
             print(f"  {entry['title']}: skipping {g['chapter_title']} — {s}", file=sys.stderr)
@@ -294,7 +389,8 @@ def main():
     results, pending = [], []
     for entry in scanned:
         state, games = entry["state"], entry["games"]
-        reportable_ids = {gid for gid, s in state.items() if s in ("done", "skip", "requeue")}
+        reportable_ids = {gid for gid, s in state.items()
+                          if s in ("done", "skip", "requeue", "hold")}
         if len(reportable_ids) < len(games):
             pending.append({"title": entry["title"], "done": len(reportable_ids), "total": len(games)})
             print(f"  {entry['title']}: {len(reportable_ids)}/{len(games)} reportable — deferred", file=sys.stderr)
@@ -331,6 +427,12 @@ def main():
         json.dump(output, f)
     with open(RATE_LIMIT_MARKER_PATH, "w") as f:
         f.write(blocked_until.isoformat() if blocked_until else "")
+    save_failed_state(failed_state)
+    held = sum(1 for e in scanned for st in e["state"].values() if st == "hold")
+    if held:
+        print(f"Held {held} permanently-failing game(s) out of the analysis queue "
+              f"(retry forced if the game changes, or after {FAILED_RETRY_DAYS} days).",
+              file=sys.stderr)
 
     print(f"Done. {len(results)} collections ready, {len(pending)} deferred.", file=sys.stderr)
 

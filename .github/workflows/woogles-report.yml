@@ -51,6 +51,9 @@ jobs:
           mkdir -p data
           git fetch origin woogles-data
           git show origin/woogles-data:data/rate-limited-until.txt > data/rate-limited-until.txt 2>/dev/null || echo "" > data/rate-limited-until.txt
+          # Which games' analyses have already failed, and on what game data — so a
+          # permanently-broken game isn't re-requested (burning quota) every run.
+          git show origin/woogles-data:data/failed-analysis.json > data/failed-analysis.json 2>/dev/null || rm -f data/failed-analysis.json
           if [ "${{ github.event.inputs.target_username }}" = "" ] && [ "${{ github.event.inputs.target_collection_uuid }}" = "" ]; then
             git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
             # Curley enrichment state: which analyzed-game set was last processed,
@@ -103,6 +106,7 @@ jobs:
       - name: Publish fresh snapshot, rate-limit, and send-status markers to woogles-data branch
         run: |
           cp data/rate-limited-until.txt /tmp/rate-limited-until.txt
+          cp data/failed-analysis.json /tmp/failed-analysis.json 2>/dev/null || true
           cp data/woogles-snapshot.json /tmp/woogles-snapshot.json
           one_off=false
           if [ "${{ github.event.inputs.target_username }}" != "" ] || [ "${{ github.event.inputs.target_collection_uuid }}" != "" ]; then
@@ -118,6 +122,11 @@ jobs:
           git checkout -B woogles-data origin/woogles-data
           cp /tmp/rate-limited-until.txt data/rate-limited-until.txt
           git add -f data/rate-limited-until.txt
+          # Quota state, like the rate-limit marker: persisted on every run, one-off included.
+          if [ -f /tmp/failed-analysis.json ]; then
+            cp /tmp/failed-analysis.json data/failed-analysis.json
+            git add -f data/failed-analysis.json
+          fi
           if [ "$one_off" = false ]; then
             cp /tmp/last-report-sent.txt data/last-report-sent.txt
             cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
