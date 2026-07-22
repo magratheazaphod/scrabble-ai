@@ -18,6 +18,11 @@ What it checks (exit 0 = all green):
    bad runs actually went wrong, and require the guards to catch each one:
    - drop the game #91 opening exchange     -> checker must FAIL (turn counts)
    - shorten a mid-game rack (AEINNNR bug)  -> checker must WARN
+   - drop Jesse's racks entirely (#91/#92)  -> checker must ERROR and
+     author_gcg must refuse to write a file
+   Plus a leftover-rack equivalence check: a turn recorded as "kept" leftover
+   tiles must author the identical GCG as the same turn recorded as a full
+   "rack" (both the kept="" bingo case and a non-empty leftover).
    - the wrong VEE endgame reading (#91)    -> solver must REJECT it outright
      (it needs a 3rd V) and name the overdrawn V as the misread pointer
    - an invalid word at exact score         -> solver must reject via lexicon
@@ -36,6 +41,7 @@ REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..'))
 sys.path.insert(0, HERE)
 from verify_gcg import parse_events, parse_pos
 from otb_solver import VALS
+from check_transcription import entry_kind
 
 GROUND_TRUTH = [
     ('Practice Games/James Curley/91_jul12_26.gcg', 91),
@@ -182,6 +188,83 @@ def main():
     if 'WARN' not in r.stdout or 'AEINNR' not in r.stdout:
         failures.append('injection: short mid-game rack did not WARN')
     print('injection short-rack:', 'warned' if 'WARN' in r.stdout else 'MISSED')
+
+    # A MISSING Jesse rack must be an ERROR in the checker and must stop
+    # author_gcg outright — the #91/#92 defect (played-tiles-only racks →
+    # no BestBot stats → un-analyzable game, unfixable after upload).
+    t = json.loads(json.dumps(t91))
+    dropped = 0
+    for row in t['rows']:
+        j = row.get('jesse')
+        if j and j.get('rack') and dropped < 2:
+            del j['rack']
+            dropped += 1
+    json.dump(t, open(path('inj_norack.json'), 'w'))
+    r = run('check_transcription.py', path('inj_norack.json'))
+    ok_check = r.returncode != 0 and 'no rack transcribed' in r.stdout
+    if not ok_check:
+        failures.append('injection: missing Jesse rack did not ERROR in the checker')
+    r = run('author_gcg.py', path('inj_norack.json'), path('sol91.json'),
+            '--out', path('inj_norack.gcg'))
+    ok_author = r.returncode != 0 and not os.path.exists(path('inj_norack.gcg'))
+    if not ok_author:
+        failures.append('injection: author_gcg wrote a GCG despite missing Jesse racks')
+    print('injection missing-rack:',
+          'checker ERROR + author refused' if ok_check and ok_author else 'MISSED')
+
+    # Leftover ("kept") racks must rebuild to the SAME full racks as the
+    # explicit form — Jesse writes either one depending on how rushed he was.
+    t = json.loads(json.dumps(t91))
+    converted = 0
+    for row in t['rows']:
+        j = row.get('jesse')
+        if not j or not j.get('rack') or entry_kind(j.get('entry')) != 'word':
+            continue
+        played = Counter(c.upper() for c in j['entry'] if not c.islower())
+        left = Counter(j['rack'].upper()) - played
+        if sum((played - Counter(j['rack'].upper())).values()):
+            continue                      # play-through letters: skip, not a clean case
+        j['kept'] = ''.join(sorted(left.elements()))
+        del j['rack']
+        converted += 1
+    json.dump(t, open(path('inj_kept.json'), 'w'))
+    r = run('check_transcription.py', path('inj_kept.json'), '--spec', path('s91_kept.json'))
+    ok = r.returncode == 0
+    if ok:
+        r = run('author_gcg.py', path('inj_kept.json'), path('sol91.json'),
+                '--out', path('inj_kept.gcg'))
+        ok = r.returncode == 0 and norm_events(path('out91.gcg')) == norm_events(path('inj_kept.gcg'))
+    if not ok:
+        failures.append(f'leftover racks ({converted} rows) did not rebuild to the same '
+                        f'GCG as the full-rack form:\n{r.stdout}{r.stderr}')
+    print('leftover-rack round-trip:', f'ok ({converted} rows)' if ok else 'FAILED')
+
+    # The round-trip above only reaches the degenerate kept="" case, because
+    # neither ground-truth game carries real racks (that IS the #91/#92 defect).
+    # So pin the non-empty case explicitly: QAT off a full AAINQRT rack is the
+    # same turn as QAT keeping AINR, and must author identically.
+    def author_with(jesse_cell_patch, tag):
+        t = json.loads(json.dumps(t91))
+        for row in t['rows']:
+            j = row.get('jesse')
+            if j and j.get('entry') == 'QAT':
+                j.pop('rack', None)
+                j.pop('kept', None)
+                j.update(jesse_cell_patch)
+        json.dump(t, open(path(f'kept_{tag}.json'), 'w'))
+        r = run('author_gcg.py', path(f'kept_{tag}.json'), path('sol91.json'),
+                '--out', path(f'kept_{tag}.gcg'))
+        return r, path(f'kept_{tag}.gcg')
+
+    r_full, f_full = author_with({'rack': 'AAINQRT'}, 'full')
+    r_left, f_left = author_with({'kept': 'AINR'}, 'left')
+    ok = (r_full.returncode == 0 and r_left.returncode == 0
+          and norm_events(f_full) == norm_events(f_left)
+          and any('AAINQRT' in l for l in norm_events(f_left)))
+    if not ok:
+        failures.append('non-empty leftover rack did not rebuild to the full rack '
+                        f'AAINQRT:\n{r_left.stdout}{r_left.stderr}')
+    print('leftover-rack (non-empty):', 'ok' if ok else 'FAILED')
 
     spec = json.load(open(path('s91.json')))
     words = [m['word'] for m in spec['moves']]

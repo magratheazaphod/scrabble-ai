@@ -40,11 +40,15 @@ def main():
     ap.add_argument('--game-number', type=int)
     ap.add_argument('--out', required=True)
     ap.add_argument('--finalist', type=int, default=0)
+    ap.add_argument('--allow-partial-racks', action='store_true',
+                    help="write the file even when some of Jesse's racks were never "
+                         'transcribed — ONLY for racks genuinely unreadable on the photo; '
+                         'the resulting game gets no BestBot stats for Jesse')
     args = ap.parse_args()
 
     t = json.load(open(args.transcript))
     sol = json.load(open(args.solver))
-    errors, warnings, info, seq = check(t)
+    errors, warnings, info, seq = check(t, allow_partial_racks=args.allow_partial_racks)
     if errors:
         sys.exit("transcript does not PASS check_transcription.py — fix it first:\n  "
                  + "\n  ".join(errors))
@@ -108,14 +112,50 @@ def main():
     cum = {'jesse': 0, 'opponent': 0}
     tiles_on_board = 0
     notes = []
+    missing_jesse_racks = []  # (event_no, word) for Jesse moves with no transcribed rack
     for i, (p, kind, e, m) in enumerate(events):
         if kind == 'word':
             placed_tiles = Counter('?' if pl['blank'] else pl['letter'].upper()
                                    for pl in m['placed'])
-            if p == 'jesse' and e.get('rack'):
-                rack = ''.join(sorted(e['rack'].upper()))
+            written = e.get('rack') if p == 'jesse' else None
+            kept = e.get('kept') if p == 'jesse' else None
+            # Jesse writes the rack column two ways: the FULL 7-tile rack, or —
+            # when he's in a hurry — only the LEFTOVER tiles he kept after the
+            # play. Both are complete information: m['placed'] is exactly the
+            # tiles this play took from the rack (play-through tiles are not in
+            # it), so full rack = kept + placed. This is why the resolution
+            # lives here and not in a separate rack pass: nothing else knows
+            # which tiles came off the rack.
+            #
+            # Distinguishing the two without asking: a short cell that CONTAINS
+            # the played tiles is a misread full rack (AEINNR for AEINNNR,
+            # game #91), not a leftover — a leftover is disjoint from the play.
+            if written and not kept and len(written) < 7:
+                if not (Counter(written.upper()) & placed_tiles):
+                    kept, written = written, None
+            if p == 'jesse' and kept is not None:
+                full = Counter(kept.upper()) + placed_tiles
+                if sum(full.values()) > 7:
+                    sys.exit(f"event {i+1} ({m['word']}): leftover {kept} + played "
+                             f"{''.join(sorted(placed_tiles.elements()))} is "
+                             f"{sum(full.values())} tiles, over the 7-tile limit — "
+                             "re-read the rack cell, or it may be a full rack "
+                             "(use \"rack\", not \"kept\")")
+                rack = ''.join(sorted(full.elements()))
+                print(f"leftover rule: event {i+1} ({nick[p]} {m['word']}) kept "
+                      f"{kept} -> full rack {rack}")
+            elif p == 'jesse' and written:
+                rack = ''.join(sorted(written.upper()))
             else:
+                # Played-tiles fallback. CORRECT for the opponent (no scoresheet
+                # of theirs exists), NEVER acceptable for Jesse — his full rack
+                # is always on the sheet's far-left column, and a partial rack
+                # leaves the game not-fully-annotated, so BestBot yields no
+                # stats for him. Games #91/#92 shipped this way; see
+                # known-issues.md. Tracked and reported at the end of the run.
                 rack = ''.join(sorted(placed_tiles.elements()))
+                if p == 'jesse':
+                    missing_jesse_racks.append((i + 1, m['word']))
             # partial-rack endgame rule: derive the true full rack near the endgame
             if 100 - tiles_on_board - len(rack) <= 7 and i != last_word_idx:
                 full = placed_tiles + future_racks[i] + \
@@ -141,7 +181,12 @@ def main():
             tiles_on_board += len(m['placed'])
         elif kind == 'exchange':
             spec = e['entry'][1:].upper()
-            rack = ''.join(sorted((e.get('rack') or spec).upper()))
+            # Same two conventions as a word row; on an exchange the tiles that
+            # left the rack are the exchanged ones, so full rack = kept + spec.
+            if e.get('kept') is not None:      # "" is valid: kept nothing
+                rack = ''.join(sorted((e['kept'] + spec).upper()))
+            else:
+                rack = ''.join(sorted((e.get('rack') or spec).upper()))
             lines.append(f">{nick[p]}: {rack} -{spec} +0 {cum[p]}")
         elif kind == 'pass':
             nxt = next((ev for ev in events[i+1:] if ev[0] == p and ev[1] == 'word'), None)
@@ -174,6 +219,23 @@ def main():
             r = lo_tiles.upper() if p == lo_player else ''
             cum[p] -= mt
             lines.append(f">{nick[p]}: {r} (time) -{mt} {cum[p]}")
+
+    # Hard gate: Jesse's racks are ALWAYS recoverable from the scoresheet's
+    # far-left column, so a missing one is an incomplete transcription, not a
+    # limitation of the source material. Writing the file anyway is how games
+    # #91/#92 shipped un-analyzable (known-issues.md).
+    if missing_jesse_racks:
+        detail = ', '.join(f"event {n} ({w})" for n, w in missing_jesse_racks)
+        msg = (f"{len(missing_jesse_racks)} of Jesse's moves have no transcribed rack, so "
+               f"they would carry played-tiles-only racks: {detail}.\n"
+               "Go back to the scoresheet's far-left rack column and transcribe them "
+               "(7 letters per row, '?' = blank) — a partial rack means the game is not "
+               "fully annotated and BestBot will produce NO stats for Jesse.\n"
+               "Only if a rack is genuinely unreadable on the photo: rerun with "
+               "--allow-partial-racks and tell Jesse which turns are affected.")
+        if not args.allow_partial_racks:
+            sys.exit("REFUSING to write an under-racked GCG — " + msg)
+        print("WARNING (--allow-partial-racks): " + msg)
 
     with open(args.out, 'w') as f:
         f.write('\n'.join(lines) + '\n')

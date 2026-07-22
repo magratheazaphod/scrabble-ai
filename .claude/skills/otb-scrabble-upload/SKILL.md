@@ -37,6 +37,19 @@ regardless. When invoking via the `Agent` tool, pass `model: 'opus'`
 explicitly. (Today's mechanical guards catch that run's specific failure
 classes, but revisiting the tier is Jesse's call, not yours.)
 
+**Core principle: racks are part of the deliverable, not a nicety.** A game
+whose racks are just the tiles played is not fully annotated: BestBot returns
+NO per-player stats for it, so it never reaches the Curley tracker or a report,
+and the upload is irreversible — the only remedy is reconstructing and
+uploading the whole game again. Jesse's full rack for every turn is ALWAYS on
+the scoresheet's far-left column, so a missing one is an incomplete
+transcription, never a limit of the source material. Transcribe all of them;
+`check_transcription.py` errors on any Jesse turn with no rack and
+`author_gcg.py` refuses to write the file. The opponent's mid-game racks are
+the one genuine exception (no scoresheet of theirs exists) — near the endgame
+even those are derived (Step 5). Games #91 and #92 shipped without racks and
+are permanently un-analyzable; that is the failure this guards against.
+
 **Core principle: never trust your eyes for placements — trust arithmetic.**
 Tiles sit proud of the board and parallax shifts them ±1 column; handwriting
 is ambiguous. The scores + cumulatives form an exact constraint system: with
@@ -80,9 +93,26 @@ disambiguation. Target ≲20 image reads per game.
 The JSON schema is documented in `check_transcription.py`'s docstring. Sheet
 layout (rotate so handwriting is upright):
 
-- Far-left column: **Jesse's racks**, one per row (7 letters, `?` = blank).
-  Racks are a full 7 until the bag empties — if you read fewer, look again
-  (confirmed failure mode: `AEINNNR` misread as `AEINNR`).
+- Far-left column: **Jesse's racks**, one per row. It comes in **two forms and
+  you must record which you see**: the full 7-tile rack (`"rack"`, `?` =
+  blank), or — when he was in a hurry — only the **leftover tiles he kept
+  after the play** (`"kept"`). Both are complete: `author_gcg.py` rebuilds the
+  full rack as kept + the tiles the play took off the rack, so **never convert
+  by hand**. Tell them apart by length and overlap: a 7-letter cell is a full
+  rack; a shorter cell sharing no letters with that row's play is a leftover;
+  a shorter cell that *does* overlap the play is a misread full rack (game
+  #91's `AEINNR`) — go re-read it. A blank cell on a bingo row is a leftover
+  of nothing, which is correct and needs no rack.
+  **Transcribe every one — this column is not optional** (see the rack
+  principle above; the checker errors on a missing rack and `author_gcg.py`
+  refuses to write the file). Racks are a full 7 until the bag empties — if you
+  read fewer, look again (confirmed failure mode: `AEINNNR` misread as
+  `AEINNR`). Read them in the same top-to-bottom pass as the play columns:
+  they are one more column on a sheet you are already reading row by row, and
+  the checker cross-checks each rack against that row's play, so reading them
+  together is what makes both verifiable. If a cell is genuinely illegible
+  after zooming, say so to Jesse and use `--allow-partial-racks` knowingly —
+  do not let it pass silently.
 - Middle + right play columns: one Jesse, one opponent — identify by racks
   containing Jesse's words, and the Me/Them totals boxes. Each row = one
   turn pair; entries are `WORD score/cum`.
@@ -203,6 +233,7 @@ and #92 files for tone); table-error `#note`s are added automatically.
 3. Upload:
    ```bash
    python3 scripts/woogles_upload.py <file>.gcg --lexicon CSW24 \
+       --otb --game-number <N> --photos IMG_A.jpeg,IMG_B.jpeg \
        --collection "James Curley practice games" \
        --chapter "Game #<N> - YYYY-MM-DD - <first player> vs <second player>" \
        --comment "<reconstruction notes>"
@@ -210,6 +241,17 @@ and #92 files for tone); table-error `#note`s are added automatically.
    It preflights, re-runs `verify_gcg.py` as a hard gate (import is
    irreversible), imports (FIVE_POINT default), verifies the game finished
    server-side, adds it to the collection, and posts the event-0 comment.
+   **`--otb` is required here** — it records the run in
+   `data/otb-upload-log.jsonl` (game id, URL, source GCG + sha256, source
+   photos, per-player rack completeness). The log covers ONLY games this
+   pipeline reconstructed, because those are the ones whose fidelity is in
+   question; normally-uploaded games are trusted and deliberately absent.
+   The record is written at import time, so a superseded or failed-
+   verification upload still lands in it — three copies of game #91 reached
+   Woogles and only two were written down anywhere. To review past runs or
+   find every version of a game, read that file. It is **local-only by
+   design** (`data/` is gitignored): never force-add it to a branch the way
+   the `data/` report markers are.
    Chapter titles for the Curley collection follow the tracker convention —
    `Game #<N> - <ISO date> - <first player> vs <second player>`, Jesse always
    "JD" and James always "James Curley", **whoever moved first named first**

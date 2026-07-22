@@ -47,6 +47,34 @@ placements support (chain-true finals JD 499 / James 309). Consequence:
 `verify_gcg.py` will keep flagging this one file; that is expected and not a
 reason to "fix" it.
 
+## OPEN — Games #91/#92 have played-tiles-only racks (found 2026-07-22)
+
+Both live games carry each player's PLAYED TILES as the rack on every mid-game
+turn, not the true 7-tile rack — so neither side is fully annotated and BestBot
+produces no per-player stats (this is why Curley tracker rows 92/93 are blank;
+see the tracker's terminal-rows list). Only the endgame racks are true, via
+`author_gcg.py`'s endgame derivation.
+
+Cause: `author_gcg.py` uses Jesse's transcribed rack only `if e.get('rack')`
+and otherwise falls back silently to `placed_tiles`. The fallback is correct
+for James (no opponent scoresheet exists) but wrong for Jesse, whose racks were
+sitting on the photo — and nothing anywhere failed when they were skipped.
+
+Both #91 and #92 predate the scripts-first overhaul, when Step 2 did not yet
+call for the rack column. (Game #90 also has full racks, but it was a Fable
+one-shot that worked this out unaided, not a run of this pipeline — it is not
+evidence about the pipeline either way and is not in the run log.) The gap is
+now closed at both ends: `check_transcription.py` ERRORs on a Jesse turn with
+neither `rack` nor `kept`, and `author_gcg.py` refuses to write the file
+(`--allow-partial-racks` is the only, loud, escape hatch).
+
+A full-account census of all 244 annotated games (2026-07-22) confirms **no
+uploaded version of either game has complete racks**; the three #91 copies and
+one #92 copy are all in `data/otb-upload-log.jsonl`. Fixing requires
+re-transcribing the rack column from IMG_1518/1519 and IMG_1520/1521 and
+re-uploading as new games — imports are irreversible, so the current copies
+stay up superseded. Jesse's call.
+
 ## NOTE — Game #91 rack correction (2026-07-15)
 
 Jesse's rack for INANER was **AEINNNR** (7 tiles), not the transcribed
