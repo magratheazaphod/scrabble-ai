@@ -22,17 +22,34 @@ jobs:
 
       - run: pip install -r requirements.txt
 
+      # This job spends the same BestBot analysis quota the report job does, so it
+      # has to read the same quota state — otherwise it re-requests known-failing
+      # games hourly and ignores a rate-limit window the report job already hit.
+      - name: Fetch quota state from woogles-data branch
+        run: |
+          mkdir -p data
+          git fetch origin woogles-data
+          git show origin/woogles-data:data/rate-limited-until.txt > data/rate-limited-until.txt 2>/dev/null || echo "" > data/rate-limited-until.txt
+          git show origin/woogles-data:data/failed-analysis.json > data/failed-analysis.json 2>/dev/null || rm -f data/failed-analysis.json
+
       - run: python scripts/fetch_woogles_snapshot.py
         env:
           WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
 
-      - name: Publish snapshot to woogles-data branch
+      - name: Publish snapshot and quota state to woogles-data branch
         run: |
           cp data/woogles-snapshot.json /tmp/woogles-snapshot.json
+          cp data/rate-limited-until.txt /tmp/rate-limited-until.txt
+          cp data/failed-analysis.json /tmp/failed-analysis.json 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin woogles-data
           git checkout -B woogles-data origin/woogles-data
           cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
-          git add -f data/woogles-snapshot.json
+          cp /tmp/rate-limited-until.txt data/rate-limited-until.txt
+          git add -f data/woogles-snapshot.json data/rate-limited-until.txt
+          if [ -f /tmp/failed-analysis.json ]; then
+            cp /tmp/failed-analysis.json data/failed-analysis.json
+            git add -f data/failed-analysis.json
+          fi
           git diff --cached --quiet && echo "No snapshot changes — nothing to commit." || (git commit -m "Update Woogles snapshot ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
