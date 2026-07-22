@@ -18,6 +18,8 @@ Transcript format (JSON) — fill this from the scoresheet photos:
      "opponent": {"entry": "BI", "score": 8, "cum": 8}},
     {"jesse":    {"rack": "AAINQRT", "entry": "QAT", "score": 24, "cum": 24},
      "opponent": {"entry": "VEGA", "score": 26, "cum": 34}},
+    {"jesse":    {"kept": "AINR", "entry": "QAT", "score": 24, "cum": 24},
+     "opponent": {"entry": "VEGA", "score": 26, "cum": 34}},   // same turn, leftover form
     ...
   ],
   "boxes": {                      // the totals boxes at the sheet bottom
@@ -27,6 +29,20 @@ Transcript format (JSON) — fill this from the scoresheet photos:
   "leftover": {"player": "jesse", "tiles": "D"},   // unplayed end-of-game rack
   "blanks": ["S", "Y"]            // blank designations from the tracking grid
 }
+
+Jesse's rack column (far left of the sheet) comes in TWO forms, and BOTH are
+complete information — record whichever is on the sheet, never convert by hand:
+  "rack" — the full 7-tile rack he held ('?' = blank)
+  "kept" — only the LEFTOVER tiles he kept after the play, which is what he
+           writes when he is in a hurry. author_gcg.py rebuilds the full rack
+           as kept + the tiles the play actually took off the rack. "" is a
+           valid value (a bingo keeps nothing).
+A SHORT cell is auto-read as "kept" when it shares no letters with that row's
+play; a short cell that DOES overlap the play is a misread full rack (game
+#91's AEINNR), not a leftover, and is flagged. One of the two is REQUIRED on
+every Jesse turn — without it the GCG carries played-tiles-only racks, the game
+is not fully annotated, and BestBot returns no stats for him (games #91/#92).
+Use --allow-partial-racks only for a cell that is genuinely illegible.
 
 Entry values per player per row (omit the player key or use null for no turn):
   "WORD"    played word as spelled on the board; lowercase letter = a blank
@@ -94,7 +110,10 @@ def entry_kind(entry):
     return 'invalid'
 
 
-def check(t):
+def check(t, allow_partial_racks=False):
+    """allow_partial_racks downgrades the missing-rack ERROR to a warning — only
+    for racks genuinely illegible on the photo; the game then gets no BestBot
+    stats for Jesse."""
     errors, warnings, info = [], [], []
     rows = t['rows']
     players = ['jesse', 'opponent']
@@ -168,6 +187,31 @@ def check(t):
     for i, e in cols['jesse']:
         kind = entry_kind(e.get('entry'))
         rack = e.get('rack')
+        # Jesse records the rack column either as the full 7-tile rack or as
+        # just the LEFTOVER tiles kept after the play ("kept", or a short cell
+        # disjoint from the played letters). Both are complete — author_gcg.py
+        # rebuilds the full rack as kept + placed. Only a cell that is BOTH
+        # short and overlapping the play is a misread (game #91's AEINNR).
+        kept = e.get('kept')
+        if kept is None and rack and len(rack) < 7 and kind == 'word':
+            played = Counter(c.upper() for c in e['entry'] if not c.islower())
+            if not (Counter(rack.upper()) & played):
+                kept, rack = rack, None
+        # NB: `kept` of "" is meaningful — a bingo keeps nothing — so test for
+        # presence, never truthiness.
+        if kind in ('word', 'exchange') and not rack and kept is None:
+            # A MISSING rack is the more serious version of a short one: it
+            # means that row of the far-left column was never read at all.
+            # Jesse's racks are always on the sheet, so this is an incomplete
+            # transcription — it is what left games #91/#92 with no BestBot
+            # stats (known-issues.md). Downgraded only under the explicit
+            # --allow-partial-racks escape hatch, for an illegible cell.
+            (warnings if allow_partial_racks else errors).append(
+                f"row {i+1} jesse: no rack transcribed — read it off the "
+                "scoresheet's far-left column (7 letters, '?' = blank), or record "
+                "the leftover tiles as \"kept\". Without one of them the GCG falls "
+                "back to played-tiles-only racks and the game gets no BestBot "
+                "stats for Jesse.")
         if (kind in ('word', 'exchange') and rack and len(rack) != 7
                 and i not in jesse_word_rows[-2:]):
             warnings.append(f"row {i+1} jesse: rack {rack} has {len(rack)} tiles mid-game — "
@@ -307,8 +351,11 @@ def main():
         i = args.index('--spec')
         spec_out = args[i + 1]
         del args[i:i + 2]
+    allow_partial = '--allow-partial-racks' in args
+    if allow_partial:
+        args.remove('--allow-partial-racks')
     t = json.load(open(args[0]))
-    errors, warnings, info, seq = check(t)
+    errors, warnings, info, seq = check(t, allow_partial_racks=allow_partial)
     for e in errors:
         print(f"ERROR: {e}")
     for w in warnings:

@@ -25,13 +25,23 @@ Usage:
 - Exit 0 only when the game is imported AND verified finished server-side.
 
 Auth: WOOGLES_API_KEY in .env at the repo root (same as tournament-analysis).
+
+Imports made by the /otb-scrabble-upload pipeline (--otb) are appended to
+data/otb-upload-log.jsonl — a record of past pipeline RUNS, since a
+photo-reconstructed game is the only kind whose fidelity is in question.
+Normal uploads (Quackle exports, archive backfills) are trusted and NOT logged.
+The record is written before any step that can fail, so superseded and stuck
+uploads appear too — an ImportGCG is irreversible, so a game that exists must
+be findable later even if the run died afterwards. See log_entry().
 """
-import sys, os, json, argparse, subprocess
+import sys, os, json, argparse, subprocess, atexit, hashlib, re
+from datetime import datetime, timezone
 
 import requests
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = 'https://woogles.io/api'
+UPLOAD_LOG = os.path.join(REPO, 'data', 'otb-upload-log.jsonl')
 
 
 def load_env():
@@ -42,6 +52,33 @@ def load_env():
             if line and not line.startswith('#') and '=' in line:
                 k, v = line.split('=', 1)
                 os.environ.setdefault(k, v.strip().strip('"').strip("'"))
+
+
+def rack_stats(gcg):
+    """Per-player (turns, turns whose declared rack is a full 7 tiles).
+
+    Racks written as played-tiles-only are the historical defect behind games
+    #91/#92 (blank BestBot stats): the log records this so a partial-rack
+    upload is visible without re-fetching the GCG.
+    """
+    stats = {}
+    for line in gcg.splitlines():
+        m = re.match(r'^>(\S+):\s+(\S+)\s', line)
+        if not m or m.group(2).startswith('('):
+            continue
+        player, rack = m.group(1).rstrip(':'), m.group(2)
+        t, f = stats.get(player, (0, 0))
+        stats[player] = (t + 1, f + (len(rack) == 7))
+    return {p: {'turns': t, 'full_racks': f} for p, (t, f) in stats.items()}
+
+
+def log_entry(entry):
+    """Append one record to the upload log. Registered via atexit so it fires
+    on sys.exit() paths too — the log must never be less complete than reality."""
+    entry['status'] = entry.get('status', 'incomplete')
+    os.makedirs(os.path.dirname(UPLOAD_LOG), exist_ok=True)
+    with open(UPLOAD_LOG, 'a', encoding='utf-8') as fh:
+        fh.write(json.dumps(entry, sort_keys=True) + '\n')
 
 
 def rpc(hdrs, service, body):
@@ -62,6 +99,13 @@ def main():
     ap.add_argument('--comment')
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--cleanup', action='store_true')
+    ap.add_argument('--otb', action='store_true',
+                    help='this upload came from the /otb-scrabble-upload photo pipeline — '
+                         'record it in data/otb-upload-log.jsonl. Only reconstructed games '
+                         'are logged; normally-uploaded games are trusted and left out.')
+    ap.add_argument('--game-number', type=int,
+                    help='tracker game # (logged with --otb)')
+    ap.add_argument('--photos', help='comma-separated source photo filenames (logged with --otb)')
     ap.add_argument('--verify-warn-only', action='store_true',
                     help='downgrade a verify_gcg replay failure to a warning — ONLY for '
                          'historical files with known, documented defects (e.g. game #90)')
@@ -147,6 +191,33 @@ def main():
     game_id = resp['game_id']
     print(f'imported: https://woogles.io/anno/{game_id}')
 
+    # 3b. log the import immediately — it is irreversible, so a pipeline run
+    # gets recorded before verification, collection, or comment can fail and
+    # abort it. Superseded reconstructions are exactly what this log is for:
+    # three copies of game #91 reached Woogles and only two were written down
+    # anywhere.
+    entry = None
+    if args.otb:
+        entry = {
+            'uploaded_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+            'game_number': args.game_number,
+            'game_id': game_id,
+            'url': f'https://woogles.io/anno/{game_id}',
+            'gcg_file': os.path.relpath(os.path.abspath(args.gcg), REPO),
+            'gcg_sha256': hashlib.sha256(gcg_contents.encode('utf-8')).hexdigest(),
+            'photos': [p.strip() for p in args.photos.split(',')] if args.photos else None,
+            'lexicon': args.lexicon,
+            'challenge_rule': args.challenge,
+            'events': n_events,
+            'collection': args.collection,
+            'chapter': args.chapter,
+            'players': [l.split(None, 2)[1] for l in gcg_contents.splitlines()
+                        if l.startswith('#player')],
+            'rack_stats': rack_stats(gcg_contents),
+            'status': 'imported',
+        }
+        atexit.register(log_entry, entry)
+
     # 4. verify finished server-side (GetGCG only returns for finished games)
     try:
         remote = rpc(hdrs, 'game_service.GameMetadataService/GetGCG', {'game_id': game_id})
@@ -186,6 +257,8 @@ def main():
             {'game_id': game_id, 'event_number': 0, 'comment': args.comment})
         print('posted game comment (event 0)')
 
+    if entry is not None:
+        entry['status'] = 'complete'
     print(f'DONE: {game_id}')
 
 
