@@ -68,24 +68,61 @@ def save_failed_state(state):
         json.dump(state, f, indent=1, sort_keys=True)
 
 
-def history_fingerprint(game_id):
+def fingerprint_events(history):
     """Hash of a game's events — changes exactly when the game is re-uploaded or
-    edited. None if the history can't be read (then we never hold the game back)."""
+    edited. Takes an already-fetched history so callers that have one don't pay
+    for a second read."""
     import hashlib
 
-    try:
-        history = post(
-            "game_service.GameMetadataService/GetGameHistory", {"game_id": game_id}
-        ).get("history") or {}
-    except requests.exceptions.HTTPError:
-        return None
-    events = history.get("events") or []
+    events = (history or {}).get("events") or []
     material = json.dumps(
         [[e.get("type"), e.get("rack"), e.get("position"), e.get("played_tiles"),
           e.get("score"), e.get("cumulative")] for e in events],
         sort_keys=True,
     )
     return hashlib.sha1(material.encode()).hexdigest()
+
+
+def history_fingerprint(game_id):
+    """fingerprint_events for a game we don't already hold the history of. None if
+    the history can't be read (then we never hold the game back)."""
+    try:
+        history = post(
+            "game_service.GameMetadataService/GetGameHistory", {"game_id": game_id}
+        ).get("history") or {}
+    except requests.exceptions.HTTPError:
+        return None
+    return fingerprint_events(history)
+
+
+# Editing a game does NOT invalidate its analysis, and there is no way for us to
+# force one: RequestAnalysis honours force=true only for FAILED jobs or legacy v0
+# results — any current (v2) completed analysis comes back ALREADY_REQUESTED,
+# "Analysis is already up to date" (liwords pkg/analysis/service.go:547). Only an
+# admin RequeueAnalysis, or a fresh upload under a new game_id, actually re-runs it.
+#
+# So drift is reported, not repaired. Phase 3 already fetches every analyzed
+# game's history, so comparing it against the fingerprint recorded when the
+# analysis was last seen costs nothing — and it turns "these stats are silently
+# stale" into a visible line in the log and a field in the snapshot.
+ANALYZED_STATE_PATH = "data/analyzed-fingerprints.json"
+
+
+def load_analyzed_state():
+    if not os.path.exists(ANALYZED_STATE_PATH):
+        return {}
+    try:
+        with open(ANALYZED_STATE_PATH) as f:
+            state = json.load(f)
+        return state if isinstance(state, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def save_analyzed_state(state):
+    os.makedirs(os.path.dirname(ANALYZED_STATE_PATH), exist_ok=True)
+    with open(ANALYZED_STATE_PATH, "w") as f:
+        json.dump(state, f, indent=1, sort_keys=True)
 
 
 def failed_needs_request(game_id, error, now, failed_state):
@@ -290,6 +327,7 @@ def main():
 
     now = datetime.now(timezone.utc)
     failed_state = load_failed_state()
+    analyzed_state = load_analyzed_state()
     blocked_until = read_rate_limit_marker(now)
     rate_limited = blocked_until is not None
     first_request_at = None
@@ -386,7 +424,7 @@ def main():
 
     # --- Phase 3: assemble the snapshot. A collection is reportable once every game
     # is done/skip/requeue — nothing left to request and nothing waiting in the queue.
-    results, pending = [], []
+    results, pending, stale = [], [], []
     for entry in scanned:
         state, games = entry["state"], entry["games"]
         reportable_ids = {gid for gid, s in state.items()
@@ -408,12 +446,28 @@ def main():
                 "game_service.GameMetadataService/GetGameHistory",
                 {"game_id": g["game_id"]},
             )
-            game_entries.append({"meta": g, "analysis": analysis, "history": history})
+            # Free drift check: the history is already in hand.
+            gid = g["game_id"]
+            fingerprint = fingerprint_events(history.get("history") or {})
+            known = analyzed_state.get(gid, {}).get("history")
+            edited = known is not None and known != fingerprint
+            if edited:
+                stale.append({"game_id": gid, "collection": entry["title"],
+                              "chapter": g.get("chapter_title", "")})
+                print(f"  {entry['title']}: {g.get('chapter_title')} was EDITED after its "
+                      f"analysis ran — its stats are stale. Woogles cannot re-analyze a "
+                      f"completed game; re-upload it to refresh.", file=sys.stderr)
+            else:
+                # Only advance the baseline while the two agree, so an edit stays
+                # reported every run until the game is actually re-uploaded.
+                analyzed_state[gid] = {"history": fingerprint}
+            game_entries.append({"meta": g, "analysis": analysis, "history": history,
+                                 "analysis_stale": edited})
 
         results.append({"uuid": entry["uuid"], "title": entry["title"], "games": game_entries})
         print(f"  {entry['title']}: snapshot ready — {len(game_entries)} games", file=sys.stderr)
 
-    output = {"collections": results, "pending": pending}
+    output = {"collections": results, "pending": pending, "stale_analyses": stale}
     if one_off:
         subject = resolve_subject_identity(results)
         if subject:
@@ -428,6 +482,12 @@ def main():
     with open(RATE_LIMIT_MARKER_PATH, "w") as f:
         f.write(blocked_until.isoformat() if blocked_until else "")
     save_failed_state(failed_state)
+    save_analyzed_state(analyzed_state)
+    if stale:
+        print(f"{len(stale)} game(s) edited since their analysis ran — stats stale until "
+              f"re-uploaded:", file=sys.stderr)
+        for e in stale:
+            print(f"  {e['collection']}: {e['chapter']} ({e['game_id']})", file=sys.stderr)
     held = sum(1 for e in scanned for st in e["state"].values() if st == "hold")
     if held:
         print(f"Held {held} permanently-failing game(s) out of the analysis queue "

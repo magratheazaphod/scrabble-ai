@@ -31,6 +31,7 @@ jobs:
           git fetch origin woogles-data
           git show origin/woogles-data:data/rate-limited-until.txt > data/rate-limited-until.txt 2>/dev/null || echo "" > data/rate-limited-until.txt
           git show origin/woogles-data:data/failed-analysis.json > data/failed-analysis.json 2>/dev/null || rm -f data/failed-analysis.json
+          git show origin/woogles-data:data/analyzed-fingerprints.json > data/analyzed-fingerprints.json 2>/dev/null || rm -f data/analyzed-fingerprints.json
 
       - run: python scripts/fetch_woogles_snapshot.py
         env:
@@ -41,6 +42,7 @@ jobs:
           cp data/woogles-snapshot.json /tmp/woogles-snapshot.json
           cp data/rate-limited-until.txt /tmp/rate-limited-until.txt
           cp data/failed-analysis.json /tmp/failed-analysis.json 2>/dev/null || true
+          cp data/analyzed-fingerprints.json /tmp/analyzed-fingerprints.json 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin woogles-data
@@ -48,8 +50,7 @@ jobs:
           cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
           cp /tmp/rate-limited-until.txt data/rate-limited-until.txt
           git add -f data/woogles-snapshot.json data/rate-limited-until.txt
-          if [ -f /tmp/failed-analysis.json ]; then
-            cp /tmp/failed-analysis.json data/failed-analysis.json
-            git add -f data/failed-analysis.json
-          fi
+          for f in failed-analysis.json analyzed-fingerprints.json; do
+            if [ -f "/tmp/$f" ]; then cp "/tmp/$f" "data/$f"; git add -f "data/$f"; fi
+          done
           git diff --cached --quiet && echo "No snapshot changes — nothing to commit." || (git commit -m "Update Woogles snapshot ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)

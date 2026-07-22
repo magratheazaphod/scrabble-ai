@@ -84,6 +84,28 @@ Caveats when the play is *not* a full 7-tile bingo: the rack still must contain 
 
 After correcting an already-uploaded game in place, its cached `FAILED` analysis result stays stale until you re-run analysis with `RequestAnalysis {..., "force": true}` (plain `force:false` returns the cached failure without re-running).
 
+### A game that analyzed SUCCESSFULLY can never be re-analyzed — fix it by re-uploading
+
+**This is the single most important thing to know before editing an already-uploaded game.** Confirmed 2026-07-22 against `pkg/analysis/service.go:547`:
+
+```go
+} else if req.Msg.Force && existingJob.Status == "completed" {
+    // Force re-analysis only allowed for legacy (v0) results
+    if partial.AnalysisVersion >= 2 {
+        return ALREADY_REQUESTED, "Analysis is already up to date"
+    }
+```
+
+`force: true` is honoured in exactly two cases: the job **failed**, or the stored result is a **legacy v0** analysis. For any current (`analysis_version: 2`) completed result the call returns `ALREADY_REQUESTED` / `"Analysis is already up to date"` and does nothing — **even though the game's moves have changed underneath it.** Editing a game does not invalidate its analysis server-side. There is no public API to force one; `AnalysisAdminService.RequeueAnalysis` does exactly the needed reset but requires `rbac.AdminAllAccess` (`pkg/analysis/admin_service.go:84`).
+
+Consequences to plan around:
+
+- **Check the status BEFORE editing.** `GetAnalysisStatus` returns both `status` and `analysis_version`. If it's `COMPLETED` with `analysis_version >= 2`, an in-place edit will silently never reach the analysis — the stats stay computed against the old moves forever.
+- **The fix is a fresh upload under a new `game_id`**, which has no existing job and analyzes clean. Then swap it into the collection (`RemoveGameFromCollection` for the old id, `AddGameToCollection` for the new — reuse the old `chapter_title`) and repoint anything keyed on the game id, e.g. the Curley tracker row (see `/curley-tracker`). The old game can't be deleted once finished, so it just becomes an orphan — that's expected.
+- **A partial (<7 tile) rack is the case that bites**, because unlike an over-7 rack it does NOT fail analysis. It analyzes "successfully" against the short rack, which quietly makes that player's `mistake_index` meaningless and blocks per-player stats, and by then the result is frozen. Worked example: game #59 (2024-07-08 vs James Curley), turn 27 `AARSVV` where the play required 7 tiles — re-uploaded as `S597yCKxMKXrNm6259BFQ6`.
+
+Reconstruct a short rack the same way as an over-long one: the played tiles are a subset of the true rack, and the surrounding turns pin the rest. For #59, the preceding play (`N9 OF` from `FORSSVV`) left `RSSVV` and the following rack was `AINRS`, so turn 27 had to be `AARSSVV` — `RSSVV` plus the drawn `AA`, playing `VAVS` to leave `ARS`. `scripts/verify_gcg.py` (run automatically by `woogles_upload.py`) confirms a reconstruction by replaying the whole file: it reported `100 tiles accounted` and the true finals once corrected.
+
 ### Jesse must be notified of every healed game (mandatory)
 
 Whenever a game is uploaded from healed content (i.e. the scanner changed anything about the file), Jesse wants to know so he can review it. Two channels, both required:
