@@ -177,6 +177,28 @@ Analysis takes 2–10 minutes per game (Monte-Carlo simulation). Queue all pendi
 
 `.github/workflows/woogles-report.yml` already runs a GitHub Actions cron multiple times a day (retrying every 30 min), calling `scripts/fetch_woogles_snapshot.py` to request analysis for any pending games across **every collection on Jesse's profile** (respecting the rolling 24h rate limit), then `scripts/generate_report_email.py` to build and email the report once a collection is fully analyzed. State lives in `.github/report-state.json` (committed to master) plus markers on the `woogles-data` branch. Any newly created collection is picked up automatically on the next run — no per-tournament setup, scheduled task, or cloud routine is ever needed to "resume" or "finish" analysis for a collection. If Jesse asks about a stalled/incomplete report, check this workflow's state/runs rather than proposing new automation.
 
+### Testing changes to `fetch_woogles_snapshot.py` — scope the run, don't sweep the archive
+
+A bare `python3 scripts/fetch_woogles_snapshot.py` walks **every** collection on Jesse's profile: a `GetAnalysisStatus` per game in Phase 1, then a `GetAnalysisResult` **and** a `GetGameHistory` per analyzed game in Phase 3. That is ~700 HTTP reads and ~2 minutes per run at the current ~230-game archive — enough to blow past a 120s command timeout. None of it spends analysis quota (they're all reads), but it is a wasteful way to test a code path, and Jesse has called it out as such (2026-07-22).
+
+Scope the run instead. Two env vars, both already honoured by the script:
+
+```bash
+# one collection instead of eleven
+TARGET_COLLECTION_UUID=55b29df3-10fd-471b-9e87-135ed5bbb2f6 python3 scripts/fetch_woogles_snapshot.py
+TARGET_USERNAME=magrathean python3 scripts/fetch_woogles_snapshot.py   # a whole profile, still narrower than the default
+```
+
+**Pin the rate-limit marker forward before any test run** so Phase 2 issues no `RequestAnalysis` calls and the test can't eat into the 15/day rolling budget:
+
+```bash
+python3 -c "from datetime import datetime,timezone,timedelta; open('data/rate-limited-until.txt','w').write((datetime.now(timezone.utc)+timedelta(hours=2)).isoformat())"
+```
+
+For decision logic (which games to re-request, whether an analysis has drifted), skip the script entirely and call the helpers directly — `failed_needs_request()`, `fingerprint_events()`, `history_fingerprint()` are all pure enough to exercise against one game plus a hand-built state dict, and a `copy.deepcopy` of one real history lets you mutate a rack/score/event order to prove the fingerprint is sensitive to each. That's seconds, not minutes.
+
+Restore afterwards: clear `data/rate-limited-until.txt`, and remember `data/woogles-snapshot.json` is Jesse's local file — back it up before a test run overwrites it.
+
 ### Step 4: Fetch stats for all games
 
 ```python

@@ -176,7 +176,12 @@ play-through dots, blank casing, exchange/pass/challenge/time lines, the
 end-rack bonus line — and the **partial-rack endgame pitfall**: near the
 endgame it derives each player's true full rack from their remaining plays +
 leftover (the server otherwise ends the game early: "can only pass or
-challenge"). It prints what it derived — sanity-check those racks. Add any
+challenge"). It prints what it derived — **sanity-check those racks before
+uploading, because a short rack cannot be fixed after the fact.** A rack with
+fewer than 7 tiles still analyzes "successfully", silently scoring that player
+against an incomplete rack, and Woogles refuses to re-analyze a completed game
+— the only remedy is re-uploading under a new game_id and repointing everything
+that referenced the old one (see the re-analysis section in `/gcg-upload`). Add any
 game-specific `#description`/`#note` prose by hand afterwards (see the #91
 and #92 files for tone); table-error `#note`s are added automatically.
 

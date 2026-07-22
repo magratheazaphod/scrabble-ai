@@ -54,6 +54,8 @@ jobs:
           # Which games' analyses have already failed, and on what game data — so a
           # permanently-broken game isn't re-requested (burning quota) every run.
           git show origin/woogles-data:data/failed-analysis.json > data/failed-analysis.json 2>/dev/null || rm -f data/failed-analysis.json
+          # Baseline game-history fingerprints, to spot games edited after analysis.
+          git show origin/woogles-data:data/analyzed-fingerprints.json > data/analyzed-fingerprints.json 2>/dev/null || rm -f data/analyzed-fingerprints.json
           if [ "${{ github.event.inputs.target_username }}" = "" ] && [ "${{ github.event.inputs.target_collection_uuid }}" = "" ]; then
             git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
             # Curley enrichment state: which analyzed-game set was last processed,
@@ -126,6 +128,7 @@ jobs:
         run: |
           cp data/rate-limited-until.txt /tmp/rate-limited-until.txt
           cp data/failed-analysis.json /tmp/failed-analysis.json 2>/dev/null || true
+          cp data/analyzed-fingerprints.json /tmp/analyzed-fingerprints.json 2>/dev/null || true
           cp data/woogles-snapshot.json /tmp/woogles-snapshot.json
           one_off=false
           if [ "${{ github.event.inputs.target_username }}" != "" ] || [ "${{ github.event.inputs.target_collection_uuid }}" != "" ]; then
@@ -142,10 +145,9 @@ jobs:
           cp /tmp/rate-limited-until.txt data/rate-limited-until.txt
           git add -f data/rate-limited-until.txt
           # Quota state, like the rate-limit marker: persisted on every run, one-off included.
-          if [ -f /tmp/failed-analysis.json ]; then
-            cp /tmp/failed-analysis.json data/failed-analysis.json
-            git add -f data/failed-analysis.json
-          fi
+          for f in failed-analysis.json analyzed-fingerprints.json; do
+            if [ -f "/tmp/$f" ]; then cp "/tmp/$f" "data/$f"; git add -f "data/$f"; fi
+          done
           if [ "$one_off" = false ]; then
             cp /tmp/last-report-sent.txt data/last-report-sent.txt
             cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
