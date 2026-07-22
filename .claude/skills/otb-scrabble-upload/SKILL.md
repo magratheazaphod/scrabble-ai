@@ -199,14 +199,18 @@ and #92 files for tone); table-error `#note`s are added automatically.
    ```bash
    python3 scripts/woogles_upload.py <file>.gcg --lexicon CSW24 \
        --collection "James Curley practice games" \
-       --chapter "YYYY-MM-DD - JD vs James Curley (Game <N>)" \
+       --chapter "Game #<N> - YYYY-MM-DD - <first player> vs <second player>" \
        --comment "<reconstruction notes>"
    ```
    It preflights, re-runs `verify_gcg.py` as a hard gate (import is
    irreversible), imports (FIVE_POINT default), verifies the game finished
    server-side, adds it to the collection, and posts the event-0 comment.
-   Include the game # in chapter titles (several same-day chapters already
-   exist without it and are ambiguous). Lexicon = CSW edition current at the
+   Chapter titles for the Curley collection follow the tracker convention —
+   `Game #<N> - <ISO date> - <first player> vs <second player>`, Jesse always
+   "JD" and James always "James Curley", **whoever moved first named first**
+   (see /curley-tracker). After the tracker row exists, run
+   `python3 scripts/sync_curley_collection.py` to place the chapter in Game #
+   order; it also repairs the title if you got it wrong. Lexicon = CSW edition current at the
    time of play; it CANNOT be changed after import. If the account has stuck
    unfinished games blocking imports, rerun with `--cleanup` (only
    unfinished games are deletable — it cannot destroy a finished one).

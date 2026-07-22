@@ -103,6 +103,25 @@ jobs:
           GOOGLE_SA_KEYFILE="$RUNNER_TEMP/curley-sa.json" \
             python scripts/update_curley_tracker.py --enrich-collection --skip-if-unconfigured
 
+      # Keeps the collection ordered by tracker "Game #" and its chapter titles
+      # in the "Game #n - date - <first player> vs <second player>" form. No-ops
+      # when nothing moved; never fails the report if the collection API hiccups.
+      - name: Sync the Curley collection order and chapter titles
+        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
+        continue-on-error: true
+        env:
+          CURLEY_SA_KEY_JSON: ${{ secrets.CURLEY_SA_KEY_JSON }}
+          CURLEY_TRACKER_SHEET_ID: ${{ secrets.CURLEY_TRACKER_SHEET_ID }}
+          WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
+        run: |
+          if [ -z "$CURLEY_SA_KEY_JSON" ] || [ -z "$CURLEY_TRACKER_SHEET_ID" ]; then
+            echo "Curley tracker secrets not configured — skipping collection sync."
+            exit 0
+          fi
+          printf '%s' "$CURLEY_SA_KEY_JSON" > "$RUNNER_TEMP/curley-sa.json"
+          GOOGLE_SA_KEYFILE="$RUNNER_TEMP/curley-sa.json" \
+            python scripts/sync_curley_collection.py
+
       - name: Publish fresh snapshot, rate-limit, and send-status markers to woogles-data branch
         run: |
           cp data/rate-limited-until.txt /tmp/rate-limited-until.txt

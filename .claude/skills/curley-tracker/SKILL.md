@@ -23,8 +23,41 @@ formula-preserving row writer).
   writers must use the script's `game_id_cell()` helper, never a bare id.
 - **Collection:** "James Curley practice games", uuid
   `55b29df3-10fd-471b-9e87-135ed5bbb2f6`. Lexicon CSW21 before 2025-01-01,
-  CSW24 after (Jesse is always CSW, never NWL). Chapter naming:
-  `<ISO date> - JD vs James Curley`.
+  CSW24 after (Jesse is always CSW, never NWL). Chapter order and naming are
+  not hand-managed — see "Collection order and chapter titles" below.
+
+## Collection order and chapter titles (per Jesse, 2026-07-22)
+
+The collection mirrors the tracker: chapters are ordered by **"Game #"
+ascending**, and every chapter title is
+
+```
+Game #<n> - <YYYY-MM-DD> - <first player> vs <second player>
+```
+
+e.g. `Game #1 - 2022-11-03 - JD vs James Curley`, or
+`Game #2 - 2022-11-03 - James Curley vs JD` when James opened.
+
+Naming rules, all mandatory:
+- Jesse is always **"JD"**, never "Jesse"/"Magrathean". James is always
+  **"James Curley"**, never "James"/"JC"/"Curley".
+- **Whoever moved first is named first.** Read it from the game's own history
+  (`GetGameHistory` — the first event's `player_index`), never assume JD.
+- The date is the tracker's date column, which outranks any date already in a
+  chapter title (the sheet is the record of when a game was played).
+
+Never hand-edit chapter titles or drag chapters around in the Woogles UI —
+run the sync script, which is idempotent:
+
+```bash
+python3 scripts/sync_curley_collection.py [--dry-run]
+```
+
+It reads the sheet, calls `UpdateChapterTitle` only for chapters whose title
+actually changes and `ReorderGames` only when the order actually differs, and
+parks any collection game with no tracker row at the end (loudly). Run it
+after uploading a new game (the daily workflow also runs it — see
+"Automation"). Full pass ≈ 77 `GetGameHistory` calls, about a minute.
 
 ## Score semantics (per Jesse, 2026-07-15)
 
@@ -49,6 +82,9 @@ python3 scripts/update_curley_tracker.py --gcg <file> --game-id <id> --game-num 
 # phase 2 — per-player BestBot stats for one game / every rowed game
 python3 scripts/update_curley_tracker.py --enrich --game-id <id>
 python3 scripts/update_curley_tracker.py --enrich-collection
+
+# collection hygiene — reorder + retitle chapters to match the sheet
+python3 scripts/sync_curley_collection.py
 ```
 
 ## Stats columns (phase 2)
@@ -70,7 +106,9 @@ stats cell filled is considered done and never re-fetched.
 
 `.github/workflows/woogles-report.yml` already: requests BestBot analysis for
 pending games across all collections (rolling 24h quota, backs off via a
-persisted marker), then runs `--enrich-collection` after each report refresh.
+persisted marker), then runs `--enrich-collection` after each report refresh,
+then runs `sync_curley_collection.py` so a newly uploaded game lands in the
+right chapter slot with the right title without anyone asking.
 Newly uploaded and newly analyzed games fill in automatically within days —
 no manual polling, no new cron. The OTB upload pipeline calls phase 1 + the
 consistency audit itself (see /otb-scrabble-upload).
