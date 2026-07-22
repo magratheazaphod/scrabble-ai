@@ -53,6 +53,10 @@ jobs:
           git show origin/woogles-data:data/rate-limited-until.txt > data/rate-limited-until.txt 2>/dev/null || echo "" > data/rate-limited-until.txt
           if [ "${{ github.event.inputs.target_username }}" = "" ] && [ "${{ github.event.inputs.target_collection_uuid }}" = "" ]; then
             git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
+            # Curley enrichment state: which analyzed-game set was last processed,
+            # and which games are proven un-enrichable. Absent = do a full pass.
+            git show origin/woogles-data:data/curley-enrich-marker.txt > data/curley-enrich-marker.txt 2>/dev/null || rm -f data/curley-enrich-marker.txt
+            git show origin/woogles-data:data/curley-enrich-terminal.txt > data/curley-enrich-terminal.txt 2>/dev/null || rm -f data/curley-enrich-terminal.txt
           fi
 
       - name: Fetch fresh snapshot (requests analysis for pending games)
@@ -105,6 +109,8 @@ jobs:
             one_off=true
           else
             cp data/last-report-sent.txt /tmp/last-report-sent.txt
+            cp data/curley-enrich-marker.txt /tmp/curley-enrich-marker.txt 2>/dev/null || true
+            cp data/curley-enrich-terminal.txt /tmp/curley-enrich-terminal.txt 2>/dev/null || true
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -116,6 +122,9 @@ jobs:
             cp /tmp/last-report-sent.txt data/last-report-sent.txt
             cp /tmp/woogles-snapshot.json data/woogles-snapshot.json
             git add -f data/last-report-sent.txt data/woogles-snapshot.json
+            for f in curley-enrich-marker.txt curley-enrich-terminal.txt; do
+              if [ -f "/tmp/$f" ]; then cp "/tmp/$f" "data/$f"; git add -f "data/$f"; fi
+            done
           fi
           git diff --cached --quiet && echo "Nothing changed — nothing to record." || (git commit -m "Update snapshot / rate-limit / report-sent markers ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
 

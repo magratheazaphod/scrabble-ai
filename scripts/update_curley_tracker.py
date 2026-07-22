@@ -123,6 +123,124 @@ def sheet_id_from_env():
 
 
 # --------------------------------------------------------------------------- #
+# --enrich-collection state (published to the woogles-data branch alongside the
+# report pipeline's other markers — see woogles-report.yml)
+# --------------------------------------------------------------------------- #
+SNAPSHOT_PATH = "data/woogles-snapshot.json"
+ENRICH_TERMINAL_PATH = "data/curley-enrich-terminal.txt"
+ENRICH_MARKER_PATH = "data/curley-enrich-marker.txt"
+# Do one full pass a day regardless, so a row added to the sheet by hand (which
+# no snapshot signal can see) is never more than this stale.
+ENRICH_MAX_SKIP_HOURS = 24
+
+
+def load_terminal_ids():
+    """Game ids proven un-enrichable: BestBot-analyzed, but with neither side
+    fully annotated, so there is nothing to write and never will be unless the
+    game is re-annotated on Woogles. Without this the same dead rows are
+    re-fetched on every scheduled run, forever."""
+    if not os.path.exists(ENRICH_TERMINAL_PATH):
+        return set()
+    with open(ENRICH_TERMINAL_PATH) as f:
+        return {ln.strip() for ln in f if ln.strip() and not ln.startswith("#")}
+
+
+def save_terminal_ids(ids):
+    os.makedirs(os.path.dirname(ENRICH_TERMINAL_PATH), exist_ok=True)
+    with open(ENRICH_TERMINAL_PATH, "w") as f:
+        f.write("# Games with nothing for --enrich-collection to write, and no prospect\n"
+                "# of that changing on its own: analyzed but with neither side fully\n"
+                "# annotated, or a permanently FAILED analysis (a malformed upload).\n"
+                "# Re-examine them all with --recheck-terminal.\n")
+        for gid in sorted(ids):
+            f.write(gid + "\n")
+
+
+def analyzed_fingerprint():
+    """Hash of the set of Curley games the fresh snapshot reports as analyzed.
+
+    It changes exactly when a new game's BestBot analysis lands — the only event
+    that can hand --enrich-collection something new to write. None when there is
+    no usable snapshot, which means "can't tell, do a full pass"."""
+    import hashlib
+
+    if not os.path.exists(SNAPSHOT_PATH):
+        return None
+    try:
+        with open(SNAPSHOT_PATH) as f:
+            snap = json.load(f)
+    except (OSError, ValueError):
+        return None
+    ids = set()
+    for coll in snap.get("collections") or []:
+        if "curley" not in (coll.get("title") or "").lower():
+            continue
+        for g in coll.get("games") or []:
+            if (g.get("analysis") or {}).get("found"):
+                gid = (g.get("meta") or {}).get("game_id")
+                if gid:
+                    ids.add(gid)
+    if not ids:
+        return None
+    return hashlib.sha1("\n".join(sorted(ids)).encode()).hexdigest()
+
+
+def read_enrich_marker():
+    """(fingerprint, hours_since) from the last completed pass; (None, None) if
+    there is no readable marker."""
+    from datetime import datetime, timezone
+
+    if not os.path.exists(ENRICH_MARKER_PATH):
+        return None, None
+    with open(ENRICH_MARKER_PATH) as f:
+        parts = f.read().split()
+    if len(parts) != 2:
+        return None, None
+    fp, stamp = parts
+    try:
+        when = datetime.fromisoformat(stamp)
+    except ValueError:
+        return fp, None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return fp, (datetime.now(timezone.utc) - when).total_seconds() / 3600
+
+
+def write_enrich_marker(fingerprint):
+    from datetime import datetime, timezone
+
+    if not fingerprint:
+        return
+    os.makedirs(os.path.dirname(ENRICH_MARKER_PATH), exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with open(ENRICH_MARKER_PATH, "w") as f:
+        f.write(f"{fingerprint} {stamp}\n")
+
+
+def enrichment_worth_running(force):
+    """(should_run, fingerprint, why) — decided from local files only, before
+    any Sheets or Woogles call.
+
+    The scheduled workflow fires ~16x a day; enrichment only ever has work when
+    a new analysis has landed. Opening the sheet each time just to rediscover
+    there is nothing to do is pure cost, and a transient Sheets 503 on one of
+    those no-op opens is what turned the run red on 2026-07-21."""
+    fp = analyzed_fingerprint()
+    if force:
+        return True, fp, "--recheck-terminal forces a full pass"
+    if fp is None:
+        return True, fp, "no usable snapshot to compare against — full pass"
+    last_fp, age_h = read_enrich_marker()
+    if last_fp != fp:
+        return True, fp, "new BestBot analysis since the last pass"
+    if age_h is None:
+        return True, fp, "last pass has no readable timestamp — full pass"
+    if age_h >= ENRICH_MAX_SKIP_HOURS:
+        return True, fp, f"last pass was {age_h:.0f}h ago (daily floor)"
+    return False, fp, f"no new analysis since the last pass {age_h:.1f}h ago"
+
+
+# --------------------------------------------------------------------------- #
 # GCG parsing (phase 1)
 # --------------------------------------------------------------------------- #
 def parse_gcg(path, game_id):
@@ -264,14 +382,33 @@ def _racks_complete(turns, idx):
     )
 
 
-def game_stats_from_api(game_id):
+def analysis_status(game_id):
+    """(status, error_message) from GetAnalysisStatus.
+
+    The error message matters: a FAILED analysis is usually a permanent defect
+    in the uploaded game (e.g. 'turn 18: rack "AAGIIKSUUY" has 10 tiles, max is
+    7' — a malformed GCG rack), not a transient queue problem, and re-requesting
+    it forever accomplishes nothing."""
+    r = woogles_rpc("analysis_service.AnalysisService/GetAnalysisStatus",
+                    {"game_id": game_id})
+    return r.get("status"), (r.get("error_message") or "").strip()
+
+
+def game_stats_with_status(game_id):
+    """(stats_or_None, status, error_message) — the enrichment view of one game,
+    keeping *why* there are no stats instead of collapsing it all to None."""
+    status, err = analysis_status(game_id)
+    if status != "COMPLETED":
+        return None, status, err
+    return game_stats_from_api(game_id, _status_checked=True), status, err
+
+
+def game_stats_from_api(game_id, _status_checked=False):
     """The 8 enrichment fields for one game, or None if not yet analyzed.
 
     A side that wasn't fully annotated gets None for all four of its fields
     (cells stay blank), per Jesse 2026-07-15."""
-    status = woogles_rpc("analysis_service.AnalysisService/GetAnalysisStatus",
-                         {"game_id": game_id}).get("status")
-    if status != "COMPLETED":
+    if not _status_checked and analysis_status(game_id)[0] != "COMPLETED":
         return None
     analysis = woogles_rpc("analysis_service.AnalysisService/GetAnalysisResult",
                            {"game_id": game_id})["result"]
@@ -319,10 +456,16 @@ def game_id_cell(gid):
     bare id — so it's clickable for Jesse while every reader (col_values /
     get_all_values return the formatted label) still sees just the id."""
     return f'=HYPERLINK("https://woogles.io/anno/{gid}","{gid}")'
+RETRYABLE_SHEETS_CODES = ("429", "500", "502", "503", "504")
+
+
 def _retry(fn, *args, **kwargs):
-    """Retry a gspread call with exponential backoff on Sheets API 429s — the
-    bulk archive backfill fires enough per-game reads to trip the per-minute
-    read quota, and a 429 there must never be mistaken for 'no row exists'."""
+    """Retry a gspread call with exponential backoff on Sheets API 429s and 5xxs.
+
+    429: the bulk archive backfill fires enough per-game reads to trip the
+    per-minute read quota, and a 429 there must never be mistaken for 'no row
+    exists'. 5xx: Google returns transient 503s often enough that one on a
+    routine sheet open reddened the nightly workflow on 2026-07-21."""
     import gspread
     import time
 
@@ -331,9 +474,9 @@ def _retry(fn, *args, **kwargs):
         try:
             return fn(*args, **kwargs)
         except gspread.exceptions.APIError as e:
-            if "429" not in str(e) or attempt == 5:
+            if not any(c in str(e) for c in RETRYABLE_SHEETS_CODES) or attempt == 5:
                 raise
-            print(f"    (Sheets API rate limited, retrying in {delay}s...)", file=sys.stderr)
+            print(f"    (Sheets API error, retrying in {delay}s: {e})", file=sys.stderr)
             time.sleep(delay)
             delay = min(delay * 2, 60)
 
@@ -530,6 +673,11 @@ def main(argv):
     ap.add_argument("--enrich-collection", action="store_true",
                     help="phase 2 for every analyzed JC game that already has a row "
                          "(for the report pipeline; skips games with no row yet)")
+    ap.add_argument("--recheck-terminal", action="store_true",
+                    help="with --enrich-collection: ignore the remembered set of "
+                         "un-enrichable games and re-examine every blank row, even if "
+                         "no new analysis has landed. Use after re-uploading a game whose "
+                         "analysis had failed, or whose annotation was completed.")
     ap.add_argument("--skip-if-unconfigured", action="store_true",
                     help="exit 0 (instead of erroring) when no sheet credentials are set")
     ap.add_argument("--dry-run", action="store_true",
@@ -542,7 +690,7 @@ def main(argv):
         return 0
 
     if args.enrich_collection:
-        return run_enrich_collection(args.dry_run)
+        return run_enrich_collection(args.dry_run, args.recheck_terminal)
 
     if args.enrich:
         if not args.game_id:
@@ -689,16 +837,27 @@ def ensure_stats_columns(ws, field_col, header, dry_run):
         field_col[f] = start + i
 
 
-def run_enrich_collection(dry_run):
+def run_enrich_collection(dry_run, recheck_terminal=False):
     """Fill the per-player stats cells for every row that has a game id.
 
     One read of the whole sheet, one Woogles API sweep (only for rows whose
     stats cells are all still empty), one batch write. Games not yet
     BestBot-analyzed stay blank and are retried on the next run; a row with
     any stats cell already filled is considered done and never re-fetched
-    (its remaining blanks mean that side wasn't fully annotated)."""
+    (its remaining blanks mean that side wasn't fully annotated).
+
+    Two guards keep this from re-doing dead work every 90 minutes: the whole
+    pass is skipped unless new analysis has landed (see enrichment_worth_running)
+    and rows proven un-enrichable are remembered (see load_terminal_ids)."""
     import gspread.utils as gu
     from concurrent.futures import ThreadPoolExecutor
+
+    should_run, fingerprint, why = enrichment_worth_running(recheck_terminal)
+    if not should_run:
+        print(f"[enrich-collection] skipped — {why}.")
+        return 0
+    print(f"[enrich-collection] running — {why}.")
+    terminal = set() if recheck_terminal else load_terminal_ids()
 
     ws = open_worksheet()
     rows = _retry(ws.get_all_values)
@@ -709,7 +868,7 @@ def run_enrich_collection(dry_run):
     ensure_stats_columns(ws, field_col, header, dry_run)
 
     gid_col = field_col["game_id"]
-    todo = []
+    todo, skipped = [], 0
     for ridx, row in enumerate(rows[1:], start=2):
         gid = row[gid_col - 1].strip() if len(row) >= gid_col else ""
         if not gid:
@@ -718,18 +877,35 @@ def run_enrich_collection(dry_run):
                      for f in STATS_FIELDS)
         if filled:
             continue
+        if gid in terminal:
+            skipped += 1
+            continue
         todo.append((ridx, gid))
+    if skipped:
+        print(f"[enrich-collection] skipping {skipped} row(s) already proven un-enrichable "
+              f"(re-examine with --recheck-terminal).")
     print(f"[enrich-collection] {len(todo)} row(s) with a game id and no stats yet.")
     if not todo:
+        if not dry_run:
+            write_enrich_marker(fingerprint)
         return 0
 
     with ThreadPoolExecutor(max_workers=4) as ex:
-        all_stats = list(ex.map(lambda t: game_stats_from_api(t[1]), todo))
+        results = list(ex.map(lambda t: game_stats_with_status(t[1]), todo))
 
-    cells, enriched, pending = [], 0, 0
-    for (ridx, gid), stats in zip(todo, all_stats):
+    cells, enriched, pending, new_terminal = [], 0, 0, []
+    for (ridx, gid), (stats, status, err) in zip(todo, results):
         if stats is None:
-            pending += 1
+            # A FAILED analysis is a defect in the uploaded game, not a queue
+            # position — it will fail identically on every retry, so retire the
+            # row instead of re-fetching it forever. Anything else really is
+            # still in flight.
+            if status == "FAILED":
+                new_terminal.append(gid)
+                print(f"  {gid}: row {ridx} analysis FAILED — {err or 'no reason given'}")
+            else:
+                pending += 1
+                print(f"  {gid}: row {ridx} not analyzed yet (status {status})")
             continue
         wrote = False
         for f, v in stats.items():
@@ -737,14 +913,21 @@ def run_enrich_collection(dry_run):
                 continue
             cells.append({"range": gu.rowcol_to_a1(ridx, field_col[f]), "values": [[str(v)]]})
             wrote = True
+        if not wrote:
+            new_terminal.append(gid)
         print(f"  {gid}: row {ridx} " +
               ("enriched" if wrote else "analyzed but no side fully annotated"))
         enriched += 1 if wrote else 0
     if dry_run:
-        print(f"\n(dry run) would write {len(cells)} cell(s).")
+        print(f"\n(dry run) would write {len(cells)} cell(s), retire {len(new_terminal)} "
+              f"un-enrichable row(s); {pending} still awaiting BestBot analysis.")
         return 0
     if cells:
         _retry(ws.batch_update, cells, value_input_option="USER_ENTERED")
+    if new_terminal:
+        save_terminal_ids(terminal | set(new_terminal))
+        print(f"retired {len(new_terminal)} un-enrichable row(s): {', '.join(new_terminal)}")
+    write_enrich_marker(fingerprint)
     print(f"\nenriched {enriched} game(s); {pending} still awaiting BestBot analysis.")
     return 0
 
