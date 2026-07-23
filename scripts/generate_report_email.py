@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Generate the Woogles tournament report via Claude (with code execution) and email it.
+"""Generate the Woogles tournament report and email it.
 
-Runs from GitHub Actions. SKILL.md is the single source of truth for stats-computation
-logic and report format — this script never reimplements it; it hands SKILL.md plus the
-data snapshot to Claude and lets the model run the Python it describes via the code
-execution tool, so arithmetic is actually executed, not reasoned about.
+Runs from GitHub Actions. Stats computation, aggregation, notes, and the report
+template are all committed code in tournament_report.py (single source of truth,
+shared with the interactive tournament-analysis skill — see its SKILL.md). The
+only remaining LLM call writes the 2-4 sentence `## Summary` narrative from a
+compact per-collection digest, and is cached per collection keyed on a content
+hash of that digest so unchanged collections cost nothing to re-render.
 """
 import json
 import os
@@ -18,8 +20,11 @@ from zoneinfo import ZoneInfo
 import anthropic
 import markdown
 
+import tournament_report as tr
+
 CENTRAL = ZoneInfo("America/Chicago")
 SENT_MARKER_PATH = "data/last-report-sent.txt"
+DRY_RUN = os.environ.get("DRY_RUN", "").strip() == "1"
 
 HTML_TEMPLATE = """\
 <html>
@@ -42,14 +47,18 @@ HTML_TEMPLATE = """\
 </html>
 """
 
-MODEL = "claude-opus-4-8"
+MODEL = "claude-sonnet-5"
 DEFAULT_RECIPIENT = "magratheazaphod@gmail.com"
 STATE_PATH = ".github/report-state.json"
 
-
-def read_skill_md():
-    with open(".claude/skills/tournament-analysis/SKILL.md") as f:
-        return f.read()
+EXAMPLE_SUMMARY = (
+    "A best-of-three final against Nigel Richards that slipped away 1-2, with a lopsided "
+    "−304 aggregate spread. Jesse actually played clean, disciplined Scrabble throughout — "
+    "a 1.73 average mistakes score, 75% bingo find rate, and zero phonies — but a 685-point "
+    "Round 1 onslaught dug a hole too deep to climb out of. The lone bright spot was a "
+    "commanding Round 2 (563-417 on four bingos), while Nigel's near-flawless play (0.40 "
+    "mistakes, 1.6% win% lost across the two annotated games) ultimately decided the match."
+)
 
 
 def load_state():
@@ -77,64 +86,76 @@ def mark_sent(today_str):
         f.write(today_str)
 
 
-def upload_snapshot(client, snapshot):
-    payload = json.dumps(snapshot).encode("utf-8")
-    uploaded = client.beta.files.upload(
-        file=("woogles-snapshot.json", payload, "application/json"),
-        betas=["files-api-2025-04-14"],
+def compute_collection(col, subject=None):
+    """Run the deterministic module end-to-end for one collection.
+
+    Returns (stats, agg, notes, digest, digest_hash).
+    """
+    stats = [tr.compute_game(r, subject=subject) for r in col["games"]]
+    stats.sort(key=lambda g: g["round"])
+    tr.check_phony_words(stats)
+    agg = tr.aggregate(stats)
+    notes = tr.game_notes(stats)
+    digest = tr.build_digest(stats, agg, notes, col["title"])
+    return stats, agg, notes, digest, tr.digest_hash(digest)
+
+
+def generate_summary(client, digest, subject=None):
+    """The only remaining LLM call — a small no-tools call over a compact digest.
+    Returns None on API failure (caller renders without a Summary section)."""
+    audience = "Jesse Day, the player" if subject is None else f"the recipient (about Woogles player {subject.get('real_name') or subject['nickname']}, not Jesse Day)"
+    subject_note = (
+        ""
+        if subject is None
+        else f"\n\nThis is a one-off report about {subject.get('real_name') or subject['nickname']}, not Jesse Day. Address the summary to {audience}."
     )
-    return uploaded.id
+    prompt = f"""Here is a compact stats digest for one Woogles tournament collection:
+
+<digest>
+{digest}
+</digest>
+{subject_note}
+
+Write a 2-4 sentence narrative summary of this tournament for the report's "## Summary" section. Be factual and specific: name opponents, cite the standout numbers from the digest. No headers, no meta-commentary, no mention of the digest or your methodology — this is prose for {audience}.
+
+Example of the style and length to match (from a different tournament, do not reuse its content):
+{EXAMPLE_SUMMARY}"""
+
+    try:
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=500,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text_blocks = [b.text for b in response.content if b.type == "text"]
+        return text_blocks[-1].strip() if text_blocks else None
+    except anthropic.APIError as e:
+        print(f"Summary generation failed: {e}", file=sys.stderr)
+        return None
 
 
-def generate_collection_report(client, skill_md, file_id, subject=None):
-    """Generate the markdown report for exactly one collection (the snapshot behind
-    file_id has a single entry in "collections" and an empty "pending"). Regenerating
-    one collection at a time — rather than batching all of them into one Claude call —
-    is what lets each collection's report be cached and reused independently."""
-    subject_clause = ""
-    audience = "Jesse"
-    if subject:
-        nickname, real_name = subject["nickname"], subject.get("real_name") or subject["nickname"]
-        subject_clause = f"""
+def migrate_entry(uuid, entry, golden_col_lookup=None):
+    """Zero-cost migration: an old {"report_md", "game_count"} entry becomes
+    {"digest_hash", "summary_md"} using the collection's CURRENT data, no LLM call.
+    Returns the migrated entry, or the original if it can't be migrated yet
+    (collection not present in this run's snapshot)."""
+    if "report_md" not in entry:
+        return entry
+    col = golden_col_lookup.get(uuid) if golden_col_lookup else None
+    if not col:
+        return entry
+    _, _, _, digest, dhash = compute_collection(col)
+    old_report_md = entry["report_md"]
+    idx = old_report_md.find("## Summary")
+    old_summary = old_report_md[idx + len("## Summary"):].strip() if idx != -1 else None
 
-IMPORTANT — this run is NOT about Jesse Day. Wherever SKILL.md's stats-computation logic identifies "Jesse" as the subject player (the is_jesse() matcher — note summary_for_index() then derives each side's mistake score from that player_index, so it needs no separate override — plus report titles, column headers like "Jesse Score"/"Jesse Bingos"), instead identify the subject player by normalizing each player's nickname (GameHistory players[].nickname: lowercase it, strip everything except a-z) and checking whether it equals "{nickname}" — this handles per-game spelling variants like suffixes ("(MYS)") or inconsistent casing. Do NOT try to match on their Woogles login username, which does not appear anywhere in game data. Use their real name, "{real_name}" (from GameHistory's real_name field), in place of "Jesse Day" everywhere a report title, section header, or column header would otherwise reference Jesse — e.g. "Aggregate Stats (Jesse Day)" becomes "Aggregate Stats ({real_name})"."""
-        audience = f"the recipient (not Jesse — this is a one-off report about Woogles player {real_name})"
-
-    prompt = f"""Here is the current SKILL.md for Woogles tournament analysis (the authoritative spec for stats computation, aggregation, and report format):
-
-<skill_md>
-{skill_md}
-</skill_md>
-{subject_clause}
-
-A data snapshot (woogles-snapshot.json) is attached to this message via the code execution container. It has the shape: {{"collections": [{{"uuid", "title", "games": [{{"meta", "analysis", "history"}}]}}], "pending": []}} — exactly one collection, already confirmed to have complete game data. Each game's "meta"/"analysis"/"history" are exactly the GetCollection game entry / GetAnalysisResult / GetGameHistory response bodies that SKILL.md's Workflow steps expect.
-
-Using the code execution tool, write and run actual Python to load the snapshot and follow SKILL.md's Steps 5 through 8 exactly for this one collection: compute per-game stats and aggregates, generate per-game notes, and build the report using SKILL.md's current report template and aggregation rules. Do the arithmetic in code, not by reasoning.
-
-Then write your final answer as plain text (not a tool call) containing ONLY that collection's markdown report, using SKILL.md's exact template — nothing else. Do not add a summary line, do not mention other collections, do not mention SKILL.md, "steps", your methodology, or the code execution process anywhere in this final answer — it's one section of an email to {audience}, not a description of how you produced it."""
-
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=16000,
-        thinking={"type": "adaptive"},
-        output_config={"effort": "high"},
-        tools=[{"type": "code_execution_20260521", "name": "code_execution"}],
-        extra_headers={"anthropic-beta": "files-api-2025-04-14"},
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {"type": "container_upload", "file_id": file_id},
-                ],
-            }
-        ],
-    )
-
-    # Claude narrates between tool calls (progress commentary); only the last
-    # text block is the actual final answer we asked for.
-    text_blocks = [b.text for b in response.content if b.type == "text"]
-    return text_blocks[-1].strip() if text_blocks else ""
+    return {
+        "title": entry.get("title", col["title"]),
+        "game_count": len(col["games"]),
+        "digest_hash": dhash,
+        "summary_md": old_summary,
+        "reported_at": entry.get("reported_at"),
+    }
 
 
 def build_pending_note(pending):
@@ -145,6 +166,10 @@ def build_pending_note(pending):
 
 
 def send_email(body, recipient, subject):
+    if DRY_RUN:
+        print("=== DRY_RUN: email body ===", file=sys.stderr)
+        print(body)
+        return
     sender = os.environ["GMAIL_ADDRESS"]
     password = os.environ["GMAIL_APP_PASSWORD"]
 
@@ -169,7 +194,7 @@ def main():
     one_off = bool(target_username or target_collection_uuid)
 
     today_str = datetime.now(CENTRAL).strftime("%Y-%m-%d")
-    if not one_off and already_sent_today(today_str):
+    if not one_off and not DRY_RUN and already_sent_today(today_str):
         print(f"Already sent today's report ({today_str}) — skipping.", file=sys.stderr)
         return
 
@@ -195,37 +220,47 @@ def main():
         print("Nothing to report — skipping entirely.", file=sys.stderr)
         return
 
+    col_by_uuid = {c["uuid"]: c for c in collections}
+
+    # Zero-cost migration: old {"report_md", "game_count"} entries -> {"digest_hash", "summary_md"}.
+    if not one_off:
+        for uuid, entry in list(state.items()):
+            state[uuid] = migrate_entry(uuid, entry, col_by_uuid)
+
     client = None
-    skill_md = None
     report_sections = []
     updated_state = dict(state)
 
     for col in collections:
         prior = state.get(col["uuid"]) if not one_off else None
-        if prior and prior.get("game_count") == len(col["games"]) and prior.get("report_md"):
-            print(f"Reusing cached report for '{col['title']}' (unchanged)", file=sys.stderr)
-            report_sections.append(prior["report_md"])
-            continue
 
-        if client is None:
-            client = anthropic.Anthropic()
-            skill_md = read_skill_md()
+        stats, agg, notes, digest, dhash = compute_collection(col, subject=subject_identity)
+        subject_display = "Jesse Day" if subject_identity is None else (
+            subject_identity.get("real_name") or subject_identity["nickname"]
+        )
 
-        print(f"Generating report for '{col['title']}' via Claude (code execution)...", file=sys.stderr)
-        file_id = upload_snapshot(client, {"collections": [col], "pending": []})
-        report_md = generate_collection_report(client, skill_md, file_id, subject=subject_identity)
+        summary_md = None
+        if prior and prior.get("digest_hash") == dhash and prior.get("summary_md"):
+            print(f"Reusing cached summary for '{col['title']}' (digest unchanged)", file=sys.stderr)
+            summary_md = prior["summary_md"]
+        else:
+            if client is None:
+                client = anthropic.Anthropic()
+            print(f"Generating summary for '{col['title']}' via Claude...", file=sys.stderr)
+            summary_md = generate_summary(client, digest, subject=subject_identity)
+            if summary_md is None:
+                print(f"No summary for '{col['title']}' this run — rendering without one.", file=sys.stderr)
 
-        if not report_md or report_md.strip() == "NO_REPORT_READY":
-            print(f"Failed to generate report for '{col['title']}' — skipping it this run", file=sys.stderr)
-            continue
-
+        report_md = tr.render_report(stats, agg, notes, col["title"], summary_md=summary_md, subject_display=subject_display)
         report_sections.append(report_md)
+
         if not one_off:
             updated_state[col["uuid"]] = {
                 "title": col["title"],
                 "game_count": len(col["games"]),
+                "digest_hash": dhash,
+                "summary_md": summary_md,
                 "reported_at": today_str,
-                "report_md": report_md,
             }
 
     if not report_sections and not pending:
@@ -254,8 +289,9 @@ def main():
         print("Done.", file=sys.stderr)
         return
 
-    mark_sent(today_str)
-    save_state(updated_state)
+    if not DRY_RUN:
+        mark_sent(today_str)
+        save_state(updated_state)
     print("Done.", file=sys.stderr)
 
 
