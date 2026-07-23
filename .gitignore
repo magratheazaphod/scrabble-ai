@@ -8,3 +8,4 @@ board-pictures/
 .claude/skills/tournament-analysis/state/
 .Rhistory
 scripts/safety-net.log
+data/golden-snapshot.json
