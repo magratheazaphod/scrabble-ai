@@ -36,6 +36,13 @@ is recorded alongside the seed so any report says what it was seeded on.
 from the analyzed games and diffs them, so a report can state outright whether
 its numbers agree with the platform's rather than asking the reader to trust
 them. This catches both a bug here and a game the collection is missing.
+
+**League-wide leaderboard.** `mistake_leaderboard_section` ranks every player in
+the season, across all divisions, by average mistakes score — the one figure that
+survives the division tiering, since it is measured against BestBot rather than
+against whoever was across the board. Top 10 plus the subject's own placement.
+Report-only by construction: the only text this module writes back to Woogles is
+a collection title and description, and neither is derived from the leaderboard.
 """
 import argparse
 import json
@@ -43,7 +50,9 @@ import os
 import random
 import re
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 
@@ -125,15 +134,21 @@ def resolve_season(league, season_number=None):
     raise SystemExit(f"{league['name']} has no season {season_number}")
 
 
-def find_player_division(season_id, username, required=True):
+def all_division_standings(season_id):
+    """Every division in the season, each with its full standings list."""
+    resp = post("league_service.LeagueService/GetAllDivisionStandings",
+                {"season_id": season_id})
+    return resp.get("divisions", [])
+
+
+def find_player_division(season_id, username, required=True, divisions=None):
     """(division, standing) for `username` in this season, or (None, None).
 
     `required=False` is for sweeping every league on the platform, most of which
     the player has never entered — not finding them is the normal case there.
+    Pass `divisions` to reuse an already-fetched standings read.
     """
-    resp = post("league_service.LeagueService/GetAllDivisionStandings",
-                {"season_id": season_id})
-    for div in resp.get("divisions", []):
+    for div in (all_division_standings(season_id) if divisions is None else divisions):
         for standing in div.get("standings", []):
             if standing.get("username", "").lower() == username.lower():
                 return div, standing
@@ -391,6 +406,230 @@ def seeding_rows(stats):
              g["jesse_score"] - g["opp_score"]) for g in stats]
 
 
+LEADERBOARD_SIZE = 10
+
+
+def _norm_name(s):
+    """Analysis `player_name` is the nickname with separators merged out."""
+    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+
+
+def bingo_find_counts(user_id, username, season_id, cache=None):
+    """(found, missed) bingos for one player across their finished season games.
+
+    Counted exactly as the report's own Bingo Find Rate is: one `played_is_bingo`
+    turn is a find, one `missed_bingo` turn is a miss, and the rate is
+    found/(found+missed). Unlike `compute_game` this does not re-run
+    `validate_bingo` against the history rack — that guard needs a second fetch
+    per game (GetGameHistory) purely to catch a rare analysis rack bug, which
+    would double the ~150 reads this leaderboard already costs. It is applied
+    identically (i.e. not at all) to every player including the subject, so the
+    ranking stays internally consistent; on Season 18 the two methods agreed
+    exactly, for the subject and for his opponents.
+
+    `cache` is a shared {game_id: analysis} dict — top-10 players play each other,
+    and a game analyzed once serves both of its players.
+    """
+    if cache is None:
+        cache = {}
+    games = [g for g in player_season_games(user_id, season_id)
+             if g.get("result") in FINISHED_RESULTS]
+    want = _norm_name(username)
+    found = missed = 0
+    for g in games:
+        gid = g["game_id"]
+        if gid not in cache:
+            try:
+                cache[gid] = post("analysis_service.AnalysisService/GetAnalysisResult",
+                                  {"game_id": gid})
+            except requests.exceptions.HTTPError:
+                cache[gid] = None  # never analyzed; excluded from both halves
+        res = (cache[gid] or {}).get("result") or {}
+        for t in res.get("turns") or []:
+            if _norm_name(t.get("player_name")) != want:
+                continue
+            if t.get("played_is_bingo"):
+                found += 1
+            if t.get("missed_bingo"):
+                missed += 1
+    return found, missed
+
+
+def _find_rate(found, missed):
+    total = found + missed
+    if not total:
+        return "N/A"
+    return f"{found}/{total} ({round(found / total * 100, 1)}%)"
+
+
+def mistake_leaderboard(divisions, username):
+    """(rows, my_row, min_games) — every league player ranked by mistakes score.
+
+    A season's divisions are skill-tiered, so the division table only ever says
+    how the player is doing against their own tier. Mistakes score is the one
+    figure that *is* comparable across tiers — it measures play against BestBot's
+    optimal, not against whoever happened to be across the board — so it is worth
+    ranking league-wide.
+
+    Only players with at least half the season's leading analyzed-game count
+    qualify: mid-season, a player two games in can post a freak 1.8 average that
+    would otherwise head the table. `min_games` is returned so the report can
+    state the bar it applied. The subject is returned separately and is never
+    filtered out, so a report always says where its subject stands even when
+    they haven't yet qualified (`rank` is then None).
+
+    Rows are dicts with rank/username/user_id/division/avg_mi/games; rank is dense
+    over the qualified list, ties broken by more games then username so the
+    ordering is stable across runs.
+    """
+    everyone = [
+        {**s, "division_number": d.get("division_number")}
+        for d in divisions
+        for s in (d.get("standings") or [])
+    ]
+    max_analyzed = max((s.get("games_analyzed") or 0 for s in everyone), default=0)
+    min_games = max(1, (max_analyzed + 1) // 2)
+
+    def row(s, rank):
+        return {"rank": rank, "username": s.get("username"), "user_id": s.get("user_id"),
+                "division": s.get("division_number"), "avg_mi": s.get("avg_mistake_index"),
+                "games": s.get("games_analyzed") or 0}
+
+    qualified = sorted(
+        (s for s in everyone
+         if s.get("avg_mistake_index") is not None
+         and (s.get("games_analyzed") or 0) >= min_games),
+        key=lambda s: (s["avg_mistake_index"], -(s.get("games_analyzed") or 0),
+                       (s.get("username") or "").lower()),
+    )
+    rows = [row(s, i) for i, s in enumerate(qualified, start=1)]
+    me = next((r for r in rows if (r["username"] or "").lower() == username.lower()), None)
+    if me is None:
+        # Unqualified (or unanalyzed) — show the subject with no rank rather than
+        # dropping them, which would silently answer "where do I fit" with nothing.
+        mine = next((s for s in everyone
+                     if (s.get("username") or "").lower() == username.lower()), None)
+        if mine is not None and mine.get("avg_mistake_index") is not None:
+            me = row(mine, None)
+    return rows, me, min_games
+
+
+def attach_bingo_rates(rows, season_id, max_workers=6):
+    """Fill each row's `find_rate` in place, fetching the analyses concurrently.
+
+    Only ever called on the handful of rows a report actually displays (top 10
+    plus the subject) — computing it for all ~200 league players would be a few
+    thousand reads for numbers nothing prints.
+    """
+    cache = {}
+    lock = threading.Lock()
+
+    def one(r):
+        # A per-call cache view keeps the shared dict's writes under the lock while
+        # leaving the HTTP calls themselves fully concurrent.
+        found, missed = bingo_find_counts(r["user_id"], r["username"], season_id,
+                                          cache=_LockedCache(cache, lock))
+        r["found"], r["missed"] = found, missed
+        r["find_rate"] = _find_rate(found, missed)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        list(ex.map(one, [r for r in rows if r.get("user_id")]))
+    return rows
+
+
+class _LockedCache(dict):
+    """dict view over a shared game_id -> analysis cache, safe across threads."""
+
+    def __init__(self, shared, lock):
+        super().__init__()
+        self._shared, self._lock = shared, lock
+
+    def __contains__(self, k):
+        with self._lock:
+            return k in self._shared
+
+    def __getitem__(self, k):
+        with self._lock:
+            return self._shared[k]
+
+    def __setitem__(self, k, v):
+        with self._lock:
+            self._shared[k] = v
+
+
+def mistake_leaderboard_section(divisions, season, league, username):
+    """Markdown for the league-wide mistakes-score leaderboard.
+
+    Report-only: nothing here is written back to Woogles. The sync writes exactly
+    two pieces of text to the platform — the collection title and description
+    (`sync_collection`) — and neither is built from this. Keep it that way; the
+    league standings page publishes per-division tables only, and a cross-division
+    ranking of named players is not ours to publish on their behalf.
+    """
+    rows, me, min_games = mistake_leaderboard(divisions, username)
+    if not rows:
+        return ""
+    total_players = sum(len(d.get("standings") or []) for d in divisions)
+
+    # The top 10 is chosen on mistakes score alone, as asked; the bingo find rate
+    # is a column on those 10, never a factor in who makes the cut.
+    shown = rows[:LEADERBOARD_SIZE]
+    if me is not None and me not in shown:
+        shown = shown + [me]
+    attach_bingo_rates(shown, season["uuid"])
+
+    lines = ["## League-Wide Mistakes Score Leaderboard", ""]
+    lines.append(
+        f"*Lowest average mistakes score across all {len(divisions)} divisions of "
+        f"{league['name']} League Season {season['season_number']} "
+        f"({len(rows)} of {total_players} players qualified). Divisions are "
+        f"skill-tiered, so records and spreads aren't comparable between them — "
+        f"but mistakes score is measured against BestBot's optimal play rather "
+        f"than against the opponent, so it is. Ranking is on mistakes score alone; "
+        f"bingo find rate is shown alongside, computed over the same season games "
+        f"the way the report computes it for the subject.*"
+    )
+    lines.append("")
+    lines.append("| # | Player | Div | Avg Mistakes | Bingo Find Rate | Games |")
+    lines.append("|---|---|---|---|---|---|")
+
+    def emit(r, bold):
+        b = "**" if bold else ""
+        rank = str(r["rank"]) if r["rank"] else "—"
+        cells = [rank, r["username"], r["division"], _fmt(round(r["avg_mi"], 2)),
+                 r.get("find_rate", "—"), r["games"]]
+        lines.append("| " + " | ".join(f"{b}{c}{b}" for c in cells) + " |")
+
+    for r in rows[:LEADERBOARD_SIZE]:
+        emit(r, me is not None and r["username"] == me["username"])
+    if me is not None and (me["rank"] is None or me["rank"] > LEADERBOARD_SIZE):
+        lines.append("| … | | | | | |")
+        emit(me, True)
+    lines.append("")
+
+    if me is None:
+        lines.append(
+            f"*{username} has no analyzed games in this season yet, so no "
+            "league-wide placement can be computed.*"
+        )
+    elif me["rank"] is None:
+        lines.append(
+            f"*{username} is unranked here: the table counts only players with at "
+            f"least {min_games} analyzed game(s) this season, and {username} has "
+            f"{me['games']}. The figures shown are over those games.*"
+        )
+    else:
+        lines.append(
+            f"**{username} ranks {_ordinal(me['rank'])} of {len(rows)}** qualified "
+            f"players league-wide on mistakes score ({_fmt(round(me['avg_mi'], 2))} "
+            f"over {me['games']} games), with a bingo find rate of "
+            f"{me.get('find_rate', '—')}. Qualifying needs at least {min_games} "
+            "analyzed game(s) — half the season's leading total — so a player two "
+            "games into the season can't top the table on a small sample."
+        )
+    return "\n".join(lines)
+
+
 def cross_check_section(stats, agg, standing, division, season, league):
     """Markdown for the league context: seeding basis, division table, cross-check."""
     key = rating_key(league)
@@ -489,7 +728,9 @@ def report_extras(collection_uuid, stats, agg):
         s["opp_rating"] = (seeds.get(s.get("game_id")) or {}).get("rating")
     league = get_league(entry["league_slug"])
     season = resolve_season(league, entry.get("season_number"))
-    division, standing = find_player_division(season["uuid"], entry["username"])
+    divisions = all_division_standings(season["uuid"])
+    division, standing = find_player_division(season["uuid"], entry["username"],
+                                              divisions=divisions)
 
     rows = cross_check_rows(stats, agg, standing)
     bad = [r[0] for r in rows if not r[3]]
@@ -505,9 +746,24 @@ def report_extras(collection_uuid, stats, agg):
         f"of {len(division.get('standings') or [])}. Games are ordered by opponent "
         f"rating (seed 1 = strongest), not by round. Cross-check: {verdict}."
     )
+
+    lb_rows, me, _ = mistake_leaderboard(divisions, entry["username"])
+    if me is not None and me["rank"] is not None:
+        digest_line += (
+            f" League-wide mistakes-score leaderboard (all {len(divisions)} divisions, "
+            f"lowest average is best): {entry['username']} ranks "
+            f"{_ordinal(me['rank'])} of {len(lb_rows)} qualified players at "
+            f"{me['avg_mi']:.2f}. This ranking exists only in this report and is "
+            "not published on woogles.io."
+        )
+
+    sections = [cross_check_section(stats, agg, standing, division, season, league)]
+    leaderboard = mistake_leaderboard_section(divisions, season, league, entry["username"])
+    if leaderboard:
+        sections.append(leaderboard)
     return {
         "round_label": "Seed",
-        "sections": [cross_check_section(stats, agg, standing, division, season, league)],
+        "sections": sections,
         "digest_line": digest_line,
     }
 
