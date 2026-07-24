@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Turn a Woogles league season into a report-ready collection.
 
-A league season is a round robin inside one division: every player meets every
-other once, games are played asynchronously over two weeks, and each finished
-game is auto-analyzed by BestBot. So unlike a tournament there is nothing to
-upload and no analysis to request — the only missing piece is the *collection*
-that the existing report pipeline consumes. This module builds it:
+A league season is a schedule inside one division: games are played
+asynchronously over two weeks, and each finished game is auto-analyzed by
+BestBot. So unlike a tournament there is nothing to upload and no analysis to
+request — the only missing piece is the *collection* that the existing report
+pipeline consumes. This module builds it:
 
     python3 scripts/woogles_league.py                    # current CSW season
     python3 scripts/woogles_league.py --season 18        # a specific season
@@ -16,7 +16,24 @@ Re-running is safe and is in fact the intended mode: a season is synced while it
 is still in progress, so each run adds whatever games have finished since and
 re-seeds the ordering. Only genuinely-changed titles and orderings are written.
 
-**Ordering.** A league round robin has no meaningful round order — the "round"
+**Division size and game count — do not infer one from the other.** Divisions are
+NOT all the same size, and a season's schedule is capped at **14 games** (one per
+day of the 14-day season, and new seasons start every 14 days). So:
+
+  * a division of 15 or fewer plays a full round robin, size − 1 games — 13
+    players is 12 games, 14 players is 13;
+  * a division of 16 or 17 is capped at 14 and is therefore *not* a full round
+    robin — some pairs never meet.
+
+Season 18 ran divisions of 13 through 17, i.e. 12- to 14-game schedules, all in
+the same season. A player with fewer games than the season's leader has very
+probably just finished a smaller division's full schedule — check
+`games_remaining` on their standing before calling anything unplayed, and never
+compare raw game counts across divisions as though they meant the same thing.
+This bit a report summary once (2026-07-24), which read a complete 12-game
+Division 14 season as "2 games unplayed" against a 14-game leader.
+
+**Ordering.** A league schedule has no meaningful round order — the "round"
 number Woogles reports is 0 for every game, and games finish in whatever order
 the two players got to them. Ordering by date would therefore be arbitrary. So
 games are instead sequenced by *opponent strength*, strongest first, and the
@@ -408,6 +425,10 @@ def seeding_rows(stats):
 
 LEADERBOARD_SIZE = 10
 
+# Analyzed games needed to appear in the leaderboard. Flat on purpose — see
+# mistake_leaderboard.
+MIN_ANALYZED_GAMES = 6
+
 
 def _norm_name(s):
     """Analysis `player_name` is the nickname with separators merged out."""
@@ -463,7 +484,7 @@ def _find_rate(found, missed):
 
 
 def mistake_leaderboard(divisions, username):
-    """(rows, my_row, min_games) — every league player ranked by mistakes score.
+    """(rows, my_row) — every league player ranked by mistakes score.
 
     A season's divisions are skill-tiered, so the division table only ever says
     how the player is doing against their own tier. Mistakes score is the one
@@ -471,12 +492,16 @@ def mistake_leaderboard(divisions, username):
     optimal, not against whoever happened to be across the board — so it is worth
     ranking league-wide.
 
-    Only players with at least half the season's leading analyzed-game count
-    qualify: mid-season, a player two games in can post a freak 1.8 average that
-    would otherwise head the table. `min_games` is returned so the report can
-    state the bar it applied. The subject is returned separately and is never
-    filtered out, so a report always says where its subject stands even when
-    they haven't yet qualified (`rank` is then None).
+    Qualifying takes `MIN_ANALYZED_GAMES` analyzed games — a flat bar, deliberately
+    not a fraction of anyone's schedule. Some cut is needed, since a player two
+    games in can post a freak 1.8 average that would otherwise head the table, but
+    a proportional bar has to reckon with divisions differing in size and the
+    schedule capping at 14 games (see the module docstring), and a small division's
+    complete season is then shorter than a large one's. A flat 6 sidesteps that
+    entirely: it is a real sample by any division's standard, and no one who has
+    played a reasonable share of any schedule is excluded by it. The subject is
+    returned separately and is never filtered out, so a report always says where
+    its subject stands even when they haven't yet qualified (`rank` is then None).
 
     Rows are dicts with rank/username/user_id/division/avg_mi/games; rank is dense
     over the qualified list, ties broken by more games then username so the
@@ -487,9 +512,6 @@ def mistake_leaderboard(divisions, username):
         for d in divisions
         for s in (d.get("standings") or [])
     ]
-    max_analyzed = max((s.get("games_analyzed") or 0 for s in everyone), default=0)
-    min_games = max(1, (max_analyzed + 1) // 2)
-
     def row(s, rank):
         return {"rank": rank, "username": s.get("username"), "user_id": s.get("user_id"),
                 "division": s.get("division_number"), "avg_mi": s.get("avg_mistake_index"),
@@ -498,7 +520,7 @@ def mistake_leaderboard(divisions, username):
     qualified = sorted(
         (s for s in everyone
          if s.get("avg_mistake_index") is not None
-         and (s.get("games_analyzed") or 0) >= min_games),
+         and (s.get("games_analyzed") or 0) >= MIN_ANALYZED_GAMES),
         key=lambda s: (s["avg_mistake_index"], -(s.get("games_analyzed") or 0),
                        (s.get("username") or "").lower()),
     )
@@ -511,7 +533,7 @@ def mistake_leaderboard(divisions, username):
                      if (s.get("username") or "").lower() == username.lower()), None)
         if mine is not None and mine.get("avg_mistake_index") is not None:
             me = row(mine, None)
-    return rows, me, min_games
+    return rows, me
 
 
 def attach_bingo_rates(rows, season_id, max_workers=6):
@@ -566,7 +588,7 @@ def mistake_leaderboard_section(divisions, season, league, username):
     league standings page publishes per-division tables only, and a cross-division
     ranking of named players is not ours to publish on their behalf.
     """
-    rows, me, min_games = mistake_leaderboard(divisions, username)
+    rows, me = mistake_leaderboard(divisions, username)
     if not rows:
         return ""
     total_players = sum(len(d.get("standings") or []) for d in divisions)
@@ -615,17 +637,17 @@ def mistake_leaderboard_section(divisions, season, league, username):
     elif me["rank"] is None:
         lines.append(
             f"*{username} is unranked here: the table counts only players with at "
-            f"least {min_games} analyzed game(s) this season, and {username} has "
-            f"{me['games']}. The figures shown are over those games.*"
+            f"least {MIN_ANALYZED_GAMES} analyzed games this season, and {username} "
+            f"has {me['games']}. The figures shown are over those games.*"
         )
     else:
         lines.append(
             f"**{username} ranks {_ordinal(me['rank'])} of {len(rows)}** qualified "
             f"players league-wide on mistakes score ({_fmt(round(me['avg_mi'], 2))} "
             f"over {me['games']} games), with a bingo find rate of "
-            f"{me.get('find_rate', '—')}. Qualifying needs at least {min_games} "
-            "analyzed game(s) — half the season's leading total — so a player two "
-            "games into the season can't top the table on a small sample."
+            f"{me.get('find_rate', '—')}. Qualifying takes "
+            f"{MIN_ANALYZED_GAMES} analyzed games, so a player two games into the "
+            "season can't top the table on a small sample."
         )
     return "\n".join(lines)
 
@@ -747,7 +769,7 @@ def report_extras(collection_uuid, stats, agg):
         f"rating (seed 1 = strongest), not by round. Cross-check: {verdict}."
     )
 
-    lb_rows, me, _ = mistake_leaderboard(divisions, entry["username"])
+    lb_rows, me = mistake_leaderboard(divisions, entry["username"])
     if me is not None and me["rank"] is not None:
         digest_line += (
             f" League-wide mistakes-score leaderboard (all {len(divisions)} divisions, "
