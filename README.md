@@ -19,6 +19,14 @@ running the daily work unattended.
   scores, mistakes, bingos, etc.) pulled from Woogles BestBot analysis
   (`tournament-analysis` skill). A GitHub Actions cron regenerates and emails
   these daily.
+- **Woogles league seasons** — `scripts/woogles_league.py` turns each season of
+  a Woogles league (Collins, NWL, …) into a collection named
+  `Collins League - Season 18`, which the report pipeline above then picks up
+  unchanged. A league is a round robin with no meaningful round order, so games
+  are ordered by opponent rating (seed 1 = strongest) rather than by round, and
+  every report is cross-checked against the division's own standings table on
+  woogles.io. The daily cron syncs the current season, so a finished game joins
+  its collection on the next run with no manual step.
 - **Curley tracker** — a Google Sheet logging every practice game against
   James Curley, auto-enriched with BestBot stats and kept in sync with a
   matching Woogles collection (`curley-tracker` skill). The same cron audits
@@ -40,6 +48,7 @@ the project root (gitignored).
 
 ## Reports
 
+- [`reports/collins-league-season-18-report.md`](reports/collins-league-season-18-report.md) — Collins League S18 Div 14, 9-3 +1042 (2nd of 13)
 - [`reports/causeway-2026-report.md`](reports/causeway-2026-report.md) — Causeway 2026, 9-10 +144
 - [`reports/causeway-2026-budak-report.md`](reports/causeway-2026-budak-report.md) — Causeway 2026, Budak
 - [`reports/austin-one-day-aug-23-report.md`](reports/austin-one-day-aug-23-report.md) — Austin One-Day Aug '23, 5-1 +500

@@ -8,6 +8,8 @@ functions implement and for the upstream data-fetch steps (1-4) that produce
 the `{"meta", "analysis", "history"}` game dicts these functions consume.
 """
 import hashlib
+import json
+import os
 import re
 import time
 import random
@@ -15,13 +17,116 @@ import random
 import requests
 
 BASE = "https://woogles.io/api"
+PROFILE_URL = "https://woogles.io/profile/{}"
+
+
+def woogles_username(player):
+    """The player's real Woogles account name, or None if they have no account.
+
+    Only games actually played on Woogles identify their players by account. In a
+    game created through the annotator the "player" is just a free-text label the
+    uploader typed, and turning that into a profile link is wrong — usually the
+    link is dead, and worse, a label that happens to collide with some stranger's
+    username would point at that stranger.
+
+    Annotator uploads have been observed to synthesise `user_id` two different
+    ways: `internal-<nickname>` (e.g. `internal-Michael_Donegan`) and the bare
+    nickname itself (`user_id: "JamesCurley"`). Both are caught by the same rule:
+    a real Woogles account's id is an opaque 22-character key
+    (`ZyTogV4LzXY2AFsT7wCW8T`) that is never derived from the chosen nickname.
+    Checking the id rather than the collection's `is_annotated` flag keeps this
+    correct per-player, so a collection mixing uploads with played games still
+    links only the real accounts.
+    """
+    uid = (player.get("user_id") or "").strip()
+    nick = (player.get("nickname") or "").strip()
+    if not uid or not nick or uid.startswith("internal-") or uid == nick:
+        return None
+    return nick
+
+
+# A person's real name is public in tournament results; their Woogles handle is
+# public on their profile. The *link between the two* is neither, and is not ours
+# to publish — someone may deliberately keep their online identity separate from
+# their real-world one. So this mapping is private-by-construction and opt-in:
+#
+#   * it is asserted by hand, never inferred from a name that merely resembles a
+#     username (that guess would eventually point at an innocent stranger);
+#   * it lives in data/, which this public repo gitignores in full, so it cannot
+#     be committed by accident;
+#   * automation reads it from WOOGLES_NAME_REGISTRY (a GitHub Actions secret)
+#     rather than from the repo;
+#   * when neither source is present the feature is simply off, which is the
+#     correct default for any report rendered for anyone but its owner.
+#
+# Format is {username: [aliases as they appear in game data]}, e.g.
+#   {"james": ["James Curley", "JamesCurley", "JC"]}
+NAME_REGISTRY_PATH = "data/woogles-usernames.json"
+_NAME_REGISTRY = None
+
+
+def _norm_label(s):
+    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+
+
+def load_name_registry(force=False):
+    """{normalized alias: username}. Empty when no private registry is configured."""
+    global _NAME_REGISTRY
+    if _NAME_REGISTRY is not None and not force:
+        return _NAME_REGISTRY
+    raw = None
+    inline = os.environ.get("WOOGLES_NAME_REGISTRY", "").strip()
+    if inline:
+        try:
+            raw = json.loads(inline)
+        except ValueError:
+            raw = None
+    if raw is None and os.path.exists(NAME_REGISTRY_PATH):
+        try:
+            with open(NAME_REGISTRY_PATH) as f:
+                raw = json.load(f)
+        except (OSError, ValueError):
+            raw = None
+    registry = {}
+    for username, aliases in (raw or {}).items():
+        if isinstance(aliases, str):
+            aliases = [aliases]
+        for alias in list(aliases or []) + [username]:
+            registry[_norm_label(alias)] = username
+    _NAME_REGISTRY = registry
+    return registry
+
+
+def _label_matches_username(name, username):
+    return _norm_label(name) == _norm_label(username)
+
+
+def opponent_cell(name, username):
+    """Opponent as displayed in the report: real name plus their Woogles username
+    linked to their profile. Collapses to just the link when the display name adds
+    nothing (no real name on file, so `name` is already the username).
+
+    `username` comes from the game's own account data when the game was played on
+    Woogles; for an annotator upload there is no account, so fall back to the
+    private name registry above (off unless configured).
+    """
+    username = username or load_name_registry().get(_norm_label(name))
+    if not username:
+        return name
+    link = f"[{username}]({PROFILE_URL.format(username)})"
+    return link if _label_matches_username(name, username) else f"{name} ({link})"
 
 
 def is_jesse(p):
     nick = (p.get("nickname") or "").lower().replace("_", "")
     real = (p.get("real_name") or "").lower()
     uid = (p.get("user_id") or "").lower()
-    return nick in ("jd", "jessed", "jesseday") or "jesse" in real or uid == "magrathean"
+    # "magrathean" is the nickname on games actually played on Woogles (league,
+    # casual); the rest are labels used on annotator uploads. Matching it by
+    # nickname as well as user_id means identification no longer depends on the
+    # profile happening to carry a real name.
+    return (nick in ("jd", "jessed", "jesseday", "magrathean")
+            or "jesse" in real or uid == "magrathean")
 
 
 def _normalize_nick(nick):
@@ -72,7 +177,7 @@ def get_opp_name(meta, players, jesse_idx):
     real = format_real_name(opp.get("real_name", ""))
     title = re.sub(r"^\([^)]+\)\s*", "", meta["chapter_title"])
     title = re.sub(
-        r"^(Round\s+\d+|Rd\s*\d+|Game\s*#?\d+(?:\s*[-–]\s*\d{4}-\d{2}-\d{2})?)\s*[-–]?\s*",
+        r"^(Round\s+\d+|Rd\s*\d+|Seed\s*\d+|Game\s*#?\d+(?:\s*[-–]\s*\d{4}-\d{2}-\d{2})?)\s*[-–]?\s*",
         "",
         title,
         flags=re.I,
@@ -278,7 +383,11 @@ def compute_game(r, subject=None):
     jesse_score = history["final_scores"][jesse_idx]
     opp_score = history["final_scores"][opp_idx]
     opp_name = get_opp_name(meta, history["players"], jesse_idx)
-    game_url = f'https://woogles.io/anno/{meta["game_id"]}'
+    opp_username = woogles_username(history["players"][opp_idx])
+    # Annotator uploads live at /anno/<id>, games actually played on Woogles at
+    # /game/<id> — linking a played game as /anno/ yields a dead page.
+    url_path = "anno" if meta.get("is_annotated") else "game"
+    game_url = f'https://woogles.io/{url_path}/{meta["game_id"]}'
 
     summary = summary_for_index(analysis, jesse_idx)
     mistake_index = summary["mistake_index"] if summary else None
@@ -300,12 +409,19 @@ def compute_game(r, subject=None):
             else:
                 opp_bingos += 1
 
-    jesse_blanks = 0
+    # blanks_played and high_turn are what the Woogles league standings table
+    # publishes, so track them separately from "blanks drawn" (which also counts
+    # blanks exchanged away or stranded on the final rack) to keep the league
+    # cross-check comparing like with like.
+    jesse_blanks = jesse_blanks_played = jesse_high_turn = 0
     for ev in (history.get("events") or []):
         if ev["player_index"] != jesse_idx:
             continue
         if ev["type"] == "TILE_PLACEMENT_MOVE":
-            jesse_blanks += sum(1 for c in (ev.get("played_tiles") or "") if c.islower())
+            blanks = sum(1 for c in (ev.get("played_tiles") or "") if c.islower())
+            jesse_blanks += blanks
+            jesse_blanks_played += blanks
+            jesse_high_turn = max(jesse_high_turn, ev.get("score") or 0)
         elif ev["type"] == "EXCHANGE":
             jesse_blanks += (ev.get("exchanged") or "").count("?")
     last_racks = history.get("last_known_racks") or []
@@ -351,13 +467,18 @@ def compute_game(r, subject=None):
         if t.get("is_phony"):
             phonies_played += 1
 
-    rd_match = re.search(r"(?:Rd\.?\s*|Round\s*)(\d+)", meta["chapter_title"], re.I)
+    # "Seed <n>" is how league collections encode their ordering: a league is a
+    # round robin with no meaningful round order, so games are sequenced by
+    # opponent strength instead (see woogles_league.py).
+    rd_match = re.search(r"(?:Rd\.?\s*|Round\s*|Seed\s*)(\d+)", meta["chapter_title"], re.I)
     rnd = int(rd_match.group(1)) if rd_match else meta["chapter_number"]
 
     return {
         "round": rnd,
+        "game_id": meta["game_id"],
         "title": meta["chapter_title"],
         "opponent": opp_name,
+        "opp_username": opp_username,
         "game_url": game_url,
         "lexicon": history.get("lexicon"),
         "jesse_score": jesse_score,
@@ -369,6 +490,8 @@ def compute_game(r, subject=None):
         "jesse_bingos": jesse_bingos,
         "opp_bingos": opp_bingos,
         "jesse_blanks": jesse_blanks,
+        "jesse_blanks_played": jesse_blanks_played,
+        "jesse_high_turn": jesse_high_turn,
         "endgame_spread_lost": endgame_spread_lost,
         "win_prob_lost": win_prob_lost,  # multiply by 100 for %
         "opp_win_prob_lost": opp_win_prob_lost,  # only valid when opp_fully_annotated; multiply by 100 for %
@@ -567,15 +690,29 @@ def _progression(stats):
     return " ".join("".join(boxes[i : i + 5]) for i in range(0, len(boxes), 5))
 
 
-def render_report(stats, agg, notes, title, summary_md=None, subject_display="Jesse Day"):
+def render_report(stats, agg, notes, title, summary_md=None, subject_display="Jesse Day",
+                  round_label=None, extra_sections=None):
+    """Render the report markdown.
+
+    `round_label` renames the ordering column when games aren't sequenced by
+    round — a league is a round robin whose games have no meaningful order, so it
+    passes "Seed" and the column reports opponent strength instead. Setting it
+    also suppresses the missing-rounds note, which is meaningless for an ordering
+    that is contiguous by construction.
+
+    `extra_sections` is a list of ready-made markdown blocks appended after the
+    per-game tables and before the Summary (the league cross-check uses it).
+    """
     n = agg["n"]
+    col_label = round_label or "Rnd"
+    short_label = round_label or "Rd"
     lines = [f"# {title}"]
 
     missing_rounds_note = ""
     rounds = sorted(g["round"] for g in stats)
     expected = list(range(rounds[0], rounds[-1] + 1)) if rounds else []
     missing = sorted(set(expected) - set(rounds))
-    if missing:
+    if missing and round_label is None:
         label = "Rd" if len(missing) == 1 else "Rds"
         missing_rounds_note = f" ({label} {', '.join(map(str, missing))} missing)"
     lines.append(
@@ -592,7 +729,10 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     mi_qualifier = ""
     if agg["mi_games"] < n:
         unavailable_rounds = sorted(g["round"] for g in stats if g["mistake_index"] is None)
-        mi_qualifier = f" (over {agg['mi_games']} games; Rds {', '.join(map(str, unavailable_rounds))} unavailable)"
+        mi_qualifier = (
+            f" (over {agg['mi_games']} games; {short_label}s "
+            f"{', '.join(map(str, unavailable_rounds))} unavailable)"
+        )
     avg_mi_str = f"{agg['avg_mi']:.2f}{mi_qualifier}" if agg["avg_mi"] is not None else "—"
     lines.append(f"| Average Mistakes Score | {avg_mi_str} |")
     lines.append(f"| Average Score | {agg['avg_jesse']:.1f} |")
@@ -628,7 +768,7 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
 
     show_opp_cols = agg["n_opp_annotated"] > 0
     header = (
-        "| Rnd | Game | Opponent | Result | Jesse | Opp | Spread | Mistakes | Jesse Bingos | "
+        f"| {col_label} | Game | Opponent | Result | Jesse | Opp | Spread | Mistakes | Jesse Bingos | "
         "Missed Bingos | Opp Bingos | Jesse Blanks | Endgame Spread Lost | Win% Lost"
     )
     sep = "|---|---|---|---|---|---|---|---|---|---|---|---|---|---"
@@ -643,7 +783,8 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     for g, note in zip(stats, notes):
         mi_str = f"{g['mistake_index']:.1f}" if g["mistake_index"] is not None else "—"
         row = (
-            f"| {g['round']} | [↗]({g['game_url']}) | {g['opponent']} | {g['result']} | "
+            f"| {g['round']} | [↗]({g['game_url']}) | "
+            f"{opponent_cell(g['opponent'], g.get('opp_username'))} | {g['result']} | "
             f"{g['jesse_score']} | {g['opp_score']} | {sp_str(g['jesse_score']-g['opp_score'])} | "
             f"{mi_str} | {g['jesse_bingos']} | {g['missed_bingos']} | {g['opp_bingos']} | "
             f"{g['jesse_blanks']} | {g['endgame_spread_lost']} | {round(g['win_prob_lost']*100,1)}%"
@@ -682,11 +823,15 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     lines.append("")
     lines.append("*Lowercase = blank tile; (X) = board tile X was already there*")
     lines.append("")
-    lines.append("| Rd | Opponent | Word |")
+    lines.append(f"| {short_label} | Opponent | Word |")
     lines.append("|---|---|---|")
     for g in stats:
         for w in g.get("missed_bingo_words", []):
             lines.append(f"| {g['round']} | {g['opponent']} | {w} |")
+
+    for section in extra_sections or []:
+        lines.append("")
+        lines.append(section.strip())
 
     if summary_md:
         lines.append("")
