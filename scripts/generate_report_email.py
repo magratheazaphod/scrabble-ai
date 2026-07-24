@@ -21,6 +21,7 @@ import anthropic
 import markdown
 
 import tournament_report as tr
+import woogles_league as wl
 
 CENTRAL = ZoneInfo("America/Chicago")
 SENT_MARKER_PATH = "data/last-report-sent.txt"
@@ -118,7 +119,9 @@ def generate_summary(client, digest, subject=None):
 
 Write a 2-4 sentence narrative summary of this tournament for the report's "## Summary" section. Be factual and specific: name opponents, cite the standout numbers from the digest. No headers, no meta-commentary, no mention of the digest or your methodology — this is prose for {audience}.
 
-Example of the style and length to match (from a different tournament, do not reuse its content):
+Honour any "Challenge rule:" line in the digest — it constrains what is worth saying. In particular, under VOID no phony can be played, so phony counts are not a credit to anyone and mistakes scores are not comparable to challenge-rule events.
+
+Example of the style and length to match (from a different tournament, do not reuse its content — note that its phony praise applies only because that event allowed phonies):
 {EXAMPLE_SUMMARY}"""
 
     try:
@@ -129,7 +132,11 @@ Example of the style and length to match (from a different tournament, do not re
         )
         text_blocks = [b.text for b in response.content if b.type == "text"]
         return text_blocks[-1].strip() if text_blocks else None
-    except anthropic.APIError as e:
+    except Exception as e:  # noqa: BLE001
+        # Deliberately broad: the Summary is the one optional, non-deterministic
+        # part of the report, and no failure to write it — an API error, but also
+        # a missing/!invalid key, which raises TypeError long before any request —
+        # is worth losing the whole email over.
         print(f"Summary generation failed: {e}", file=sys.stderr)
         return None
 
@@ -239,6 +246,18 @@ def main():
             subject_identity.get("real_name") or subject_identity["nickname"]
         )
 
+        # League seasons get seed ordering and a cross-check against the division
+        # standings. Never let a league lookup (which is live, unlike the rest of
+        # this run) take down the whole email — degrade to a plain report.
+        extras = {}
+        try:
+            extras = wl.report_extras(col["uuid"], stats, agg)
+        except Exception as e:  # noqa: BLE001 — any failure here is non-fatal
+            print(f"League extras unavailable for '{col['title']}': {e}", file=sys.stderr)
+        if extras.get("digest_line"):
+            digest = f"{digest}\n{extras['digest_line']}"
+            dhash = tr.digest_hash(digest)
+
         summary_md = None
         if prior and prior.get("digest_hash") == dhash and prior.get("summary_md"):
             print(f"Reusing cached summary for '{col['title']}' (digest unchanged)", file=sys.stderr)
@@ -251,7 +270,12 @@ def main():
             if summary_md is None:
                 print(f"No summary for '{col['title']}' this run — rendering without one.", file=sys.stderr)
 
-        report_md = tr.render_report(stats, agg, notes, col["title"], summary_md=summary_md, subject_display=subject_display)
+        report_md = tr.render_report(
+            stats, agg, notes, col["title"], summary_md=summary_md,
+            subject_display=subject_display,
+            round_label=extras.get("round_label"),
+            extra_sections=extras.get("sections"),
+        )
         report_sections.append(report_md)
 
         if not one_off:

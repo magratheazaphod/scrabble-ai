@@ -177,6 +177,61 @@ Analysis takes 2–10 minutes per game (Monte-Carlo simulation). Queue all pendi
 
 `.github/workflows/woogles-report.yml` already runs a GitHub Actions cron multiple times a day (retrying every 30 min), calling `scripts/fetch_woogles_snapshot.py` to request analysis for any pending games across **every collection on Jesse's profile** (respecting the rolling 24h rate limit), then `scripts/generate_report_email.py` to build and email the report once a collection is fully analyzed. State lives in `.github/report-state.json` (committed to master) plus markers on the `woogles-data` branch. Any newly created collection is picked up automatically on the next run — no per-tournament setup, scheduled task, or cloud routine is ever needed to "resume" or "finish" analysis for a collection. If Jesse asks about a stalled/incomplete report, check this workflow's state/runs rather than proposing new automation.
 
+### Woogles league seasons — already automated, use `scripts/woogles_league.py`
+
+Jesse plays the Woogles Collins league (`woogles.io/leagues/csw`). A season is a
+14-day round robin inside one division; every game is played on Woogles and
+auto-analyzed by BestBot, so there is nothing to upload and no analysis quota to
+spend. The only missing piece is the collection, and `scripts/woogles_league.py`
+builds it — do not hand-roll this:
+
+```bash
+python3 scripts/woogles_league.py                 # current CSW season
+python3 scripts/woogles_league.py --season 18     # a specific season
+python3 scripts/woogles_league.py --all-leagues   # what the cron runs
+python3 scripts/woogles_league.py --dry-run       # plan only
+```
+
+It is idempotent and meant to be re-run mid-season; the daily
+`woogles-report.yml` cron runs `--all-leagues` before the snapshot step, so a
+game that finished since the last run joins its collection automatically.
+
+Three things differ from a tournament report, all handled by the module:
+
+- **Ordering.** League games have no round (`round` is 0 for all of them), so
+  chapter titles are `Seed <n> - <opponent> vs JD`, seeded by each opponent's
+  rating **in the league's own format** (`CSW19.classic.corres` — leagues are
+  correspondence; note Woogles rates every CSW lexicon under the legacy `CSW19`
+  key, per `transformLexiconName` in liwords). `compute_game` parses `Seed <n>`
+  into `round`, and `render_report(..., round_label="Seed")` labels the column.
+- **Cross-check.** `woogles_league.report_extras(uuid, stats, agg)` returns the
+  render arguments plus a digest line, comparing 11 computed figures against the
+  division standings table. Call it unconditionally — it returns `{}` for any
+  non-league collection.
+- **Played, not annotated.** These are real games: `is_annotated` is false, so
+  they live at `/game/<id>` (not `/anno/<id>`), and both players' racks are fully
+  known, so `opp_fully_annotated` is true for every game and the opponent columns
+  are real numbers rather than "—".
+
+### Linking opponents to Woogles profiles
+
+`opponent_cell` renders an opponent as `Real Name - [username](profile link) (#seed)`
+— the leading name is dropped when no real name is on file (so the label already
+IS the username), and the `(#n)` suffix appears only for a seeded collection (a
+league, where `render_report` is called with `round_label="Seed"`).
+The username comes from the game's own account data via `woogles_username`, which
+requires the player's `user_id` to be a real opaque account key — annotator
+uploads synthesise it as either `internal-<nickname>` or the bare nickname, and
+neither may be linked (the link would usually be dead, and could point at a
+stranger whose handle happens to match the label).
+
+For uploads there is an optional private fallback: `data/woogles-usernames.json`
+(or the `WOOGLES_NAME_REGISTRY` env var / Actions secret), mapping
+`{username: [aliases]}`. **Keep it out of the repo** — `data/` is gitignored and
+this repo is public. A real name ↔ handle mapping is not ours to publish; players
+may keep those identities separate deliberately. Unset means the feature is off,
+which is the right default for a report about anyone but Jesse.
+
 ### Testing changes to `fetch_woogles_snapshot.py` — scope the run, don't sweep the archive
 
 A bare `python3 scripts/fetch_woogles_snapshot.py` walks **every** collection on Jesse's profile: a `GetAnalysisStatus` per game in Phase 1, then a `GetAnalysisResult` **and** a `GetGameHistory` per analyzed game in Phase 3. That is ~700 HTTP reads and ~2 minutes per run at the current ~230-game archive — enough to blow past a 120s command timeout. None of it spends analysis quota (they're all reads), but it is a wasteful way to test a code path, and Jesse has called it out as such (2026-07-22).
@@ -251,10 +306,14 @@ never the Woogles login username.
 - For very large collections (50+ games), check with Jesse before committing to a full analysis sweep in one sitting.
 - **Endgame spread lost context:** values of 20+ in a single game are worth flagging — use per-turn `played_move` / `optimal_move` / `spread_loss` to explain what happened.
 - **Win% Lost:** sum of `win_prob_loss` over Jesse's turns × 100. High in a win = nearly gave it away; high in a close loss = structural deficit, not bad luck.
-- **Phonies:** `is_phony` = word not in lexicon (games are configured for CSW — the lexicon Jesse always plays, confirmed via `history['lexicon']`, e.g. `CSW21`/`CSW24`); check it for BOTH players, not just Jesse (`analysis['turns'][i]['is_phony']` is the authoritative flag — don't infer phony-ness from the event log alone, since an *unchallenged* phony has no `PHONY_TILES_RETURNED` event and still scores). If `total_phonies == 0`, omit "Games per Phony Played" from the report. Every phony gets named in the per-game note with a trailing `*` (`phony WORD*`, or `phony WORD* (unchallenged)` if it wasn't caught); opponent phonies are attributed by the opponent's name from the Opponent column. **Multi-word plays:** when the play formed more than one word (`event['words_formed']` has >1 entry — e.g. a bingo crossing several tiles, or a short play forming a cross word), show ALL of them joined by `/` before the `*` (e.g. `GU/PU*`) — do NOT assume the primary/longest word is the invalid one. This bit Jesse: two "phonies" (GU, LINUX) turned out to be valid CSW words, and the actual violation was almost certainly the cross word (PU, NEEL) formed alongside them. Never assert which specific word was invalid; let Jesse read the full set and judge for himself.
+- **Phonies:** `is_phony` = word not in lexicon (games are configured for CSW — the lexicon Jesse always plays, confirmed via `history['lexicon']`, e.g. `CSW21`/`CSW24`); check it for BOTH players, not just Jesse (`analysis['turns'][i]['is_phony']` is the authoritative flag — don't infer phony-ness from the event log alone, since an *unchallenged* phony has no `PHONY_TILES_RETURNED` event and still scores). If `total_phonies == 0`, omit "Games per Phony Played" from the report (and under VOID omit every phony stat — see the VOID entry below). Every phony gets named in the per-game note with a trailing `*` (`phony WORD*`, or `phony WORD* (unchallenged)` if it wasn't caught); opponent phonies are attributed by the opponent's name from the Opponent column. **Multi-word plays:** when the play formed more than one word (`event['words_formed']` has >1 entry — e.g. a bingo crossing several tiles, or a short play forming a cross word), show ALL of them joined by `/` before the `*` (e.g. `GU/PU*`) — do NOT assume the primary/longest word is the invalid one. This bit Jesse: two "phonies" (GU, LINUX) turned out to be valid CSW words, and the actual violation was almost certainly the cross word (PU, NEEL) formed alongside them. Never assert which specific word was invalid; let Jesse read the full set and judge for himself.
+- **VOID challenge rule (leagues) — never credit a phony-free record.** `history['challenge_rule']` is `FIVE_POINT` (or similar) for over-the-board tournament uploads, but `VOID` for Woogles league play and most online games. VOID means the client refuses an invalid play outright: **a phony cannot be played at all.** When every game in a collection is VOID, `aggregate` sets `void_challenge` and nulls the phony aggregates; the report then omits the phony rows and the `*` footnote, and `build_digest` states the rule in prose so the summary writer knows. In any prose you write about such a collection — summary, chat answer, ad-hoc analysis — do NOT praise, or even mention, zero phonies or "word-validity discipline": zero is the rule, not an achievement. **The same applies to the mistakes score:** playing a phony is not an available error under VOID, so mistakes scores run structurally a little lower than in challenge-rule play. Read league mistakes figures against other league play, never against OTB tournament numbers, and don't call a low league average exceptional on a comparison that isn't like-for-like.
 - **Missed bingo validation:** always cross-check `missed_bingo` against the history event rack. The analysis occasionally stores an incorrect rack, causing a false-positive (confirmed in Causeway R2: analysis showed BEEIORZ, actual was BEELORZ). If `validate_bingo(om, history_rack)` returns False, skip the entry.
 - **Nigel Richards' "missed" bingos:** when the opponent is Nigel Richards, phrase his passed-over bingos as "passed up" rather than "missed" in game notes (`game_note`'s `miss_verb` checks for `'nigel' in opp_name.lower()`) — he sees them and chooses not to play them, not a genuine oversight. Applies only to the opponent-attributed note text; Jesse's own missed-bingo wording and the Missed Bingos table (which only tracks Jesse's) are unaffected.
 - **Opponent mistake index / Win% Lost:** only trustworthy when `opp_fully_annotated` is True, which requires all three of: opponent's `mistake_index` non-null in `player_summaries`, the game actually finished (`history["play_state"] == "GAME_OVER"`), and **`opp_racks_complete` — a full 7-tile rack on every opponent turn (short racks allowed only when the bag is empty)**. The rack check is the one that actually discriminates: Woogles infers partial racks from played tiles and scores them anyway, so mistake_index is non-null even for single-side annotations (confirmed Causeway 2026 — 19/19 games had non-null opp mistake_index, only 3 were fully annotated). Tournament-level averages (`avg_opp_mi`, `avg_opp_wpl`) must only include `opp_fully_annotated` games, not the full collection.
+- **Measure the opponent the way you measure Jesse, wherever the data allows.** A league game is *played*, not annotated, so both racks are known every turn and `opp_fully_annotated` is true for all 12 games — the rare tournament equivalent is a doubly-annotated or livestreamed game. Whenever it is true, the opponent gets the same treatment Jesse does: `Opp Mistakes | Opp Missed Bingos | Opp Blanks | Opp Endgame Spread Lost | Opp Win% Lost` in the per-game table (mirroring the order of Jesse's own columns), plus Opponent Bingo Find Rate / Missed Bingos / Blanks Drawn / Avg Endgame Spread Lost in the aggregate table, and an **Opponent Missed Bingos** section formatted identically to the Missed Bingos one. This is not league-only — it applies to any collection, game by game, and games that don't qualify show "—" and are excluded from every Opp denominator (which is `n_opp_annotated`, footnoted under the table). Omit the Opponent Missed Bingos section entirely when no qualifying game has one.
+- **Never let a missed bingo change hands.** The per-game note writes Jesse's own misses as a bare `missed bingo #N (WORD)`, and a summary once read that as the *opponent's* miss and published it (Season 18, BIATHLETE). `build_digest` therefore states both lists with explicit attribution, and the two report tables are kept separate rather than merged with a "who" column. Preserve both when editing.
+- **Blanks — drawn vs played:** the report displays `jesse_blanks` (**drawn**: every blank that reached the rack, including any exchanged away or stranded at the end) because that is the luck indicator Jesse wants. `compute_game` also returns `jesse_blanks_played`, which is never displayed and exists only so the league cross-check can compare like with like — the Woogles standings table counts blanks *played*. Do not "fix" the report to match the platform here; the difference is intentional.
 - **Board reconstruction:** `build_snapshots_and_racks` runs in ~2ms per 19-game tournament and uses zero Claude tokens. Prefer it over dictionary lookup for missed-bingo word resolution.
 - **Game URL:** `https://woogles.io/anno/<game_id>`
 - **Win/Loss Progression:** a single line of 🟩 (win) / 🟥 (loss) boxes, one per game in chronological order, no round numbers and no labels. Group into blocks of 5 separated by a space for readability (no separator within a block). Built directly from `stats` (already sorted by round):

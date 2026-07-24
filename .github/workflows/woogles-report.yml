@@ -56,6 +56,9 @@ jobs:
           git show origin/woogles-data:data/failed-analysis.json > data/failed-analysis.json 2>/dev/null || rm -f data/failed-analysis.json
           # Baseline game-history fingerprints, to spot games edited after analysis.
           git show origin/woogles-data:data/analyzed-fingerprints.json > data/analyzed-fingerprints.json 2>/dev/null || rm -f data/analyzed-fingerprints.json
+          # Which collections are league seasons, and what each game was seeded on —
+          # the report step needs this to add seed ordering and the cross-check.
+          git show origin/woogles-data:data/league-collections.json > data/league-collections.json 2>/dev/null || rm -f data/league-collections.json
           if [ "${{ github.event.inputs.target_username }}" = "" ] && [ "${{ github.event.inputs.target_collection_uuid }}" = "" ]; then
             git show origin/woogles-data:data/last-report-sent.txt > data/last-report-sent.txt 2>/dev/null || echo "" > data/last-report-sent.txt
             # Curley enrichment state: which analyzed-game set was last processed,
@@ -63,6 +66,19 @@ jobs:
             git show origin/woogles-data:data/curley-enrich-marker.txt > data/curley-enrich-marker.txt 2>/dev/null || rm -f data/curley-enrich-marker.txt
             git show origin/woogles-data:data/curley-enrich-terminal.txt > data/curley-enrich-terminal.txt 2>/dev/null || rm -f data/curley-enrich-terminal.txt
           fi
+
+      # Before the snapshot, so a game that finished since the last run is already
+      # in its season's collection and gets picked up by the same pass. League
+      # games are auto-analyzed by BestBot, so this spends no analysis quota — it
+      # only builds the collection the report pipeline reads. Skipped for one-off
+      # runs, which report on an explicitly named target. Never fails the report:
+      # a league API hiccup should not cost Jesse the day's email.
+      - name: Sync league seasons into collections
+        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
+        continue-on-error: true
+        env:
+          WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
+        run: python scripts/woogles_league.py --all-leagues
 
       - name: Fetch fresh snapshot (requests analysis for pending games)
         run: python scripts/fetch_woogles_snapshot.py
@@ -74,6 +90,10 @@ jobs:
       - run: python scripts/generate_report_email.py
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
+          # Private real-name -> Woogles-handle map, kept out of this public repo.
+          # Unset is fine: the report then names people without linking profiles.
+          WOOGLES_NAME_REGISTRY: ${{ secrets.WOOGLES_NAME_REGISTRY }}
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           TARGET_USERNAME: ${{ github.event.inputs.target_username }}
@@ -129,6 +149,7 @@ jobs:
           cp data/rate-limited-until.txt /tmp/rate-limited-until.txt
           cp data/failed-analysis.json /tmp/failed-analysis.json 2>/dev/null || true
           cp data/analyzed-fingerprints.json /tmp/analyzed-fingerprints.json 2>/dev/null || true
+          cp data/league-collections.json /tmp/league-collections.json 2>/dev/null || true
           cp data/woogles-snapshot.json /tmp/woogles-snapshot.json
           one_off=false
           if [ "${{ github.event.inputs.target_username }}" != "" ] || [ "${{ github.event.inputs.target_collection_uuid }}" != "" ]; then
@@ -145,7 +166,7 @@ jobs:
           cp /tmp/rate-limited-until.txt data/rate-limited-until.txt
           git add -f data/rate-limited-until.txt
           # Quota state, like the rate-limit marker: persisted on every run, one-off included.
-          for f in failed-analysis.json analyzed-fingerprints.json; do
+          for f in failed-analysis.json analyzed-fingerprints.json league-collections.json; do
             if [ -f "/tmp/$f" ]; then cp "/tmp/$f" "data/$f"; git add -f "data/$f"; fi
           done
           if [ "$one_off" = false ]; then
