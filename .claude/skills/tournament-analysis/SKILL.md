@@ -179,8 +179,8 @@ Analysis takes 2–10 minutes per game (Monte-Carlo simulation). Queue all pendi
 
 ### Woogles league seasons — already automated, use `scripts/woogles_league.py`
 
-Jesse plays the Woogles Collins league (`woogles.io/leagues/csw`). A season is a
-14-day round robin inside one division; every game is played on Woogles and
+Jesse plays the Woogles Collins league (`woogles.io/leagues/csw`). A season runs
+14 days inside one division; every game is played on Woogles and
 auto-analyzed by BestBot, so there is nothing to upload and no analysis quota to
 spend. The only missing piece is the collection, and `scripts/woogles_league.py`
 builds it — do not hand-roll this:
@@ -195,6 +195,16 @@ python3 scripts/woogles_league.py --dry-run       # plan only
 It is idempotent and meant to be re-run mid-season; the daily
 `woogles-report.yml` cron runs `--all-leagues` before the snapshot step, so a
 game that finished since the last run joins its collection automatically.
+
+**Divisions are not all the same size, and the schedule caps at 14 games** (one
+per day of the 14-day season). A division of ≤15 plays a full round robin of
+size − 1 games; a division of 16–17 is capped at 14 and is *not* a full round
+robin. Season 18 ran 12-, 13-, and 14-game divisions side by side, with Jesse's
+Division 14 (13 players) complete at 12 games. **Never read a below-leader game
+count as unplayed games** — check `games_remaining` on the player's standing
+first. Saying "you have 2 games left" to Jesse about a season he had finished is
+a mistake already made once (2026-07-24); it is a division-size difference far
+more often than an actual gap.
 
 Three things differ from a tournament report, all handled by the module:
 
