@@ -119,7 +119,9 @@ def generate_summary(client, digest, subject=None):
 
 Write a 2-4 sentence narrative summary of this tournament for the report's "## Summary" section. Be factual and specific: name opponents, cite the standout numbers from the digest. No headers, no meta-commentary, no mention of the digest or your methodology — this is prose for {audience}.
 
-Example of the style and length to match (from a different tournament, do not reuse its content):
+Honour any "Challenge rule:" line in the digest — it constrains what is worth saying. In particular, under VOID no phony can be played, so phony counts are not a credit to anyone and mistakes scores are not comparable to challenge-rule events.
+
+Example of the style and length to match (from a different tournament, do not reuse its content — note that its phony praise applies only because that event allowed phonies):
 {EXAMPLE_SUMMARY}"""
 
     try:

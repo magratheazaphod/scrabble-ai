@@ -101,20 +101,25 @@ def _label_matches_username(name, username):
     return _norm_label(name) == _norm_label(username)
 
 
-def opponent_cell(name, username):
-    """Opponent as displayed in the report: real name plus their Woogles username
-    linked to their profile. Collapses to just the link when the display name adds
-    nothing (no real name on file, so `name` is already the username).
+def opponent_cell(name, username, seed=None):
+    """Opponent as displayed in the report: "Real Name - username (#seed)", where
+    the username links to their Woogles profile. Drops the leading name when it
+    adds nothing (no real name on file, so `name` is already the username), and
+    drops the "(#n)" when the collection has no seeding (a normal tournament,
+    where the ordering column is the round).
 
     `username` comes from the game's own account data when the game was played on
     Woogles; for an annotator upload there is no account, so fall back to the
     private name registry above (off unless configured).
     """
     username = username or load_name_registry().get(_norm_label(name))
+    suffix = f" (#{seed})" if seed is not None else ""
     if not username:
-        return name
+        return f"{name}{suffix}"
     link = f"[{username}]({PROFILE_URL.format(username)})"
-    return link if _label_matches_username(name, username) else f"{name} ({link})"
+    if _label_matches_username(name, username):
+        return f"{link}{suffix}"
+    return f"{name} - {link}{suffix}"
 
 
 def is_jesse(p):
@@ -428,11 +433,26 @@ def compute_game(r, subject=None):
     if len(last_racks) > jesse_idx and last_racks[jesse_idx]:
         jesse_blanks += last_racks[jesse_idx].count("?")
 
+    # Blanks the opponent DREW. Only meaningful when their racks are fully known
+    # (every league game; only occasionally a tournament upload) — the report
+    # shows "—" otherwise, since a single-side annotation can only ever see the
+    # blanks they actually played.
+    opp_blanks = 0
+    for ev in (history.get("events") or []):
+        if ev["player_index"] != opp_idx:
+            continue
+        if ev["type"] == "TILE_PLACEMENT_MOVE":
+            opp_blanks += sum(1 for c in (ev.get("played_tiles") or "") if c.islower())
+        elif ev["type"] == "EXCHANGE":
+            opp_blanks += (ev.get("exchanged") or "").count("?")
+    if len(last_racks) > opp_idx and last_racks[opp_idx]:
+        opp_blanks += last_racks[opp_idx].count("?")
+
     snapshots, racks = build_snapshots_and_racks(events)
     played_words = build_played_words(events)
 
     endgame_spread_lost = win_prob_lost = phonies_played = missed_bingos = 0
-    opp_win_prob_lost = 0
+    opp_win_prob_lost = opp_endgame_spread_lost = 0
     missed_bingo_words = []
     opp_missed_bingo_words = []
     jesse_phonies = []  # [{'words_formed', 'challenged'}]
@@ -460,6 +480,8 @@ def compute_game(r, subject=None):
         if t["player_index"] != jesse_idx:
             if opp_fully_annotated:
                 opp_win_prob_lost += t.get("win_prob_loss") or 0
+                if t.get("tiles_in_bag") == 0:
+                    opp_endgame_spread_lost += t.get("spread_loss") or 0
             continue
         if t.get("tiles_in_bag") == 0:
             endgame_spread_lost += t.get("spread_loss") or 0
@@ -481,6 +503,10 @@ def compute_game(r, subject=None):
         "opp_username": opp_username,
         "game_url": game_url,
         "lexicon": history.get("lexicon"),
+        # VOID (the Woogles league default) rejects invalid plays outright, so a
+        # phony can never reach the board and every phony statistic is trivially
+        # zero — see void_challenge in aggregate().
+        "challenge_rule": history.get("challenge_rule"),
         "jesse_score": jesse_score,
         "opp_score": opp_score,
         "result": "W" if jesse_score > opp_score else "L",
@@ -490,10 +516,12 @@ def compute_game(r, subject=None):
         "jesse_bingos": jesse_bingos,
         "opp_bingos": opp_bingos,
         "jesse_blanks": jesse_blanks,
+        "opp_blanks": opp_blanks,  # only trustworthy when opp_fully_annotated
         "jesse_blanks_played": jesse_blanks_played,
         "jesse_high_turn": jesse_high_turn,
         "endgame_spread_lost": endgame_spread_lost,
         "win_prob_lost": win_prob_lost,  # multiply by 100 for %
+        "opp_endgame_spread_lost": opp_endgame_spread_lost,  # only valid when opp_fully_annotated
         "opp_win_prob_lost": opp_win_prob_lost,  # only valid when opp_fully_annotated; multiply by 100 for %
         "phonies_played": phonies_played,
         "opp_phonies_played": len(opp_phonies),
@@ -567,11 +595,27 @@ def aggregate(stats):
     total_ob = sum(g["opp_bingos"] for g in stats)
     total_bl = sum(g["jesse_blanks"] for g in stats)
     total_eg = sum(g["endgame_spread_lost"] for g in stats)
+    # Opponent counterparts to Jesse's own stats. A league game is played, not
+    # annotated, so both racks are known on every turn and the opponent can be
+    # measured exactly as Jesse is; a tournament upload usually can't be, so
+    # every one of these is computed over `opp_ann_games` only.
+    n_ann = len(opp_ann_games)
+    total_opp_mb = sum(len(g["opp_missed_bingo_words"]) for g in opp_ann_games)
+    total_ob_ann = sum(g["opp_bingos"] for g in opp_ann_games)
+    total_opp_bl = sum(g["opp_blanks"] for g in opp_ann_games)
+    total_opp_eg = sum(g["opp_endgame_spread_lost"] for g in opp_ann_games)
+
     total_ph = sum(g["phonies_played"] for g in stats)
     total_opp_ph = sum(g["opp_phonies_played"] for g in stats)
     total_sp = sum(g["jesse_score"] - g["opp_score"] for g in stats)
 
+    # VOID challenge = the client refuses an invalid play, so nobody CAN play a
+    # phony. Reporting "0 phonies" there is not a finding, and praising it is
+    # actively wrong; every phony stat is suppressed for such a collection.
+    void_challenge = bool(stats) and all(g.get("challenge_rule") == "VOID" for g in stats)
+
     return {
+        "void_challenge": void_challenge,
         "record": f"{wins}-{n-wins} {sp_str(total_sp)}",
         "avg_jesse": round(sum(g["jesse_score"] for g in stats) / n, 1),
         "avg_opp": round(sum(g["opp_score"] for g in stats) / n, 1),
@@ -586,11 +630,21 @@ def aggregate(stats):
         "total_bl": total_bl,
         "avg_eg": round(total_eg / n, 1),
         "avg_wpl": round(sum(g["win_prob_lost"] for g in stats) / n * 100, 1),
-        "total_phonies": total_ph,
-        "total_opp_phonies": total_opp_ph,
+        "total_phonies": None if void_challenge else total_ph,
+        "total_opp_phonies": None if void_challenge else total_opp_ph,
         "games_per_mb": round(n / total_mb, 1) if total_mb else None,
-        "games_per_phony": round(n / total_ph, 1) if total_ph else None,
-        "n_opp_annotated": len(opp_ann_games),
+        "games_per_phony": round(n / total_ph, 1) if total_ph and not void_challenge else None,
+        "n_opp_annotated": n_ann,
+        "opp_bingo_find_rate": (
+            f"{total_ob_ann}/{total_ob_ann+total_opp_mb} "
+            f"({round(total_ob_ann/(total_ob_ann+total_opp_mb)*100,1)}%)"
+            if (total_ob_ann + total_opp_mb)
+            else "N/A"
+        ),
+        "total_opp_mb": total_opp_mb,
+        "games_per_opp_mb": round(n_ann / total_opp_mb, 1) if total_opp_mb else None,
+        "total_opp_bl": total_opp_bl,
+        "avg_opp_eg": round(total_opp_eg / n_ann, 1) if n_ann else None,
         "avg_opp_mi": (
             round(sum(g["opp_mistake_index"] for g in opp_ann_games) / len(opp_ann_games), 2)
             if opp_ann_games
@@ -706,6 +760,9 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     n = agg["n"]
     col_label = round_label or "Rnd"
     short_label = round_label or "Rd"
+    # Only a seeded collection (a league) has a seed to show next to the opponent;
+    # in a normal tournament the ordering column is the round number, not a rank.
+    seed_of = (lambda g: g["round"]) if round_label == "Seed" else (lambda g: None)
     lines = [f"# {title}"]
 
     missing_rounds_note = ""
@@ -743,26 +800,52 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     lines.append(f"| Total Blanks Drawn | {agg['total_bl']} ({round(agg['total_bl']/n,2):.2f}/game) |")
     lines.append(f"| Avg Endgame Spread Lost | {agg['avg_eg']:.1f} |")
     lines.append(f"| Avg Win% Lost | {agg['avg_wpl']:.1f}% |")
-    lines.append(f"| Total Phonies Played | {agg['total_phonies']} |")
-    lines.append(f"| Opponent Phonies Played | {agg['total_opp_phonies']} |")
+    if not agg.get("void_challenge"):
+        lines.append(f"| Total Phonies Played | {agg['total_phonies']} |")
+        lines.append(f"| Opponent Phonies Played | {agg['total_opp_phonies']} |")
     if agg["games_per_mb"] is not None:
         lines.append(f"| Games per Missed Bingo | {agg['games_per_mb']} |")
     if agg["games_per_phony"] is not None:
         lines.append(f"| Games per Phony Played | {agg['games_per_phony']} |")
 
     if agg["n_opp_annotated"] > 0:
-        opp_qualifier = "" if agg["n_opp_annotated"] == n else f" (over {agg['n_opp_annotated']} fully-annotated games)"
+        n_ann = agg["n_opp_annotated"]
+        opp_qualifier = "" if n_ann == n else f" (over {n_ann} fully-annotated games)"
         lines.append(f"| Average Opponent Mistakes Score | {agg['avg_opp_mi']:.2f}{opp_qualifier} |")
+        lines.append(f"| Opponent Bingo Find Rate | {agg['opp_bingo_find_rate']}{opp_qualifier} |")
+        lines.append(
+            f"| Opponent Missed Bingos | {agg['total_opp_mb']} "
+            f"({round(agg['total_opp_mb']/n_ann,2):.2f}/game){opp_qualifier} |"
+        )
+        # Only meaningful while misses are rarer than one a game; past that the
+        # "(N/game)" rate above already says it, and "0.8 games per miss" reads
+        # like nonsense.
+        if agg["games_per_opp_mb"] is not None and agg["games_per_opp_mb"] >= 1:
+            lines.append(f"| Games per Opponent Missed Bingo | {agg['games_per_opp_mb']}{opp_qualifier} |")
+        lines.append(
+            f"| Opponent Blanks Drawn | {agg['total_opp_bl']} "
+            f"({round(agg['total_opp_bl']/n_ann,2):.2f}/game){opp_qualifier} |"
+        )
+        lines.append(f"| Avg Opponent Endgame Spread Lost | {agg['avg_opp_eg']:.1f}{opp_qualifier} |")
         lines.append(f"| Average Opponent Win% Lost | {agg['avg_opp_wpl']:.1f}%{opp_qualifier} |")
 
     lines.append("")
     lines.append("## Per-Game Breakdown")
     lines.append("")
-    lines.append(
-        "*Notes: `*` marks a phony (all words formed by the play; the specific invalid word "
+    phony_note = (
+        "These games are played under the VOID challenge rule, which rejects invalid plays "
+        "outright — a phony cannot be played at all, so no phony statistics are reported and "
+        "mistakes scores run slightly lower here than in challenge-rule play, where playing a "
+        "phony is an available error. "
+        if agg.get("void_challenge")
+        else "`*` marks a phony (all words formed by the play; the specific invalid word "
         "isn't always identifiable when multiple words were formed — CSW is the configured "
-        "lexicon for every game). Opp Mistakes/Opp Win% Lost show \"—\" for games "
-        "where the opponent's rack wasn't fully known (not livestreamed or double-annotated).*"
+        "lexicon for every game). "
+    )
+    lines.append(
+        f"*Notes: {phony_note}The Opp columns measure the opponent exactly as the "
+        "columns to their left measure Jesse, and show \"—\" for games where the "
+        "opponent's rack wasn't fully known (not livestreamed or double-annotated).*"
     )
     lines.append("")
 
@@ -773,8 +856,13 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     )
     sep = "|---|---|---|---|---|---|---|---|---|---|---|---|---|---"
     if show_opp_cols:
-        header += " | Opp Mistakes | Opp Win% Lost"
-        sep += "|---|---"
+        # Mirrors Jesse's own columns, in the same order, for the games where the
+        # opponent's every rack is known.
+        header += (
+            " | Opp Mistakes | Opp Missed Bingos | Opp Blanks | Opp Endgame Spread Lost "
+            "| Opp Win% Lost"
+        )
+        sep += "|---|---|---|---|---"
     header += " | Notes |"
     sep += "|---|"
     lines.append(header)
@@ -784,15 +872,19 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
         mi_str = f"{g['mistake_index']:.1f}" if g["mistake_index"] is not None else "—"
         row = (
             f"| {g['round']} | [↗]({g['game_url']}) | "
-            f"{opponent_cell(g['opponent'], g.get('opp_username'))} | {g['result']} | "
+            f"{opponent_cell(g['opponent'], g.get('opp_username'), seed=seed_of(g))} | {g['result']} | "
             f"{g['jesse_score']} | {g['opp_score']} | {sp_str(g['jesse_score']-g['opp_score'])} | "
             f"{mi_str} | {g['jesse_bingos']} | {g['missed_bingos']} | {g['opp_bingos']} | "
             f"{g['jesse_blanks']} | {g['endgame_spread_lost']} | {round(g['win_prob_lost']*100,1)}%"
         )
         if show_opp_cols:
-            opp_mi_str = f"{g['opp_mistake_index']:.1f}" if g["opp_fully_annotated"] else "—"
-            opp_wpl_str = f"{round(g['opp_win_prob_lost']*100,1)}%" if g["opp_fully_annotated"] else "—"
-            row += f" | {opp_mi_str} | {opp_wpl_str}"
+            ann = g["opp_fully_annotated"]
+            opp_mi_str = f"{g['opp_mistake_index']:.1f}" if ann else "—"
+            opp_wpl_str = f"{round(g['opp_win_prob_lost']*100,1)}%" if ann else "—"
+            opp_mb_str = str(len(g["opp_missed_bingo_words"])) if ann else "—"
+            opp_bl_str = str(g["opp_blanks"]) if ann else "—"
+            opp_eg_str = str(g["opp_endgame_spread_lost"]) if ann else "—"
+            row += f" | {opp_mi_str} | {opp_mb_str} | {opp_bl_str} | {opp_eg_str} | {opp_wpl_str}"
         row += f" | {note} |"
         lines.append(row)
 
@@ -806,16 +898,25 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
         f"**{agg['avg_eg']:.1f}** | **{agg['avg_wpl']:.1f}%**"
     )
     if show_opp_cols:
-        opp_note = f" ({agg['n_opp_annotated']} games)"
-        avg_row += f" | **{agg['avg_opp_mi']:.2f}**\\*{opp_note} | **{agg['avg_opp_wpl']:.1f}%**\\*{opp_note}"
+        n_ann = agg["n_opp_annotated"]
+        # Only worth spelling out the denominator when it isn't every game —
+        # "(12 games)" under a 12-game report is noise.
+        opp_note = "" if n_ann == n else f" ({n_ann} games)"
+        avg_row += (
+            f" | **{agg['avg_opp_mi']:.2f}**\\*{opp_note} "
+            f"| **{round(agg['total_opp_mb']/n_ann,2):.2f}**\\*{opp_note} "
+            f"| **{round(agg['total_opp_bl']/n_ann,2):.2f}**\\*{opp_note} "
+            f"| **{agg['avg_opp_eg']:.1f}**\\*{opp_note} "
+            f"| **{agg['avg_opp_wpl']:.1f}%**\\*{opp_note}"
+        )
     avg_row += " | |"
     lines.append(avg_row)
 
     if show_opp_cols:
         lines.append("")
         lines.append(
-            "\\*Opp Mistakes/Opp Win% Lost averages are computed only over the fully-annotated "
-            "games (denominator = n_opp_annotated, not the full game count)."
+            "\\*Every Opp column's average is computed only over the fully-annotated games "
+            "(denominator = n_opp_annotated, not the full game count)."
         )
 
     lines.append("")
@@ -828,6 +929,28 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     for g in stats:
         for w in g.get("missed_bingo_words", []):
             lines.append(f"| {g['round']} | {g['opponent']} | {w} |")
+
+    # The opponent's own misses, in the identical format. Listed only for games
+    # annotated on both sides (in a league, that is every game; in a tournament
+    # upload, only the doubly-annotated ones), so the section is omitted entirely
+    # when no game qualifies. Keeping the two tables separate is also what stops
+    # a miss of Jesse's being attributed to his opponent.
+    opp_mb_rows = [
+        (g["round"], g["opponent"], w)
+        for g in stats
+        if g["opp_fully_annotated"]
+        for w in g.get("opp_missed_bingo_words", [])
+    ]
+    if opp_mb_rows:
+        lines.append("")
+        lines.append("## Opponent Missed Bingos")
+        lines.append("")
+        lines.append("*Lowercase = blank tile; (X) = board tile X was already there*")
+        lines.append("")
+        lines.append(f"| {short_label} | Opponent | Word |")
+        lines.append("|---|---|---|")
+        for rnd, opp, w in opp_mb_rows:
+            lines.append(f"| {rnd} | {opp} | {w} |")
 
     for section in extra_sections or []:
         lines.append("")
@@ -850,8 +973,29 @@ def build_digest(stats, agg, notes, title):
     spread, mistake index, note). Never raw game/turn data.
     """
     lines = [f"Title: {title}", f"Record: {agg['record']}", f"Progression: {_progression(stats)}"]
+    if agg.get("void_challenge"):
+        # Stated in the digest itself so the summary writer can't credit Jesse for
+        # something the rules made impossible, or read a low mistakes score as
+        # more impressive than it is. Emitted only for VOID collections, so every
+        # other collection's digest hash (and cached summary) is unaffected.
+        lines.append(
+            "Challenge rule: VOID — invalid plays are rejected by the client, so NO phony can "
+            "be played by either side. Do not praise or even mention phony-free play, phony "
+            "counts, or word-validity discipline; zero phonies here is a rule, not an "
+            "achievement. Mistakes scores also run structurally lower than in challenge-rule "
+            "play (playing a phony is not an available error), so do not compare them with "
+            "over-the-board tournament figures or call them exceptional on that basis."
+        )
     lines.append("Aggregate:")
+    # `void_challenge` is reported in prose above, never as a key: including it
+    # would change every non-league collection's digest hash and needlessly
+    # re-bill all their cached summaries.
+    skip = {"void_challenge"}
+    if agg.get("void_challenge"):
+        skip |= {"total_phonies", "total_opp_phonies", "games_per_phony"}
     for k in sorted(agg.keys()):
+        if k in skip:
+            continue
         lines.append(f"  {k}: {agg[k]}")
     lines.append("Games:")
     for g, note in zip(stats, notes):
@@ -859,6 +1003,28 @@ def build_digest(stats, agg, notes, title):
         lines.append(
             f"  Rd{g['round']} vs {g['opponent']}: {g['result']} {g['jesse_score']}-{g['opp_score']} "
             f"({sp_str(g['jesse_score']-g['opp_score'])}) MI={mi_str} | {note}"
+        )
+    # Missed bingos, spelled out by who missed them. The per-game note already
+    # carries both sides, but its bare "missed bingo #3 (WORD)" clause for the
+    # subject was read as the OPPONENT's miss and published that way (Season 18,
+    # BIATHLETE), so state the attribution rather than leaving it to be inferred.
+    own = [(g["round"], w) for g in stats for w in g.get("missed_bingo_words", [])]
+    opp = [
+        (g["round"], g["opponent"], w)
+        for g in stats
+        for w in g.get("opp_missed_bingo_words", [])
+    ]
+    if own or opp:
+        lines.append(
+            "Missed bingos — attribution is exactly as stated here; never swap these two lists:"
+        )
+        lines.append(
+            f"  Missed by the subject of this report: "
+            f"{'; '.join(f'Rd{r} {w}' for r, w in own) if own else 'none'}"
+        )
+        lines.append(
+            f"  Missed by opponents: "
+            f"{'; '.join(f'Rd{r} {o} {w}' for r, o, w in opp) if opp else 'none'}"
         )
     return "\n".join(lines)
 
