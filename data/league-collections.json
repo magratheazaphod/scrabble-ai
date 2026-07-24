@@ -1,0 +1,75 @@
+{
+ "19a0eadf-f17a-409e-bf32-46543a2fd6fd": {
+  "division_id": "afe6636d-74b2-46e6-9739-d429b0b65859",
+  "division_number": 14,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "5cfc9f76-52ee-4a15-bd6f-73ac80a0731d",
+  "season_number": 18,
+  "seeds": {
+   "5SYCS27DJK": {
+    "opponent": "wajin",
+    "rating": 1655.6500724257307,
+    "seed": 5
+   },
+   "74XnBtvNQn": {
+    "opponent": "carysers",
+    "rating": 1483.978757076756,
+    "seed": 7
+   },
+   "7tLCmTxkX7": {
+    "opponent": "GrandyLu",
+    "rating": 1620.0156066538418,
+    "seed": 6
+   },
+   "A3QuZ37D8A": {
+    "opponent": "Vegewey",
+    "rating": 1413.6365116101636,
+    "seed": 8
+   },
+   "Cj6nMt68xs": {
+    "opponent": "auricle",
+    "rating": 1663.7967841392528,
+    "seed": 4
+   },
+   "UJ7yhds5Mj": {
+    "opponent": "Hassan123456789",
+    "rating": 1068.1847190668252,
+    "seed": 12
+   },
+   "b3oherdk8E": {
+    "opponent": "devdub",
+    "rating": 1673.0473999991336,
+    "seed": 3
+   },
+   "bknZ8FpiZL": {
+    "opponent": "Johnnymango",
+    "rating": 1387.0045231354363,
+    "seed": 9
+   },
+   "cths8xgtP5": {
+    "opponent": "NickTheMe1on",
+    "rating": 1364.1281624497692,
+    "seed": 11
+   },
+   "ge5aNVEW6d": {
+    "opponent": "eideticeve",
+    "rating": 1756.9045580270874,
+    "seed": 1
+   },
+   "jtgqpbwdMm": {
+    "opponent": "Gabzor89",
+    "rating": 1677.383303032313,
+    "seed": 2
+   },
+   "oNPCpoeBrX": {
+    "opponent": "ninjasloth",
+    "rating": 1383.7756077000568,
+    "seed": 10
+   }
+  },
+  "title": "Collins League - Season 18",
+  "username": "magrathean"
+ }
+}
