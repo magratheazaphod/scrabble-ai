@@ -214,10 +214,29 @@ Three things differ from a tournament report, all handled by the module:
   correspondence; note Woogles rates every CSW lexicon under the legacy `CSW19`
   key, per `transformLexiconName` in liwords). `compute_game` parses `Seed <n>`
   into `round`, and `render_report(..., round_label="Seed")` labels the column.
+- **Standings lead the report.** `league_section` renders ONE table, passed as
+  `render_report(..., lead_sections=[...])` so it sits directly under the header,
+  above Aggregate Stats. Its row order is the division's **live standing order and
+  must always match what woogles.io shows at that moment** — never seed order, which
+  is why seed is a column rather than the sort key. It lists every participant (not
+  just the ones Jesse played), with each player's live CSW correspondence rating
+  (`division_ratings`, one GetRatings per player), and folds Jesse's own result into
+  a Head-to-Head column; players he hasn't played show "—". Heading is
+  **"Final Standings"** only when `division_complete(division)` (the platform's
+  `is_complete`, or every standing at `games_remaining == 0`) and plain
+  **"Standings"** otherwise — and the digest says "provisional standing, not a final
+  placing" mid-season so no summary reports an in-progress position as a finish.
+  The only prose under the heading is "Rating is CSW correspondence rating."; keep it
+  that short. The league-wide mistakes leaderboard stays a trailing `sections` entry.
 - **Cross-check.** `woogles_league.report_extras(uuid, stats, agg)` returns the
-  render arguments plus a digest line, comparing 11 computed figures against the
-  division standings table. Call it unconditionally — it returns `{}` for any
-  non-league collection.
+  render arguments plus a digest line. Call it unconditionally — it returns `{}` for any
+  non-league collection. It still compares 11 computed figures against the division
+  standings table, but that comparison is **background QA, not report content**: every
+  row prints to stderr (the Actions log), and the report section and digest line stay
+  silent unless a figure disagrees, in which case the full table plus a warning comes
+  back. Jesse asked for this (2026-07-25) — a passing cross-check restated in every
+  email is noise. Don't reinstate the always-on table, and don't have a summary praise
+  the numbers for matching.
 - **Played, not annotated.** These are real games: `is_annotated` is false, so
   they live at `/game/<id>` (not `/anno/<id>`), and both players' racks are fully
   known, so `opp_fully_annotated` is true for every game and the opponent columns
@@ -324,11 +343,15 @@ never the Woogles login username.
 - **Measure the opponent the way you measure Jesse, wherever the data allows.** A league game is *played*, not annotated, so both racks are known every turn and `opp_fully_annotated` is true for all 12 games — the rare tournament equivalent is a doubly-annotated or livestreamed game. Whenever it is true, the opponent gets the same treatment Jesse does: `Opp Mistakes | Opp Missed Bingos | Opp Blanks | Opp Endgame Spread Lost | Opp Win% Lost` in the per-game table (mirroring the order of Jesse's own columns), plus Opponent Bingo Find Rate / Missed Bingos / Blanks Drawn / Avg Endgame Spread Lost in the aggregate table, and an **Opponent Missed Bingos** section formatted identically to the Missed Bingos one. This is not league-only — it applies to any collection, game by game, and games that don't qualify show "—" and are excluded from every Opp denominator (which is `n_opp_annotated`, footnoted under the table). Omit the Opponent Missed Bingos section entirely when no qualifying game has one.
 - **Never let a missed bingo change hands.** The per-game note writes Jesse's own misses as a bare `missed bingo #N (WORD)`, and a summary once read that as the *opponent's* miss and published it (Season 18, BIATHLETE). `build_digest` therefore states both lists with explicit attribution, and the two report tables are kept separate rather than merged with a "who" column. Preserve both when editing.
 - **Blanks — drawn vs played:** the report displays `jesse_blanks` (**drawn**: every blank that reached the rack, including any exchanged away or stranded at the end) because that is the luck indicator Jesse wants. `compute_game` also returns `jesse_blanks_played`, which is never displayed and exists only so the league cross-check can compare like with like — the Woogles standings table counts blanks *played*. Do not "fix" the report to match the platform here; the difference is intentional.
-- **Board reconstruction:** `build_snapshots_and_racks` runs in ~2ms per 19-game tournament and uses zero Claude tokens. Prefer it over dictionary lookup for missed-bingo word resolution.
-- **Game URL:** `https://woogles.io/anno/<game_id>`
-- **Win/Loss Progression:** a single line of 🟩 (win) / 🟥 (loss) boxes, one per game in chronological order, no round numbers and no labels. Group into blocks of 5 separated by a space for readability (no separator within a block). Built directly from `stats` (already sorted by round):
+- **Board reconstruction:** `build_snapshots_and_racks` runs in ~2ms per 19-game tournament and uses zero Claude tokens. Prefer it over dictionary lookup for missed-bingo word resolution. It, `build_played_words`, and `build_turn_event_indices` all walk the event log through the one shared generator `iter_move_events` — keep new events↔analysis alignment there rather than re-implementing the "skip PHONY_TILES_RETURNED / CHALLENGE_BONUS" step.
+- **Game URL:** `https://woogles.io/anno/<game_id>` (annotated) or `/game/<game_id>` (played).
+- **Deep-linking a turn:** `?turn=N` on either URL opens the game in examine mode at the position with **N−1 events replayed**, i.e. just before raw `events[N-1]` — so `turn_url(game_url, event_idx)` emits `event_idx + 1`. N counts *events*, not analysis turns; the two diverge as soon as a play is challenged off, which is why the link needs `build_turn_event_indices` rather than the analysis turn index. (Confirmed in liwords-ui: `table.tsx` does `handleExamineGoTo(turn - 1)` over the flat event list, and `CommentsDrawer.tsx` links to the position *after* a move as `event_idx + 2`. `/anno/:gameID` routes to the same `GameTable`, so annotated and played games behave identically.) Both missed-bingo tables link each word this way.
+- **Missed Bingos tables show the bare Woogles username** (`opponent_handle`), not the display name — they're scanned rather than read, and the full `Real Name - username` cell already appears once per game in the per-game table. Falls back to the display name when there's no account behind the player (an annotator upload with no registry entry).
+- **Win/Loss Progression:** a single line of 🟩 (win) / 🟥 (loss) / 🟨 (draw) boxes, one per game in chronological order, no round numbers and no labels. Group into blocks of 5 separated by a space for readability (no separator within a block). Built directly from `stats` (already sorted by round):
   ```python
-  boxes = ['🟩' if g['result']=='W' else '🟥' for g in stats]
+  box = {'W': '🟩', 'L': '🟥', 'D': '🟨'}
+  boxes = [box[g['result']] for g in stats]
   progression = ' '.join(''.join(boxes[i:i+5]) for i in range(0, len(boxes), 5))
   ```
+- **Draws:** rare, but equal final scores are a real outcome — `result` is `"W"`/`"L"`/`"D"`, never `"L"` by default, and losses are counted, not derived as `n - wins`. The record reads `9-10` normally and `9-10-1` only when a draw occurred (a permanent trailing `-0` would churn every cached digest to say nothing). Any new win-rate or record logic must count `"D"` explicitly.
   Placed immediately after the header line, before Aggregate Stats — no section header of its own.

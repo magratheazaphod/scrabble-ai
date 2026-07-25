@@ -274,6 +274,7 @@ def main():
             stats, agg, notes, col["title"], summary_md=summary_md,
             subject_display=subject_display,
             round_label=extras.get("round_label"),
+            lead_sections=extras.get("lead_sections"),
             extra_sections=extras.get("sections"),
         )
         report_sections.append(report_md)

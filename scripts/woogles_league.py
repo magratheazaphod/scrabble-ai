@@ -48,11 +48,14 @@ very games move. Ratings are read at sync time, so a season synced mid-flight an
 re-synced at the end can legitimately re-seed as ratings shift; the rating used
 is recorded alongside the seed so any report says what it was seeded on.
 
-**Cross-check.** Woogles publishes its own standings table per division
-(woogles.io/leagues/csw). `cross_check_section` recomputes the same quantities
-from the analyzed games and diffs them, so a report can state outright whether
-its numbers agree with the platform's rather than asking the reader to trust
-them. This catches both a bug here and a game the collection is missing.
+**Standings.** `league_section` renders the division exactly as woogles.io
+shows it — live standing order, one row per participant, seed and head-to-head
+demoted to columns — and it leads the report rather than trailing it.
+
+**Cross-check.** `cross_check_rows` recomputes the quantities Woogles publishes
+per division (woogles.io/leagues/csw) from the analyzed games and diffs them,
+catching both a bug here and a game the collection is missing. It runs on every
+render but reports to stderr; only a disagreement reaches the report.
 
 **League-wide leaderboard.** `mistake_leaderboard_section` ranks every player in
 the season, across all divisions, by average mistakes score — the one figure that
@@ -361,15 +364,18 @@ def cross_check_rows(stats, agg, standing):
     n = len(stats)
     gp = standing.get("games_played") or 0
     wins = sum(1 for g in stats if g["result"] == "W")
-    losses = n - wins
+    draws = sum(1 for g in stats if g["result"] == "D")
+    losses = n - wins - draws
     spread = sum(g["jesse_score"] - g["opp_score"] for g in stats)
 
     plat_draws = standing.get("draws") or 0
     plat_record = f"{standing.get('wins', 0)}-{standing.get('losses', 0)}"
     mine_record = f"{wins}-{losses}"
-    if plat_draws:
+    # Show the draw column on both sides as soon as either side claims one, so a
+    # draw the report missed (or invented) surfaces as a record mismatch.
+    if plat_draws or draws:
         plat_record += f"-{plat_draws}"
-        mine_record += "-0"
+        mine_record += f"-{draws}"
 
     rows = [
         ("Games", n, gp, n == gp),
@@ -416,11 +422,6 @@ def cross_check_rows(stats, agg, standing):
                  plat_mi and round(plat_mi, 2), _close(agg["avg_mi"], plat_mi, 0.005)))
 
     return rows
-
-
-def seeding_rows(stats):
-    return [(g["round"], g.get("opponent"), g.get("opp_rating"), g["result"],
-             g["jesse_score"] - g["opp_score"]) for g in stats]
 
 
 LEADERBOARD_SIZE = 10
@@ -652,81 +653,132 @@ def mistake_leaderboard_section(divisions, season, league, username):
     return "\n".join(lines)
 
 
-def cross_check_section(stats, agg, standing, division, season, league):
-    """Markdown for the league context: seeding basis, division table, cross-check."""
-    key = rating_key(league)
-    lines = ["## League Context", ""]
-    lines.append(
-        f"{league['name']} League, Season {season['season_number']}, "
-        f"Division {division.get('division_number')} — "
-        f"finished **{_ordinal(standing.get('rank'))} of "
-        f"{len(division.get('standings') or [])}**."
-    )
-    lines.append("")
-    lines.append(
-        f"A league season is a round robin with no meaningful round order, so games "
-        f"below are ordered by opponent strength (seed 1 = strongest), using each "
-        f"opponent's `{key}` rating at the time this report was generated."
-    )
-    lines.append("")
+def division_ratings(division, key, max_workers=8):
+    """{username.lower(): rating} for every player in the division, read live.
 
-    lines.append("### Results by Opponent Seed")
-    lines.append("")
-    lines.append("| Seed | Opponent | Rating | Result | Spread |")
-    lines.append("|---|---|---|---|---|")
-    for seed, opp, rating, result, spread in seeding_rows(stats):
-        sp = f"+{spread}" if spread > 0 else ("−" + str(abs(spread)) if spread < 0 else "0")
-        lines.append(f"| {seed} | {opp} | {_fmt(rating and round(rating))} | {result} | {sp} |")
-    lines.append("")
+    One GetRatings per player (a division is 12-17 people), fanned out. Ratings
+    move during a season and the standings are read live too, so the table shows
+    the division as it stands right now rather than as it was seeded.
+    """
+    names = [s.get("username") for s in (division.get("standings") or []) if s.get("username")]
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        ratings = list(ex.map(lambda n: player_ratings(n).get(key), names))
+    return {n.lower(): r for n, r in zip(names, ratings)}
 
-    lines.append("### Division Standings (woogles.io)")
-    lines.append("")
-    lines.append("| # | Player | W-L-D | Spread | Avg Mistakes |")
-    lines.append("|---|---|---|---|---|")
+
+def head_to_head(stats):
+    """{opponent username.lower(): {seed, result, spread}} from the played games.
+
+    Keyed on the Woogles username rather than the display name because that is
+    what the standings table carries; a division member Jesse hasn't played yet
+    (or the row for Jesse himself) simply won't be in here.
+    """
+    out = {}
+    for g in stats:
+        key = (g.get("opp_username") or g.get("opponent") or "").lower()
+        out[key] = {
+            "seed": g["round"],
+            "result": g["result"],
+            "spread": g["jesse_score"] - g["opp_score"],
+        }
+    return out
+
+
+def division_complete(division):
+    """True once every player in the division has played their whole schedule.
+
+    `is_complete` is the platform's own flag; `games_remaining` is the fallback
+    for a division that has finished but hasn't been marked yet. Division sizes
+    differ, so "everyone has 0 left" is the honest test — never a game count.
+    """
+    if division.get("is_complete"):
+        return True
+    standings = division.get("standings") or []
+    return bool(standings) and all(
+        (s.get("games_remaining") or 0) == 0 for s in standings
+    )
+
+
+def league_section(stats, agg, standing, division, season, league):
+    """Markdown for the league standings — the report's lead section.
+
+    ONE table, in the division's live standing order (never seed order), with a
+    row per participant and seed demoted to a column: Jesse reads this to see
+    where the division finished, and an order that doesn't match what woogles.io
+    shows him at that moment is worse than no table. Seed and head-to-head come
+    from his own games and are blank for anyone he hasn't played.
+    """
+    # "Final Standings" only once the whole division is done — a mid-season table
+    # is a snapshot, and calling a running season final is exactly the error that
+    # once had a summary reporting an in-progress placing as a finish.
+    heading = "Final Standings" if division_complete(division) else "Standings"
+    lines = [
+        f"## {heading} — {league['name']} League, Season "
+        f"{season['season_number']}, Division {division.get('division_number')}",
+        "",
+        "Rating is CSW correspondence rating.",
+        "",
+    ]
+
+    ratings = division_ratings(division, rating_key(league))
+    h2h = head_to_head(stats)
+    me_name = (standing.get("username") or "").lower()
+
+    lines.append("| # | Player | Rating | Seed | W-L-D | Spread | Avg Mistakes | Head-to-Head |")
+    lines.append("|---|---|---|---|---|---|---|---|")
     for s in sorted(division.get("standings") or [], key=lambda s: s.get("rank", 99)):
-        me = s.get("username", "").lower() == standing.get("username", "").lower()
-        name = f"**{s.get('username')}**" if me else s.get("username")
+        uname = s.get("username") or ""
+        is_me = uname.lower() == me_name
+        name = f"**{uname}**" if is_me else uname
+        rating = ratings.get(uname.lower())
         rec = f"{s.get('wins',0)}-{s.get('losses',0)}-{s.get('draws',0)}"
         ami = s.get("avg_mistake_index")
-        lines.append(f"| {s.get('rank')} | {name} | {rec} | {s.get('spread')} | "
-                     f"{_fmt(ami and round(ami, 2))} |")
+        game = h2h.get(uname.lower())
+        seed = game["seed"] if game else None
+        if game:
+            sp = game["spread"]
+            h2h_cell = f"{game['result']} {'+' if sp > 0 else ('−' if sp < 0 else '')}{abs(sp)}"
+        else:
+            h2h_cell = "—"
+        lines.append(
+            f"| {s.get('rank')} | {name} | {_fmt(rating and round(rating))} | {_fmt(seed)} | "
+            f"{rec} | {s.get('spread')} | {_fmt(ami and round(ami, 2))} | {h2h_cell} |"
+        )
     lines.append("")
 
+    # The cross-check itself is a background sanity check, not report content:
+    # Jesse reads these reports to see his own play, and a table of "our number
+    # equals their number" twelve times over is noise once it is reliably passing.
+    # It still RUNS on every render — the result goes to stderr (the Actions log),
+    # and a disagreement is loud enough to earn its place back in the report.
     rows = cross_check_rows(stats, agg, standing)
     mismatches = [r for r in rows if not r[3]]
-    lines.append("### Cross-Check vs the League Table")
-    lines.append("")
-    lines.append(
-        "*Every figure this report computes from the analyzed games, next to the same "
-        "figure as Woogles publishes it on the league standings page.*"
-    )
-    lines.append("")
-    lines.append("| Metric | This report | Woogles league table | |")
-    lines.append("|---|---|---|---|")
     for metric, mine, plat, ok in rows:
-        lines.append(f"| {metric} | {_fmt(mine)} | {_fmt(plat)} | {'✅' if ok else '❌'} |")
-    lines.append("")
-    lines.append(
-        "† Cross-checked on blanks *played*, to match what the league table counts. "
-        "The per-game table above reports blanks **drawn** — blanks that reached the "
-        "rack at all, including any exchanged away or left stranded at the end — which "
-        "is the better luck indicator and is intentionally the larger number."
-    )
-    lines.append("")
+        print(f"cross-check {'OK  ' if ok else 'FAIL'} {metric}: report={_fmt(mine)} "
+              f"woogles={_fmt(plat)}", file=sys.stderr)
     if mismatches:
+        lines.append("### Cross-Check vs the League Table")
+        lines.append("")
         lines.append(
             "**"
-            + f"{len(mismatches)} figure(s) disagree with the league table: "
-            + ", ".join(m[0] for m in mismatches)
-            + ".** Investigate before trusting the numbers above — a disagreement "
-            "usually means the collection is missing a game or holds one the "
-            "division doesn't count."
+            + f"{len(mismatches)} of {len(rows)} figures disagree with the woogles.io "
+            "league table.** Investigate before trusting the numbers above — a "
+            "disagreement usually means the collection is missing a game or holds one "
+            "the division doesn't count."
         )
-    else:
+        lines.append("")
+        lines.append("| Metric | This report | Woogles league table | |")
+        lines.append("|---|---|---|---|")
+        for metric, mine, plat, ok in rows:
+            lines.append(f"| {metric} | {_fmt(mine)} | {_fmt(plat)} | {'✅' if ok else '❌'} |")
+        lines.append("")
         lines.append(
-            f"**All {len(rows)} cross-checked figures match the Woogles league table.**"
+            "† Cross-checked on blanks *played*, to match what the league table counts. "
+            "The per-game table above reports blanks **drawn** — blanks that reached the "
+            "rack at all, including any exchanged away or left stranded at the end — which "
+            "is the better luck indicator and is intentionally the larger number."
         )
-    return "\n".join(lines)
+    return "\n".join(lines).rstrip()
 
 
 def report_extras(collection_uuid, stats, agg):
@@ -754,20 +806,34 @@ def report_extras(collection_uuid, stats, agg):
     division, standing = find_player_division(season["uuid"], entry["username"],
                                               divisions=divisions)
 
-    rows = cross_check_rows(stats, agg, standing)
-    bad = [r[0] for r in rows if not r[3]]
-    verdict = (
-        f"all {len(rows)} cross-checked figures match the woogles.io league table"
-        if not bad else
-        f"{len(bad)} of {len(rows)} figures DISAGREE with the woogles.io league "
-        f"table ({', '.join(bad)})"
-    )
+    n_players = len(division.get("standings") or [])
+    if division_complete(division):
+        placing = f"finished {_ordinal(standing.get('rank'))} of {n_players}"
+    else:
+        # Say it is provisional, or a summary will report a mid-season position as
+        # a final one — the same class of error as reading a smaller division's
+        # completed schedule as unplayed games.
+        placing = (
+            f"currently {_ordinal(standing.get('rank'))} of {n_players} with the "
+            f"season still in progress ({standing.get('games_remaining') or 0} games "
+            "left) — this is a provisional standing, not a final placing"
+        )
     digest_line = (
         f"League: {league['name']} Season {season['season_number']}, Division "
-        f"{division.get('division_number')}, finished {_ordinal(standing.get('rank'))} "
-        f"of {len(division.get('standings') or [])}. Games are ordered by opponent "
-        f"rating (seed 1 = strongest), not by round. Cross-check: {verdict}."
+        f"{division.get('division_number')}, {placing}. Games are ordered by opponent "
+        f"rating (seed 1 = strongest), not by round."
     )
+    # A passing cross-check is deliberately absent from the digest as well as the
+    # report: it is internal QA, and the Summary should never spend a sentence
+    # telling Jesse his own numbers agree with Woogles'. Only a failure is worth
+    # saying out loud.
+    rows = cross_check_rows(stats, agg, standing)
+    bad = [r[0] for r in rows if not r[3]]
+    if bad:
+        digest_line += (
+            f" WARNING: {len(bad)} of {len(rows)} figures DISAGREE with the woogles.io "
+            f"league table ({', '.join(bad)}) — say so plainly in the summary."
+        )
 
     lb_rows, me = mistake_leaderboard(divisions, entry["username"])
     if me is not None and me["rank"] is not None:
@@ -779,12 +845,15 @@ def report_extras(collection_uuid, stats, agg):
             "not published on woogles.io."
         )
 
-    sections = [cross_check_section(stats, agg, standing, division, season, league)]
+    # The standings lead the report; the league-wide leaderboard is supplementary
+    # and stays below the per-game tables.
+    sections = []
     leaderboard = mistake_leaderboard_section(divisions, season, league, entry["username"])
     if leaderboard:
         sections.append(leaderboard)
     return {
         "round_label": "Seed",
+        "lead_sections": [league_section(stats, agg, standing, division, season, league)],
         "sections": sections,
         "digest_line": digest_line,
     }

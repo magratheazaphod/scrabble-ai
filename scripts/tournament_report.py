@@ -122,6 +122,20 @@ def opponent_cell(name, username, seed=None):
     return f"{name} - {link}{suffix}"
 
 
+def opponent_handle(g):
+    """Bare Woogles username for the compact missed-bingo tables.
+
+    Those tables are scanned, not read: a short handle is easier to place at a
+    glance than a display name, and the full "Real Name - username" cell already
+    appears once per game in the per-game table above. Falls back to the display
+    name when there is no account behind the player (an annotator upload with no
+    registry entry).
+    """
+    name = g["opponent"]
+    username = g.get("opp_username") or load_name_registry().get(_norm_label(name))
+    return username or name
+
+
 def is_jesse(p):
     nick = (p.get("nickname") or "").lower().replace("_", "")
     real = (p.get("real_name") or "").lower()
@@ -208,39 +222,79 @@ def get_opp_name(meta, players, jesse_idx):
     return real or (opp.get("nickname") or "").replace("_", " ")
 
 
-def build_snapshots_and_racks(events):
-    """Board state (15x15) and rack BEFORE each analysis turn.
+def iter_move_events(events):
+    """Yield (event_idx, event, challenged_off) once per analysis turn, in order.
 
-    Returns (snapshots, racks). Index i corresponds to analysis turns[i].
-    History always has one extra move (the final PASS) with no matching analysis turn —
-    this means snapshots[turn_idx] is always correctly aligned.
-    PHONY_TILES_RETURNED: tiles NOT placed on board (play was challenged off).
-    CHALLENGE_BONUS: not a move, skipped.
+    The single walk shared by every events↔analysis alignment in this module:
+    only TILE_PLACEMENT_MOVE / EXCHANGE / PASS have a matching `analysis["turns"]`
+    entry, so the n-th yield lines up with `analysis["turns"][n]`. History always
+    carries one extra move (the final PASS) with no analysis turn, which is
+    harmless — the extra yield is simply never indexed.
+
+    PHONY_TILES_RETURNED (the play was challenged off) and CHALLENGE_BONUS are not
+    moves and consume no slot; a challenged placement yields once, with
+    `challenged_off` True, and the two events are stepped over together.
     """
-    board = [["" for _ in range(15)] for _ in range(15)]
-    snapshots, racks = [], []
     i = 0
     while i < len(events):
         ev = events[i]
         et = ev.get("type", "")
         if et == "TILE_PLACEMENT_MOVE":
-            snapshots.append([row[:] for row in board])
-            racks.append(ev.get("rack") or "")
-            if i + 1 < len(events) and events[i + 1].get("type") == "PHONY_TILES_RETURNED":
-                i += 2
-                continue  # phony: snapshot taken, board not updated
-            dr = 1 if ev["direction"] == "VERTICAL" else 0
-            dc = 0 if ev["direction"] == "VERTICAL" else 1
-            r2, c2 = ev["row"], ev["column"]
-            for ch in (ev.get("played_tiles") or ""):
-                if ch != ".":
-                    board[r2][c2] = ch.upper()
-                r2 += dr
-                c2 += dc
-        elif et in ("EXCHANGE", "PASS"):
-            snapshots.append([row[:] for row in board])
-            racks.append(ev.get("rack") or "")
+            challenged = (
+                i + 1 < len(events) and events[i + 1].get("type") == "PHONY_TILES_RETURNED"
+            )
+            yield i, ev, challenged
+            i += 2 if challenged else 1
+            continue
+        if et in ("EXCHANGE", "PASS"):
+            yield i, ev, False
         i += 1
+
+
+def build_turn_event_indices(events):
+    """Raw `events` index of each analysis turn: index i -> events index of turns[i].
+
+    Used to deep-link a turn on woogles.io — the client's `?turn=` parameter counts
+    events, not analysis turns, so the two diverge as soon as a play is challenged
+    off (see turn_url).
+    """
+    return [i for i, _, _ in iter_move_events(events)]
+
+
+def turn_url(game_url, event_idx):
+    """Link to the board position BEFORE the move at `event_idx` (0-based, raw events).
+
+    woogles.io examines with `?turn=N`, which replays N-1 *events* and stops — so
+    N = event_idx + 1 lands on the position with the mover still to play, which is
+    what a missed bingo wants to show (board plus the rack the bingo was in).
+    Verified against liwords-ui `table.tsx` (`handleExamineGoTo(turn - 1)`, and
+    examinedTurn slices the flat event list) and `CommentsDrawer.tsx`, which links
+    to the position AFTER a move as event_idx + 2.
+    """
+    return f"{game_url}?turn={event_idx + 1}"
+
+
+def build_snapshots_and_racks(events):
+    """Board state (15x15) and rack BEFORE each analysis turn.
+
+    Returns (snapshots, racks). Index i corresponds to analysis turns[i].
+    A play challenged off leaves the board unchanged (its tiles never stuck).
+    """
+    board = [["" for _ in range(15)] for _ in range(15)]
+    snapshots, racks = [], []
+    for _, ev, challenged in iter_move_events(events):
+        snapshots.append([row[:] for row in board])
+        racks.append(ev.get("rack") or "")
+        if ev.get("type") != "TILE_PLACEMENT_MOVE" or challenged:
+            continue
+        dr = 1 if ev["direction"] == "VERTICAL" else 0
+        dc = 0 if ev["direction"] == "VERTICAL" else 1
+        r2, c2 = ev["row"], ev["column"]
+        for ch in (ev.get("played_tiles") or ""):
+            if ch != ".":
+                board[r2][c2] = ch.upper()
+            r2 += dr
+            c2 += dc
     return snapshots, racks
 
 
@@ -323,37 +377,31 @@ def build_played_words(events):
     """
     board = [["" for _ in range(15)] for _ in range(15)]
     moves = []
-    i = 0
-    while i < len(events):
-        ev = events[i]
-        et = ev.get("type", "")
-        if et == "TILE_PLACEMENT_MOVE":
-            challenged = i + 1 < len(events) and events[i + 1].get("type") == "PHONY_TILES_RETURNED"
-            word = resolve_bingo_word(f"{ev['position']} {ev.get('played_tiles') or ''}", board)
-            moves.append(
-                {
-                    "word": word,
-                    "words_formed": ev.get("words_formed") or [word],
-                    "challenged": challenged,
-                    "player_index": ev["player_index"],
-                }
-            )
-            if challenged:
-                i += 2
-                continue
-            dr = 1 if ev["direction"] == "VERTICAL" else 0
-            dc = 0 if ev["direction"] == "VERTICAL" else 1
-            r2, c2 = ev["row"], ev["column"]
-            for ch in (ev.get("played_tiles") or ""):
-                if ch != ".":
-                    board[r2][c2] = ch.upper()
-                r2 += dr
-                c2 += dc
-        elif et in ("EXCHANGE", "PASS"):
+    for _, ev, challenged in iter_move_events(events):
+        if ev.get("type") != "TILE_PLACEMENT_MOVE":
             moves.append(
                 {"word": None, "words_formed": [], "challenged": False, "player_index": ev.get("player_index")}
             )
-        i += 1
+            continue
+        word = resolve_bingo_word(f"{ev['position']} {ev.get('played_tiles') or ''}", board)
+        moves.append(
+            {
+                "word": word,
+                "words_formed": ev.get("words_formed") or [word],
+                "challenged": challenged,
+                "player_index": ev["player_index"],
+            }
+        )
+        if challenged:
+            continue
+        dr = 1 if ev["direction"] == "VERTICAL" else 0
+        dc = 0 if ev["direction"] == "VERTICAL" else 1
+        r2, c2 = ev["row"], ev["column"]
+        for ch in (ev.get("played_tiles") or ""):
+            if ch != ".":
+                board[r2][c2] = ch.upper()
+            r2 += dr
+            c2 += dc
     return moves
 
 
@@ -450,11 +498,14 @@ def compute_game(r, subject=None):
 
     snapshots, racks = build_snapshots_and_racks(events)
     played_words = build_played_words(events)
+    turn_events = build_turn_event_indices(events)
 
     endgame_spread_lost = win_prob_lost = phonies_played = missed_bingos = 0
     opp_win_prob_lost = opp_endgame_spread_lost = 0
     missed_bingo_words = []
     opp_missed_bingo_words = []
+    missed_bingo_urls = []  # parallel to *_words: the ?turn= link for each entry
+    opp_missed_bingo_urls = []
     jesse_phonies = []  # [{'words_formed', 'challenged'}]
     opp_phonies = []  # [{'words_formed', 'challenged'}]
     for turn_idx, t in enumerate(analysis["turns"]):
@@ -471,11 +522,20 @@ def compute_game(r, subject=None):
             hist_rack = racks[turn_idx] if turn_idx < len(racks) else ""
             if validate_bingo(om, hist_rack):  # else: analysis false positive — rack mismatch
                 word = resolve_bingo_word(om, snapshots[turn_idx]) if turn_idx < len(snapshots) else om
+                # Deep link to the position the bingo was available in, so the
+                # report row is one click from the board it came off.
+                url = (
+                    turn_url(game_url, turn_events[turn_idx])
+                    if turn_idx < len(turn_events)
+                    else game_url
+                )
                 if t["player_index"] == jesse_idx:
                     missed_bingos += 1
                     missed_bingo_words.append(word)
+                    missed_bingo_urls.append(url)
                 else:
                     opp_missed_bingo_words.append(word)
+                    opp_missed_bingo_urls.append(url)
 
         if t["player_index"] != jesse_idx:
             if opp_fully_annotated:
@@ -509,7 +569,8 @@ def compute_game(r, subject=None):
         "challenge_rule": history.get("challenge_rule"),
         "jesse_score": jesse_score,
         "opp_score": opp_score,
-        "result": "W" if jesse_score > opp_score else "L",
+        # Draws are rare but real (equal final scores) — never fold one into "L".
+        "result": "W" if jesse_score > opp_score else ("L" if jesse_score < opp_score else "D"),
         "mistake_index": mistake_index,
         "opp_mistake_index": opp_mistake_index,
         "opp_fully_annotated": opp_fully_annotated,
@@ -528,6 +589,8 @@ def compute_game(r, subject=None):
         "missed_bingos": missed_bingos,
         "missed_bingo_words": missed_bingo_words,
         "opp_missed_bingo_words": opp_missed_bingo_words,
+        "missed_bingo_urls": missed_bingo_urls,
+        "opp_missed_bingo_urls": opp_missed_bingo_urls,
         "jesse_phonies": jesse_phonies,
         "opp_phonies": opp_phonies,
     }
@@ -587,6 +650,7 @@ def sp_str(v):
 def aggregate(stats):
     n = len(stats)
     wins = sum(1 for g in stats if g["result"] == "W")
+    draws = sum(1 for g in stats if g["result"] == "D")
     mi_games = [g for g in stats if g["mistake_index"] is not None]
     opp_ann_games = [g for g in stats if g["opp_fully_annotated"]]  # opponent racks known all game — see Notes
 
@@ -616,7 +680,9 @@ def aggregate(stats):
 
     return {
         "void_challenge": void_challenge,
-        "record": f"{wins}-{n-wins} {sp_str(total_sp)}",
+        # "9-10" normally, "9-10-1" only when a draw actually happened — a trailing
+        # "-0" on every report would churn every cached digest to say nothing.
+        "record": f"{wins}-{n-wins-draws}{f'-{draws}' if draws else ''} {sp_str(total_sp)}",
         "avg_jesse": round(sum(g["jesse_score"] for g in stats) / n, 1),
         "avg_opp": round(sum(g["opp_score"] for g in stats) / n, 1),
         "avg_mi": round(sum(g["mistake_index"] for g in mi_games) / len(mi_games), 2) if mi_games else None,
@@ -684,7 +750,8 @@ def _game_note(g, missed_bingo_counter):
     elif mi > 3.5:
         parts.append("errorful win" if res == "W" else "errorful")
     elif abs(sp) <= 15:
-        parts.append("narrow loss" if res == "L" else "narrow win")
+        # A draw is sp == 0, so it lands here — and "narrow win" would be wrong.
+        parts.append({"W": "narrow win", "L": "narrow loss", "D": "draw"}[res])
     elif res == "L" and abs(sp) >= 175:
         parts.append("blowout")
     elif res == "W" and sp >= 150:
@@ -740,12 +807,22 @@ def game_notes(stats):
 
 
 def _progression(stats):
-    boxes = ["\U0001f7e9" if g["result"] == "W" else "\U0001f7e5" for g in stats]
+    # 🟩 win / 🟥 loss / 🟨 draw
+    box = {"W": "\U0001f7e9", "L": "\U0001f7e5", "D": "\U0001f7e8"}
+    boxes = [box[g["result"]] for g in stats]
     return " ".join("".join(boxes[i : i + 5]) for i in range(0, len(boxes), 5))
 
 
+def _missed_bingo_cells(g, words_key, urls_key):
+    """Each missed bingo as a markdown link to the turn it was available on."""
+    return [
+        f"[{w}]({url})"
+        for w, url in zip(g.get(words_key) or [], g.get(urls_key) or [])
+    ]
+
+
 def render_report(stats, agg, notes, title, summary_md=None, subject_display="Jesse Day",
-                  round_label=None, extra_sections=None):
+                  round_label=None, extra_sections=None, lead_sections=None):
     """Render the report markdown.
 
     `round_label` renames the ordering column when games aren't sequenced by
@@ -753,6 +830,10 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     passes "Seed" and the column reports opponent strength instead. Setting it
     also suppresses the missing-rounds note, which is meaningless for an ordering
     that is contiguous by construction.
+
+    `lead_sections` is a list of ready-made markdown blocks placed directly under
+    the header, before Aggregate Stats — a league's standings go here, since the
+    division table is the first thing worth seeing in a league report.
 
     `extra_sections` is a list of ready-made markdown blocks appended after the
     per-game tables and before the Summary (the league cross-check uses it).
@@ -778,6 +859,9 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     lines.append("")
     lines.append(_progression(stats))
     lines.append("")
+    for section in lead_sections or []:
+        lines.append(section.strip())
+        lines.append("")
     lines.append(f"## Aggregate Stats ({subject_display})")
     lines.append("")
     lines.append("| Stat | Value |")
@@ -922,13 +1006,16 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     lines.append("")
     lines.append("## Missed Bingos")
     lines.append("")
-    lines.append("*Lowercase = blank tile; (X) = board tile X was already there*")
+    lines.append(
+        "*Lowercase = blank tile; (X) = board tile X was already there; "
+        "the word links to that turn on woogles.io*"
+    )
     lines.append("")
     lines.append(f"| {short_label} | Opponent | Word |")
     lines.append("|---|---|---|")
     for g in stats:
-        for w in g.get("missed_bingo_words", []):
-            lines.append(f"| {g['round']} | {g['opponent']} | {w} |")
+        for cell in _missed_bingo_cells(g, "missed_bingo_words", "missed_bingo_urls"):
+            lines.append(f"| {g['round']} | {opponent_handle(g)} | {cell} |")
 
     # The opponent's own misses, in the identical format. Listed only for games
     # annotated on both sides (in a league, that is every game; in a tournament
@@ -936,21 +1023,24 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     # when no game qualifies. Keeping the two tables separate is also what stops
     # a miss of Jesse's being attributed to his opponent.
     opp_mb_rows = [
-        (g["round"], g["opponent"], w)
+        (g["round"], opponent_handle(g), cell)
         for g in stats
         if g["opp_fully_annotated"]
-        for w in g.get("opp_missed_bingo_words", [])
+        for cell in _missed_bingo_cells(g, "opp_missed_bingo_words", "opp_missed_bingo_urls")
     ]
     if opp_mb_rows:
         lines.append("")
         lines.append("## Opponent Missed Bingos")
         lines.append("")
-        lines.append("*Lowercase = blank tile; (X) = board tile X was already there*")
+        lines.append(
+            "*Lowercase = blank tile; (X) = board tile X was already there; "
+            "the word links to that turn on woogles.io*"
+        )
         lines.append("")
         lines.append(f"| {short_label} | Opponent | Word |")
         lines.append("|---|---|---|")
-        for rnd, opp, w in opp_mb_rows:
-            lines.append(f"| {rnd} | {opp} | {w} |")
+        for rnd, opp, cell in opp_mb_rows:
+            lines.append(f"| {rnd} | {opp} | {cell} |")
 
     for section in extra_sections or []:
         lines.append("")
