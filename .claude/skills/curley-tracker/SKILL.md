@@ -122,4 +122,5 @@ itself (`/otb-scrabble-upload`).
 - Everything else 1-92 is uploaded and linked.
 
 Rows 60, 92, and 93 are permanently un-enrichable: analyzed, but not fully
-annotated (see the rack rule in `CLAUDE.md`).
+annotated (see the rack rule in `CLAUDE.md`). Correcting one means re-uploading
+and repointing the row - see `/fix-uploaded-game`.

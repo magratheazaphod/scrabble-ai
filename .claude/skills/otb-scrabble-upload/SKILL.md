@@ -51,7 +51,7 @@ them. `check_transcription.py` errors on any Jesse turn with no rack and
 one genuine exception (no scoresheet of theirs exists); near the endgame even
 those are derived. Games #91 and #92 shipped without racks and are permanently
 un-analyzable - see the rack rule in `CLAUDE.md` for why that can never be fixed
-in place.
+in place, and `/fix-uploaded-game` for the replacement procedure.
 
 **Never trust your eyes for placements - trust arithmetic.** Tiles sit proud of
 the board and parallax shifts them ±1 column; handwriting is ambiguous. The

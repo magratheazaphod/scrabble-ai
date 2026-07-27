@@ -150,10 +150,10 @@ Consequences to plan around:
   edit will never reach the analysis - stats stay computed against the old moves
   forever.
 - **The fix is a fresh upload under a new `game_id`**, which has no existing job.
-  Then swap it into the collection (`RemoveGameFromCollection` for the old id,
-  `AddGameToCollection` for the new, reusing the old `chapter_title`) and repoint
-  anything keyed on the game id, e.g. the Curley tracker row (`/curley-tracker`).
-  The old game can't be deleted once finished, so it becomes an orphan - expected.
+  Swapping it in and repointing everything keyed on the old id is
+  `scripts/replace_uploaded_game.py`; the whole diagnose-and-repair procedure is
+  **`/fix-uploaded-game`**. The old game can't be deleted once finished, so it
+  becomes an orphan - expected.
 - **A partial (<7 tile) rack is the case that bites**, because unlike an over-7
   rack it does NOT fail analysis. It analyzes "successfully" against the short
   rack, which quietly makes that player's `mistake_index` meaningless and blocks
