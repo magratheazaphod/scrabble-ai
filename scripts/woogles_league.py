@@ -42,7 +42,12 @@ as "how did I do against the 1st seed, the 2nd seed, ..." — which is the quest
 worth asking of a round robin. tournament_report.compute_game parses "Seed <n>"
 into its `round` field, so the rest of the pipeline needs no league awareness.
 
-Strength is each opponent's Woogles rating *in the format the league is played
+Seeds rank the whole division, subject included — a seed is a property of a
+player in the division, not of a slot in one person's schedule, and the subject
+being the only unseeded row was the odd one out. So the played-game seeds skip
+exactly one number: the subject's own.
+
+Strength is each player's Woogles rating *in the format the league is played
 in* — CSW correspondence for the Collins league — since that is the rating these
 very games move. Ratings are read at sync time, so a season synced mid-flight and
 re-synced at the end can legitimately re-seed as ratings shift; the rating used
@@ -232,21 +237,41 @@ def player_ratings(username):
     return {k: v.get("r") for k, v in data.items() if isinstance(v, dict) and "r" in v}
 
 
-def seed_games(games, key):
-    """Attach a rating and a 1-based seed to each game, strongest opponent first.
+def seed_order(ratings):
+    """{username.lower(): 1-based seed} over a whole division, strongest first.
 
-    Unrated opponents sort last (a missing rating is not a zero rating), with
+    Seeds rank the *division*, not the subject's opponent list, so the subject
+    holds a seed like everyone else and every player's seed means the same thing
+    in the standings table and in the collection's chapter titles. A consequence
+    worth expecting: the subject's own seed is missing from the game seeds, so
+    the played-game seeds skip exactly one number.
+
+    Unrated players sort last (a missing rating is not a zero rating), with
     username as the final tie-break so the ordering is stable across runs.
     """
+    names = sorted(ratings, key=lambda n: (ratings[n] is None,
+                                           -(ratings[n] or 0),
+                                           n))
+    return {n: i for i, n in enumerate(names, start=1)}
+
+
+def seed_games(games, key, division):
+    """Attach a rating and a division-wide seed to each game, strongest first.
+
+    Ratings come from the division standings in one fan-out; an opponent somehow
+    absent from them is looked up individually and seeded after everyone rated.
+    """
+    ratings = division_ratings(division, key)
+    seeds = seed_order(ratings)
     seeded = []
     for g in games:
-        ratings = player_ratings(g["opponent_username"])
-        seeded.append({**g, "opp_rating": ratings.get(key)})
-    seeded.sort(key=lambda g: (g["opp_rating"] is None,
-                               -(g["opp_rating"] or 0),
-                               g["opponent_username"].lower()))
-    for i, g in enumerate(seeded, start=1):
-        g["seed"] = i
+        uname = g["opponent_username"].lower()
+        if uname not in ratings:
+            ratings[uname] = player_ratings(g["opponent_username"]).get(key)
+            seeds = seed_order(ratings)
+        seeded.append({**g, "opp_rating": ratings.get(uname),
+                       "seed": seeds.get(uname)})
+    seeded.sort(key=lambda g: g["seed"])
     return seeded
 
 
@@ -667,7 +692,7 @@ def division_ratings(division, key, max_workers=8):
 
 
 def head_to_head(stats):
-    """{opponent username.lower(): {seed, result, spread}} from the played games.
+    """{opponent username.lower(): {result, spread, game_url}} from played games.
 
     Keyed on the Woogles username rather than the display name because that is
     what the standings table carries; a division member Jesse hasn't played yet
@@ -677,9 +702,9 @@ def head_to_head(stats):
     for g in stats:
         key = (g.get("opp_username") or g.get("opponent") or "").lower()
         out[key] = {
-            "seed": g["round"],
             "result": g["result"],
             "spread": g["jesse_score"] - g["opp_score"],
+            "game_url": g.get("game_url"),
         }
     return out
 
@@ -705,8 +730,9 @@ def league_section(stats, agg, standing, division, season, league):
     ONE table, in the division's live standing order (never seed order), with a
     row per participant and seed demoted to a column: Jesse reads this to see
     where the division finished, and an order that doesn't match what woogles.io
-    shows him at that moment is worse than no table. Seed and head-to-head come
-    from his own games and are blank for anyone he hasn't played.
+    shows him at that moment is worse than no table. Seed covers every player
+    (his own row included); head-to-head comes from his own games, links to the
+    game, and is blank for anyone he hasn't played.
     """
     # "Final Standings" only once the whole division is done — a mid-season table
     # is a snapshot, and calling a running season final is exactly the error that
@@ -721,6 +747,7 @@ def league_section(stats, agg, standing, division, season, league):
     ]
 
     ratings = division_ratings(division, rating_key(league))
+    seeds = seed_order(ratings)
     h2h = head_to_head(stats)
     me_name = (standing.get("username") or "").lower()
 
@@ -734,10 +761,12 @@ def league_section(stats, agg, standing, division, season, league):
         rec = f"{s.get('wins',0)}-{s.get('losses',0)}-{s.get('draws',0)}"
         ami = s.get("avg_mistake_index")
         game = h2h.get(uname.lower())
-        seed = game["seed"] if game else None
+        seed = seeds.get(uname.lower())
         if game:
             sp = game["spread"]
             h2h_cell = f"{game['result']} {'+' if sp > 0 else ('−' if sp < 0 else '')}{abs(sp)}"
+            if game.get("game_url"):
+                h2h_cell = f"[{h2h_cell}]({game['game_url']})"
         else:
             h2h_cell = "—"
         lines.append(
@@ -948,7 +977,7 @@ def sync_one(league, season, args):
         print("nothing to sync yet", file=sys.stderr)
         return 0
 
-    seeded = seed_games(finished, key)
+    seeded = seed_games(finished, key, division)
     for g in seeded:
         print(f"  seed {g['seed']:2d}  {g['opponent_username']:20s} "
               f"{_fmt(g['opp_rating'] and round(g['opp_rating'])):>6s}  "
@@ -958,7 +987,7 @@ def sync_one(league, season, args):
     description = (
         f"{league['name']} League Season {season['season_number']}, "
         f"Division {division.get('division_number')}. Round robin, ordered by "
-        f"opponent {key} rating (seed 1 = strongest)."
+        f"opponent {key} rating (seed 1 = the division's strongest player)."
     )
     uuid, actions = sync_collection(title, description, seeded, dry_run=args.dry_run)
     for a in actions:
