@@ -4,7 +4,7 @@
 Run after changing any script in this folder, when adding a new ground-truth
 game, or to benchmark a change:
 
-  python3 .claude/skills/otb-scrabble-upload/scripts/regression.py [--sweep N]
+  python3 scripts/otb/regression.py [--sweep N]
 
 What it checks (exit 0 = all green):
 
@@ -36,9 +36,11 @@ a live run (see history.md for the cost/correctness baselines to compare).
 import sys, os, re, json, subprocess, tempfile, time, glob, random
 from collections import Counter
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..'))
+HERE = os.path.dirname(os.path.abspath(__file__))          # scripts/otb
+SCRIPTS = os.path.dirname(HERE)                            # scripts
+REPO = os.path.dirname(SCRIPTS)
 sys.path.insert(0, HERE)
+sys.path.insert(0, SCRIPTS)
 from verify_gcg import parse_events, parse_pos
 from otb_solver import VALS
 from check_transcription import entry_kind
@@ -125,7 +127,12 @@ def norm_events(path_or_text, is_text=False):
 
 
 def run(script, *args, ok_exit=(0,)):
-    r = subprocess.run([sys.executable, os.path.join(HERE, script), *args],
+    # The pipeline spans two dirs: the OTB-only steps live here, the shared
+    # scoring engine and replay verifier one level up in scripts/.
+    path = os.path.join(HERE, script)
+    if not os.path.exists(path):
+        path = os.path.join(SCRIPTS, script)
+    r = subprocess.run([sys.executable, path, *args],
                        capture_output=True, text=True)
     return r
 

@@ -66,7 +66,8 @@ FULL-RES rotated image, but its docstring and SKILL.md both say to read them
 off `sheet_full.png`, which is downscaled to 2000px — a 2.856x factor that
 silently crops the wrong region (cost one wasted image op). And regression.py
 is at `.claude/skills/otb-scrabble-upload/scripts/`, not `scripts/` as stated
-below.
+below. *(Resolved 2026-07-27: the scripts moved to `scripts/` and `scripts/otb/`,
+so the statement below is now the accurate one.)*
 
 ## 2026-07-15 — Deterministic tooling overhaul
 
@@ -83,9 +84,8 @@ impossible, and the old wrong endgame reading of #91 survives only as a
 
 Benchmark the NEXT real game against the figures below and record it here.
 
-The offline test apparatus is committed as
-`.claude/skills/otb-scrabble-upload/scripts/regression.py` (run it after any
-script change; `--sweep N` adds the archive replay sweep). Baseline
+The offline test apparatus is committed as `scripts/otb/regression.py` (run it
+after any script change; `--sweep N` adds the archive replay sweep). Baseline
 result 2026-07-15: round-trips #91/#92 event-for-event, all 4 failure
 injections caught, 57/60 random archive games replay cleanly (3 expected:
 unterminated temp/sample files), **7.4s total** — the deterministic half of

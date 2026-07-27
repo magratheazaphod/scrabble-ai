@@ -86,7 +86,9 @@ Exit 0 with "PASS" if no errors (warnings allowed); exit 1 listing violations.
 import sys, os, json, re
 from collections import Counter
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.dirname(HERE))   # scripts/, for the shared engine
 from otb_solver import VALS, DIST
 
 WORD_RE = re.compile(r'^[A-Za-z]+$')

@@ -22,7 +22,9 @@ solver.json:     otb_solver.py --json output.
 import sys, os, json, argparse
 from collections import Counter
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.dirname(HERE))   # scripts/, for the shared engine
 from otb_solver import VALS
 from check_transcription import check, entry_kind
 

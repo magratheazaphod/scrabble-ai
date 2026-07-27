@@ -36,9 +36,12 @@ running the daily work unattended.
 - **Reporting queries** — ad-hoc SQL against the woogles.io production DB
   (lives in the sibling `liwords` repo).
 
-All the deterministic logic lives in `scripts/`; the `.claude/skills/`
-directory has one skill per workflow above with the full details. `data/` and
-`.github/` hold pipeline state for the automation.
+All the deterministic logic lives in `scripts/`. `CLAUDE.md` holds the
+conventions shared by every workflow (lexicon rules, API access, what's
+irreversible, what's already automated); `.claude/skills/` has one skill per
+workflow above with the procedure, plus `reference/` files for the deeper
+detail each one needs only occasionally. `data/` and `.github/` hold pipeline
+state for the automation.
 
 ## Generating a new report by hand
 
