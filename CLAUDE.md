@@ -88,6 +88,7 @@ historical error in this repo came from.
 | --- | --- |
 | `woogles_upload.py` | preflight → ImportGCG → verify finished → collection add → comment. The only sanctioned upload path. |
 | `gcg_preflight.py` | scan/heal `.gcg` parser-breaking patterns; `--check` to report only |
+| `replace_uploaded_game.py` | swap a re-uploaded game in for a defective one across its collections, and comment on the orphan |
 | `tournament_report.py` | all stats/aggregation/report rendering (single source of truth, shared with the email job) |
 | `test_report_golden.py` | regression gate - run after any `tournament_report.py` edit |
 | `fetch_woogles_snapshot.py` | harvest collections/games into `data/woogles-snapshot.json` |
@@ -181,6 +182,7 @@ data/                                pipeline state and logs (gitignored, local-
 | `/tournament-analysis` | turning a Woogles collection into a stats report; league seasons |
 | `/gcg-upload` | uploading `.gcg` files to Woogles and grouping them into a collection |
 | `/otb-scrabble-upload` | reconstructing a game from scoresheet + board photos, then uploading it |
+| `/fix-uploaded-game` | a game already on Woogles is wrong - diagnose, and repair in place or replace |
 | `/curley-tracker` | the James Curley practice-game Google Sheet and its collection |
 | `/lexicon-lookup` | validating words / definitions against CSW, NWL, TWL, foreign sets |
 | `/woogles-queries` | SQL against the woogles.io reporting DB (lives in `~/projects/liwords/reporting/`) |
