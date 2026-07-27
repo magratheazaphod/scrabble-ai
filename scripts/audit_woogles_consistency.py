@@ -41,7 +41,6 @@ import requests
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(REPO, '.claude', 'skills', 'otb-scrabble-upload', 'scripts'))
 from update_curley_tracker import load_dotenv, open_worksheet, build_header_map
 import verify_gcg as vg
 from otb_solver import LEXICON_PATH, load_lexicon

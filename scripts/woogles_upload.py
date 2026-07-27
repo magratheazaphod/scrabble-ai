@@ -125,8 +125,7 @@ def main():
 
     # 1b. independent replay verification (import is irreversible — this is the
     # last gate where a defective file can be stopped)
-    verify = os.path.join(REPO, '.claude', 'skills', 'otb-scrabble-upload',
-                          'scripts', 'verify_gcg.py')
+    verify = os.path.join(REPO, 'scripts', 'verify_gcg.py')
     if os.path.exists(verify):
         v = subprocess.run([sys.executable, verify, args.gcg], capture_output=True, text=True)
         print(v.stdout.strip())
