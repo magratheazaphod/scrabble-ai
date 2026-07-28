@@ -882,6 +882,10 @@ def report_extras(collection_uuid, stats, agg):
         sections.append(leaderboard)
     return {
         "round_label": "Seed",
+        # League games are played on Woogles with both racks known every turn, so
+        # every turn of Jesse's is analyzable — the full ranked error log is the
+        # study material the league report exists to produce.
+        "error_log": True,
         "lead_sections": [league_section(stats, agg, standing, division, season, league)],
         "sections": sections,
         "digest_line": digest_line,
