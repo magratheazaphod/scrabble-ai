@@ -405,6 +405,50 @@ def build_played_words(events):
     return moves
 
 
+def readable_move(move, board):
+    """A turn's move string with board tiles spelled out: "L1 K(I)NDA".
+
+    `played_move`/`optimal_move` come back as "<position> <tiles>", where "." means
+    "a tile already on the board" — unreadable on its own in a report row, so resolve
+    the dots against the position the move was made from. Non-placement moves
+    ("(Pass)", "(exch ABC)") have no position and are returned unchanged.
+    """
+    parts = (move or "").strip().split()
+    if len(parts) < 2:
+        return move or ""
+    position, word = parts[0], parts[1]
+    if not re.match(r"^(\d+[A-Oa-o]|[A-Oa-o]\d+)$", position):
+        return move
+    return f"{position} {resolve_bingo_word(move, board)}"
+
+
+STAGES = ("early", "mid", "pre-endgame", "endgame")
+
+
+def game_stage(turn):
+    """Which stage of the game a turn belongs to: early / mid / pre-endgame / endgame.
+
+    BestBot's own `phase` field is too coarse at the top — it lumps the whole game
+    before the pre-endgame into one `PHASE_EARLY_MID` bucket (4538 of 5630 turns in
+    the archive), which is useless for asking "where do my errors happen". So the
+    unseen-tile count does the splitting instead: the bag holds 86 tiles once both
+    racks are drawn, and 50 is roughly the point where the board is committed and
+    the opening is over. Below that, bag empty = endgame and 1-14 in the bag =
+    pre-endgame — Jesse's own boundary, and the right one: the pre-endgame is the
+    stage defined by tracking exactly what is left in the bag, and that starts two
+    turns' worth of tiles earlier than the analysis' `PHASE_*PREENDGAME` (bag ≤ 7)
+    admits. Widening it here is deliberate; don't "fix" it back to the enum.
+    """
+    bag = turn.get("tiles_in_bag")
+    if bag is None:
+        return None
+    if bag == 0:
+        return "endgame"
+    if bag <= 14:
+        return "pre-endgame"
+    return "early" if bag > 50 else "mid"
+
+
 def opp_racks_complete(analysis_turns, opp_idx):
     """True iff the opponent's rack is fully known on every turn.
 
@@ -508,6 +552,7 @@ def compute_game(r, subject=None):
     opp_missed_bingo_urls = []
     jesse_phonies = []  # [{'words_formed', 'challenged'}]
     opp_phonies = []  # [{'words_formed', 'challenged'}]
+    errors = []  # every one of the subject's turns that cost win%, richest-first later
     for turn_idx, t in enumerate(analysis["turns"]):
         # is_phony/missed_bingo are evaluated for BOTH players — mention them either way
         if t.get("is_phony"):
@@ -548,6 +593,33 @@ def compute_game(r, subject=None):
         win_prob_lost += t.get("win_prob_loss") or 0
         if t.get("is_phony"):
             phonies_played += 1
+
+        # The error log. Every turn that cost win% is listed, not just the big ones:
+        # the point of the section is to be studyable end to end, and the ranking
+        # already buries the trivia at the bottom. was_optimal turns and turns that
+        # cost exactly nothing are not errors and are skipped.
+        wpl = t.get("win_prob_loss") or 0
+        if wpl > 0 and not t.get("was_optimal"):
+            board = snapshots[turn_idx] if turn_idx < len(snapshots) else None
+            errors.append({
+                "turn_number": t.get("turn_number"),
+                "rack": t.get("rack") or "",
+                "played": readable_move(t.get("played_move"), board) if board else (t.get("played_move") or ""),
+                "played_score": t.get("played_score"),
+                "optimal": readable_move(t.get("optimal_move"), board) if board else (t.get("optimal_move") or ""),
+                "optimal_score": t.get("optimal_score"),
+                "win_prob_loss": wpl,
+                "spread_loss": t.get("spread_loss") or 0,
+                "mistake_size": t.get("mistake_size"),
+                "stage": game_stage(t),
+                "is_phony": bool(t.get("is_phony")),
+                "missed_bingo": bool(t.get("missed_bingo")),
+                "url": (
+                    turn_url(game_url, turn_events[turn_idx])
+                    if turn_idx < len(turn_events)
+                    else game_url
+                ),
+            })
 
     # "Seed <n>" is how league collections encode their ordering: a league is a
     # round robin with no meaningful round order, so games are sequenced by
@@ -593,6 +665,7 @@ def compute_game(r, subject=None):
         "opp_missed_bingo_urls": opp_missed_bingo_urls,
         "jesse_phonies": jesse_phonies,
         "opp_phonies": opp_phonies,
+        "errors": errors,
     }
 
 
@@ -821,8 +894,57 @@ def _missed_bingo_cells(g, words_key, urls_key):
     ]
 
 
+def error_log_rows(stats):
+    """Every error the subject made across the collection, worst first.
+
+    One row per turn that cost win probability, ranked by that loss — the whole
+    point is that the study order is "biggest leak first", not chronological, so
+    the ordering is global across games rather than per game.
+    """
+    rows = [dict(e, round=g["round"], game=g) for g in stats for e in g.get("errors") or []]
+    # Ties broken by spread lost then by game/turn, so the table is stable across
+    # renders (a shuffling table churns the report diff for no reason).
+    rows.sort(key=lambda e: (-e["win_prob_loss"], -e["spread_loss"], e["round"], e["turn_number"] or 0))
+    return rows
+
+
+def error_log_section(stats, short_label="Rd"):
+    """The "All Errors" table, or "" when the collection has no analyzed errors."""
+    rows = error_log_rows(stats)
+    if not rows:
+        return ""
+    lines = [
+        "## All Errors",
+        "",
+        "*Every turn that cost win probability, worst first. The turn number links to "
+        "that position on woogles.io, with the rack still to play. Lowercase = blank "
+        "tile; (X) = a tile already on the board.*",
+        "",
+        f"| Win% Lost | {short_label} | Opponent | Turn | Stage | Rack | Played | Best | Pts | Flags |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for e in rows:
+        g = e["game"]
+        pts = (e["played_score"] or 0) - (e["optimal_score"] or 0)
+        flags = []
+        if e["missed_bingo"]:
+            flags.append("missed bingo")
+        if e["is_phony"]:
+            flags.append("phony")
+        if e["spread_loss"]:
+            flags.append(f"{e['spread_loss']} spread")
+        turn_cell = f"[{e['turn_number']}]({e['url']})" if e["turn_number"] is not None else f"[↗]({e['url']})"
+        lines.append(
+            f"| {round(e['win_prob_loss'] * 100, 1)}% | {e['round']} | {opponent_handle(g)} | "
+            f"{turn_cell} | {e['stage'] or '—'} | {e['rack']} | {e['played']} ({e['played_score']}) | "
+            f"{e['optimal']} ({e['optimal_score']}) | {sp_str(pts)} | {', '.join(flags)} |"
+        )
+    return "\n".join(lines)
+
+
 def render_report(stats, agg, notes, title, summary_md=None, subject_display="Jesse Day",
-                  round_label=None, extra_sections=None, lead_sections=None):
+                  round_label=None, extra_sections=None, lead_sections=None,
+                  error_log=False):
     """Render the report markdown.
 
     `round_label` renames the ordering column when games aren't sequenced by
@@ -837,6 +959,10 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
 
     `extra_sections` is a list of ready-made markdown blocks appended after the
     per-game tables and before the Summary (the league cross-check uses it).
+
+    `error_log` adds the ranked "All Errors" section (see error_log_section). It is
+    off by default so that existing tournament reports render byte-identically;
+    league reports turn it on (woogles_league.report_extras).
     """
     n = agg["n"]
     col_label = round_label or "Rnd"
@@ -1042,6 +1168,12 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
         for rnd, opp, cell in opp_mb_rows:
             lines.append(f"| {rnd} | {opp} | {cell} |")
 
+    if error_log:
+        section = error_log_section(stats, short_label)
+        if section:
+            lines.append("")
+            lines.append(section)
+
     for section in extra_sections or []:
         lines.append("")
         lines.append(section.strip())
@@ -1054,13 +1186,74 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     return "\n".join(lines) + "\n"
 
 
-def build_digest(stats, agg, notes, title):
+DIGEST_TOP_ERRORS = 12
+
+
+def _error_digest_lines(stats, short_label="Rd"):
+    """The error-log block of the digest: a stage breakdown plus the worst errors.
+
+    Feeds the Summary the same material the "All Errors" section shows a reader, so
+    it can say *where* the win% went (a run of pre-endgame leaks is a different
+    lesson from a run of missed bingos) instead of restating the aggregate averages.
+    Only the top DIGEST_TOP_ERRORS rows are listed — the tail is a long tail of
+    sub-1% turns that would drown the signal and the prompt alike.
+    """
+    rows = error_log_rows(stats)
+    if not rows:
+        return []
+    total = sum(e["win_prob_loss"] for e in rows)
+    lines = [
+        f"Errors (every turn that cost win probability; {len(rows)} in total, "
+        f"{round(total * 100, 1)}% of win probability lost across the collection):"
+    ]
+    for stage in STAGES:
+        in_stage = [e for e in rows if e["stage"] == stage]
+        if not in_stage:
+            continue
+        lost = sum(e["win_prob_loss"] for e in in_stage)
+        lines.append(
+            f"  {stage}: {len(in_stage)} errors, {round(lost * 100, 1)}% win prob lost "
+            f"({round(lost / total * 100)}% of the total)"
+        )
+    mb = [e for e in rows if e["missed_bingo"]]
+    if mb:
+        lines.append(
+            f"  of which missed bingos: {len(mb)}, "
+            f"{round(sum(e['win_prob_loss'] for e in mb) * 100, 1)}% win prob lost"
+        )
+    lines.append(f"  Worst {min(DIGEST_TOP_ERRORS, len(rows))}, worst first:")
+    for e in rows[:DIGEST_TOP_ERRORS]:
+        tags = []
+        if e["missed_bingo"]:
+            tags.append("MISSED BINGO")
+        if e["is_phony"]:
+            tags.append("phony")
+        if e["spread_loss"]:
+            tags.append(f"{e['spread_loss']} spread lost")
+        tag_str = f" [{', '.join(tags)}]" if tags else ""
+        lines.append(
+            f"    {round(e['win_prob_loss'] * 100, 1)}% win prob lost — {short_label}"
+            f"{e['round']} vs {e['game']['opponent']}, {e['stage']} stage, turn "
+            f"{e['turn_number']}: rack {e['rack']}, played {e['played']} "
+            f"({e['played_score']}) instead of {e['optimal']} ({e['optimal_score']})"
+            f"{tag_str}"
+        )
+    return lines
+
+
+def build_digest(stats, agg, notes, title, error_log=False, short_label="Rd"):
     """Compact text the Summary LLM call reads AND the SHA-256 cache key input.
 
     Deterministic (stable ordering everywhere) — hash stability is the cache.
     Contents only: title, record line, progression string, the full agg dict
     (stable key order), and one line per game (round, opponent, result, score,
     spread, mistake index, note). Never raw game/turn data.
+
+    `error_log` appends the ranked error block (see _error_digest_lines). It is off
+    by default, and deliberately keyed to the same flag that shows the "All Errors"
+    section: a summary should only discuss errors in a report the reader can check
+    them in, and leaving it off elsewhere keeps every other collection's digest hash
+    — and so its cached summary — untouched.
     """
     lines = [f"Title: {title}", f"Record: {agg['record']}", f"Progression: {_progression(stats)}"]
     if agg.get("void_challenge"):
@@ -1116,6 +1309,8 @@ def build_digest(stats, agg, notes, title):
             f"  Missed by opponents: "
             f"{'; '.join(f'Rd{r} {o} {w}' for r, o, w in opp) if opp else 'none'}"
         )
+    if error_log:
+        lines.extend(_error_digest_lines(stats, short_label))
     return "\n".join(lines)
 
 

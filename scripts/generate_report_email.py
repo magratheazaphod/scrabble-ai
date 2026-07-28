@@ -119,6 +119,8 @@ def generate_summary(client, digest, subject=None):
 
 Write a 2-4 sentence narrative summary of this tournament for the report's "## Summary" section. Be factual and specific: name opponents, cite the standout numbers from the digest. No headers, no meta-commentary, no mention of the digest or your methodology — this is prose for {audience}.
 
+If the digest carries an "Errors:" block, spend one of your sentences on it: say which stage of the game (early / mid / pre-endgame / endgame) the win probability actually went in, whether missed bingos or ordinary play choices dominate, and name the single costliest error concretely (opponent, what was played, what was best). Report the stage breakdown as the digest states it — do not infer a pattern the numbers don't show.
+
 Honour any "Challenge rule:" line in the digest — it constrains what is worth saying. In particular, under VOID no phony can be played, so phony counts are not a credit to anyone and mistakes scores are not comparable to challenge-rule events.
 
 Example of the style and length to match (from a different tournament, do not reuse its content — note that its phony praise applies only because that event allowed phonies):
@@ -254,6 +256,17 @@ def main():
             extras = wl.report_extras(col["uuid"], stats, agg)
         except Exception as e:  # noqa: BLE001 — any failure here is non-fatal
             print(f"League extras unavailable for '{col['title']}': {e}", file=sys.stderr)
+        # The error log goes into the digest as well as the report, so the Summary
+        # can say where the win probability actually went. Rebuilt rather than
+        # appended because it belongs inside the digest body — and it is rebuilt
+        # only for the collections whose report shows the section (leagues), so no
+        # other collection's cached summary is invalidated.
+        if extras.get("error_log"):
+            digest = tr.build_digest(
+                stats, agg, notes, col["title"],
+                error_log=True, short_label=extras.get("round_label") or "Rd",
+            )
+            dhash = tr.digest_hash(digest)
         if extras.get("digest_line"):
             digest = f"{digest}\n{extras['digest_line']}"
             dhash = tr.digest_hash(digest)
@@ -276,6 +289,7 @@ def main():
             round_label=extras.get("round_label"),
             lead_sections=extras.get("lead_sections"),
             extra_sections=extras.get("sections"),
+            error_log=extras.get("error_log", False),
         )
         report_sections.append(report_md)
 
