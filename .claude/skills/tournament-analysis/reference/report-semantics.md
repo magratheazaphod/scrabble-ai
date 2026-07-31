@@ -60,6 +60,39 @@ any prose written around it.
   generator `iter_move_events`; keep new events↔analysis alignment there rather
   than re-implementing the "skip PHONY_TILES_RETURNED / CHALLENGE_BONUS" step.
 
+## The error log ("All Errors")
+
+On by default only in league reports (`error_log=True`), where both racks are
+known every turn. One row per turn of Jesse's, ranked by win% lost.
+
+- **What counts as an error.** Any turn that cost win probability, plus any turn
+  where win% stayed flat (within `FLAT_WIN_PROB`, 0.5%) but at least
+  `SPREAD_ONLY_EQUITY` (5) points of equity went with it - flagged `spread only`.
+  That second rule exists for the endgame and pre-endgame, where a game already
+  won or already lost gives every candidate the same win probability and the
+  simulation is ranking on spread alone; a win%-only filter is blind to exactly
+  the turns where the margin gets thrown away. `was_optimal` turns are never
+  errors, whatever the numbers say. Because the ranking is by win% lost,
+  spread-only rows form a block at the foot of the table and get their own
+  ranked slice in the digest - a plain head-of-list cut would never show one.
+- **Equity Lost** is the simulation's own verdict on the played move against the
+  play in the Best column: `optimal.equity - played.equity`, or the exact
+  difference in solved `final_spread` in an endgame. **A negative figure is not a
+  bug** - it means the played move was better on spread and BestBot's choice
+  bought win probability with it, which is routine when protecting a lead. Never
+  clamp it at zero or describe it as "spread gained by the bot".
+- **Off Δ / Def Δ** decompose that same comparison into scoring: points the
+  played move scores for Jesse across the line, and points it concedes to the
+  opponent. Both are signed so **positive is good for Jesse** - `Def Δ` is the
+  opponent's scoring *reduction*, not their scoring. They sum to roughly
+  −Equity Lost, never exactly: the remainder is everything spread depends on
+  besides the plays' own scores (leave value; the going-out bonus and unplayed
+  tiles in an endgame). Don't "fix" the gap by deriving one column from another,
+  and don't present the two as a decomposition of equity that must balance.
+- Rows with no comparable line in the analysis (a challenge, a pass the
+  simulator never sat on - 2 of 1,258 rows in the golden corpus) show `—` in all
+  three columns rather than a zero, which would read as "this cost nothing".
+
 ## Phonies
 
 `is_phony` = word not in the lexicon. Check it for **both** players, not just

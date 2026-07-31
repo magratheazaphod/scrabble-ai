@@ -54,6 +54,33 @@ number.
   `"8D WORD"` (position + tiles placed; lowercase = blank, `.` = existing board
   tile)
 
+### The candidate lines a turn carries
+
+Every turn holds the simulation (or endgame solution) behind its verdict, which
+is where the error log's equity columns come from. `tournament_report.
+equity_breakdown` is the only thing that should read them; verified over the
+whole golden corpus (5,544 turns).
+
+- `top_sim_plays[]` - present on every non-endgame turn, ordered best-first.
+  `[0]` is always the turn's own `optimal_move`, and exactly one entry carries
+  `is_played_move: true`, so the played and best lines are always both there.
+  (`[0]` is *not* always the maximum `win_prob` - it differs on ~4% of turns -
+  so rank by list order, never by re-sorting on `win_prob`.)
+  - `equity` - mean simulated spread for that candidate. Every candidate in a
+    turn runs the same `iterations`, so two candidates' figures are comparable
+    and their difference is the spread the played move gave up.
+  - `ply_stats[]` - `score_mean` per simulated ply. **Plies alternate starting
+    with the opponent's reply: odd `ply` is theirs, even is mine.** The
+    candidate's own `score` belongs on my side of the ledger.
+- `principal_variation` / `other_variations[]` - endgame turns only
+  (`top_sim_plays` is empty there). The solved line for the best play, and one
+  line per alternative; find the played one by matching `moves[0].
+  move_description` against `played_move` (resolvable on every endgame turn in
+  the corpus). `move_number` starts at 1 with the play under consideration, so
+  odd moves are mine and even are the opponent's, and the difference in
+  `final_spread` equals `spread_loss` exactly.
+- `top_peg_plays[]` - always empty in this archive; don't build on it.
+
 ## `events[]` (from GetGameHistory)
 
 - `type` - `TILE_PLACEMENT_MOVE`, `EXCHANGE`, `PASS`, `END_RACK_PTS`,
