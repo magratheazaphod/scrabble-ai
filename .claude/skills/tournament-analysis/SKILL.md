@@ -111,8 +111,36 @@ Save to `reports/<tournament-slug>-report.md`. For a one-off subject report
 identity via `GameHistory players[].nickname` matching, never the Woogles login
 username.
 
-**`scripts/test_report_golden.py` is the regression gate.** Run it after any edit
-to `tournament_report.py`.
+**`scripts/test_report.py` is the regression gate.** Run it after any edit to
+`tournament_report.py`; it needs no network and no `data/`.
+
+It is **not** a golden-output diff - the previous harness was, and that was the
+wrong shape for a file edited most weeks (every deliberate change failed it, so
+regenerating the expectation became reflex; it then broke silently and passed for
+weeks when the state file stopped storing rendered reports). Instead it asserts
+what the report *means* and how it is *shaped*:
+
+- **Invariants** re-derive each figure independently - scores read from the right
+  player index, `mistake_index` selected by `player_index`, bingos recounted off
+  the event log, error rows belonging to the subject's own non-optimal turns,
+  endgame equity equal to `spread_loss`. Adding a column moves none of them.
+- **Structural checks** assert every table row matches its header's column count,
+  no `None`/`nan` reaches a cell, and every link points at woogles.io - without
+  pinning one word of text.
+- **Synthetic cases** cover branches the corpus lacks (draws, VOID, a registry
+  hit) by mutating fixture input, never by hand-writing an expected dict.
+
+Numbers are deliberately not pinned; a pinned constant only records what the code
+did the day it was written. If you want a figure locked down, add an invariant
+that derives it another way.
+
+The corpus is `tests/fixtures/*.json.gz` (committed, ~500 KB, 20 games across 4
+collections). It is **anonymized**: every non-subject identity is replaced,
+`user_id`s and game ids are synthetic, and `original_gcg` is dropped - a fixture
+pairing `real_name`/`nickname`/`user_id` would be a reconstruction of the private
+name registry. Jesse's own aliases are kept deliberately, since `is_jesse` is the
+production identity path. Rebuild with `scripts/make_test_fixtures.py` (needs the
+snapshot); it refuses to write if any real name survives.
 
 ## Running without woogles.io egress
 

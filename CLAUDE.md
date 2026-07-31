@@ -90,7 +90,8 @@ historical error in this repo came from.
 | `gcg_preflight.py` | scan/heal `.gcg` parser-breaking patterns; `--check` to report only |
 | `replace_uploaded_game.py` | swap a re-uploaded game in for a defective one across its collections, and comment on the orphan |
 | `tournament_report.py` | all stats/aggregation/report rendering (single source of truth, shared with the email job) |
-| `test_report_golden.py` | regression gate - run after any `tournament_report.py` edit |
+| `test_report.py` | regression gate - run after any `tournament_report.py` edit. Semantic invariants + structural render checks over `tests/fixtures/`; pins no prose and no numbers |
+| `make_test_fixtures.py` | rebuild the committed, anonymized `tests/fixtures/` corpus from `data/golden-snapshot.json` |
 | `fetch_woogles_snapshot.py` | harvest collections/games into `data/woogles-snapshot.json` |
 | `generate_report_email.py` | build and send the daily report email |
 | `woogles_league.py` | turn a league season into a report-ready collection |

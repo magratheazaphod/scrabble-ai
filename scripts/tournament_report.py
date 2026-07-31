@@ -449,6 +449,96 @@ def game_stage(turn):
     return "early" if bag > 50 else "mid"
 
 
+# A turn is worth logging as an error when it cost win probability at all, OR
+# when win% barely moved but real spread did. The second case is the endgame and
+# pre-endgame pattern Jesse cares about: with the game already won or already
+# lost, every candidate wins with the same probability and the simulation is
+# ranking on spread alone — those turns are invisible to a win%-only filter but
+# are exactly where the point margin is thrown away.
+FLAT_WIN_PROB = 0.005  # 0.5% — "win% didn't move"
+SPREAD_ONLY_EQUITY = 5  # points of equity lost that make a flat-win% turn an error
+
+
+def _sim_split(cand):
+    """(my scoring, opponent's scoring) over a simulated candidate's plies.
+
+    A sim ply alternates sides starting with the opponent's reply, so odd plies
+    are theirs and even plies are mine; the candidate's own score is the first
+    thing on my side of the ledger. `score_mean` is the mean over the same
+    iteration count for every candidate in the turn (verified across the whole
+    archive), so two candidates' splits are directly comparable.
+    """
+    plies = cand.get("ply_stats") or []
+    mine = (cand.get("score") or 0) + sum(p["score_mean"] for p in plies if p["ply"] % 2 == 0)
+    opp = sum(p["score_mean"] for p in plies if p["ply"] % 2 == 1)
+    return mine, opp
+
+
+def _variation_split(var):
+    """(my scoring, opponent's scoring) over an endgame variation's move sequence.
+
+    `move_number` starts at 1 with the play under consideration, so odd moves are
+    mine and even ones the opponent's. Unlike the simulated split these are exact
+    — the endgame is solved, not sampled."""
+    moves = var.get("moves") or []
+    mine = sum(m["score"] for m in moves if m["move_number"] % 2 == 1)
+    opp = sum(m["score"] for m in moves if m["move_number"] % 2 == 0)
+    return mine, opp
+
+
+def equity_breakdown(turn):
+    """How much spread a turn cost, split into its offensive and defensive halves.
+
+    Returns {"equity_lost", "offense_delta", "defense_delta"}, or None when the
+    analysis carries no comparable line for the played move (a challenge or a
+    pass, or a turn the simulator never sat on).
+
+    * `equity_lost` — spread given up against the play BestBot ranked first, from
+      the simulation itself (`equity`), or the exact solved margin in an endgame.
+      Negative means the played move was *better* on spread than the top move,
+      which is normal when the top move buys win probability by protecting a lead.
+    * `offense_delta` / `defense_delta` — the same comparison decomposed into
+      scoring: how many more points the played move scores for me across the
+      simulated line, and how many fewer it concedes to the opponent. Both are
+      signed so that positive is good for Jesse, and they sum to roughly
+      -equity_lost. The gap between that sum and the equity figure is everything
+      the spread depends on besides the plays' own scores — the value of the
+      leave at the end of a simulated line, the going-out bonus and unplayed
+      tiles at the end of a solved endgame — so never "reconcile" the two by
+      deriving one from the other.
+    """
+    sims = turn.get("top_sim_plays") or []
+    if sims:
+        # sims[0] is the analysis' own `optimal_move` in every turn of the archive
+        # — i.e. the play the report's "Best" column names — so the comparison the
+        # columns make is always against the move shown beside them.
+        best = sims[0]
+        played = next((p for p in sims if p.get("is_played_move")), None)
+        if played is None:
+            return None
+        equity_lost = best["equity"] - played["equity"]
+        split = _sim_split
+    else:
+        best = turn.get("principal_variation")
+        variations = turn.get("other_variations") or []
+        played = next(
+            (v for v in variations
+             if (v.get("moves") or [{}])[0].get("move_description") == turn.get("played_move")),
+            None,
+        )
+        if not best or played is None:
+            return None
+        equity_lost = best["final_spread"] - played["final_spread"]
+        split = _variation_split
+    mine_p, opp_p = split(played)
+    mine_b, opp_b = split(best)
+    return {
+        "equity_lost": equity_lost,
+        "offense_delta": mine_p - mine_b,
+        "defense_delta": opp_b - opp_p,
+    }
+
+
 def opp_racks_complete(analysis_turns, opp_idx):
     """True iff the opponent's rack is fully known on every turn.
 
@@ -596,10 +686,14 @@ def compute_game(r, subject=None):
 
         # The error log. Every turn that cost win% is listed, not just the big ones:
         # the point of the section is to be studyable end to end, and the ranking
-        # already buries the trivia at the bottom. was_optimal turns and turns that
-        # cost exactly nothing are not errors and are skipped.
+        # already buries the trivia at the bottom. A turn that cost no win% but a
+        # real amount of spread is an error too (see FLAT_WIN_PROB). was_optimal
+        # turns are never errors, whatever the numbers say.
         wpl = t.get("win_prob_loss") or 0
-        if wpl > 0 and not t.get("was_optimal"):
+        eq = equity_breakdown(t)
+        eq_lost = eq["equity_lost"] if eq else 0
+        spread_only = wpl <= FLAT_WIN_PROB and eq_lost >= SPREAD_ONLY_EQUITY
+        if (wpl > 0 or spread_only) and not t.get("was_optimal"):
             board = snapshots[turn_idx] if turn_idx < len(snapshots) else None
             errors.append({
                 "turn_number": t.get("turn_number"),
@@ -610,6 +704,12 @@ def compute_game(r, subject=None):
                 "optimal_score": t.get("optimal_score"),
                 "win_prob_loss": wpl,
                 "spread_loss": t.get("spread_loss") or 0,
+                # None (not 0) when the analysis offers nothing to compare against —
+                # the table shows "—" rather than implying a cost of zero.
+                "equity_lost": eq["equity_lost"] if eq else None,
+                "offense_delta": eq["offense_delta"] if eq else None,
+                "defense_delta": eq["defense_delta"] if eq else None,
+                "spread_only": spread_only,
                 "mistake_size": t.get("mistake_size"),
                 "stage": game_stage(t),
                 "is_phony": bool(t.get("is_phony")),
@@ -718,6 +818,20 @@ def check_phony_words(stats):
 
 def sp_str(v):
     return f"+{v}" if v >= 0 else f"−{abs(v)}"
+
+
+def pts_str(v):
+    """A points figure to one decimal, "—" when the analysis gave us none.
+
+    Simulated equity is a mean over thousands of iterations, so it is a real
+    fraction rather than a whole number of points; endgame figures are exact but
+    print the same way so a column never mixes formats."""
+    return "—" if v is None else f"{v:.1f}".replace("-", "−")
+
+
+def signed_pts_str(v):
+    """Same, with an explicit + on gains — for columns where the sign is the point."""
+    return "—" if v is None else (f"+{v:.1f}" if v >= 0 else f"−{abs(v):.1f}")
 
 
 def aggregate(stats):
@@ -897,14 +1011,17 @@ def _missed_bingo_cells(g, words_key, urls_key):
 def error_log_rows(stats):
     """Every error the subject made across the collection, worst first.
 
-    One row per turn that cost win probability, ranked by that loss — the whole
-    point is that the study order is "biggest leak first", not chronological, so
-    the ordering is global across games rather than per game.
+    One row per turn that cost win probability or spread, ranked by the win% loss
+    — the whole point is that the study order is "biggest leak first", not
+    chronological, so the ordering is global across games rather than per game.
+    Spread-only errors (win% flat, equity thrown away) therefore land in a block
+    at the foot of the table, ordered among themselves by the spread they cost.
     """
     rows = [dict(e, round=g["round"], game=g) for g in stats for e in g.get("errors") or []]
-    # Ties broken by spread lost then by game/turn, so the table is stable across
+    # Ties broken by equity lost then by game/turn, so the table is stable across
     # renders (a shuffling table churns the report diff for no reason).
-    rows.sort(key=lambda e: (-e["win_prob_loss"], -e["spread_loss"], e["round"], e["turn_number"] or 0))
+    rows.sort(key=lambda e: (-e["win_prob_loss"], -(e["equity_lost"] or 0),
+                             e["round"], e["turn_number"] or 0))
     return rows
 
 
@@ -916,28 +1033,43 @@ def error_log_section(stats, short_label="Rd"):
     lines = [
         "## All Errors",
         "",
-        "*Every turn that cost win probability, worst first. The turn number links to "
-        "that position on woogles.io, with the rack still to play. Lowercase = blank "
-        "tile; (X) = a tile already on the board.*",
+        "*Every turn that cost win probability, worst first, plus turns where win% "
+        "barely moved but at least "
+        f"{SPREAD_ONLY_EQUITY} points of equity went with it (flagged \"spread only\", "
+        "and grouped at the foot of the table). The turn number links to that position "
+        "on woogles.io, with the rack still to play. Lowercase = blank tile; (X) = a "
+        "tile already on the board.*",
         "",
-        f"| Win% Lost | {short_label} | Opponent | Turn | Stage | Rack | Played | Best | Pts | Flags |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "*Equity Lost is the spread the simulation says the played move gave up "
+        "against Best; a negative figure means the played move was better on spread "
+        "and Best bought win probability with it, which is normal when protecting a "
+        "lead. Off Δ and Def Δ split that comparison into scoring — how many more "
+        "points the played move scores for Jesse across the simulated line, and how "
+        "many fewer it concedes to the opponent — both signed so positive is good. "
+        "They sum to roughly −Equity Lost; the remainder is what the spread depends "
+        "on besides the plays' own scores — the value of the leave, and the going-out "
+        "bonus and unplayed tiles at the end of an endgame.*",
+        "",
+        f"| Win% Lost | Equity Lost | Off Δ | Def Δ | {short_label} | Opponent | Turn | "
+        "Stage | Rack | Played | Best | Flags |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for e in rows:
         g = e["game"]
-        pts = (e["played_score"] or 0) - (e["optimal_score"] or 0)
         flags = []
         if e["missed_bingo"]:
             flags.append("missed bingo")
         if e["is_phony"]:
             flags.append("phony")
-        if e["spread_loss"]:
-            flags.append(f"{e['spread_loss']} spread")
+        if e["spread_only"]:
+            flags.append("spread only")
         turn_cell = f"[{e['turn_number']}]({e['url']})" if e["turn_number"] is not None else f"[↗]({e['url']})"
         lines.append(
-            f"| {round(e['win_prob_loss'] * 100, 1)}% | {e['round']} | {opponent_handle(g)} | "
+            f"| {round(e['win_prob_loss'] * 100, 1)}% | {pts_str(e['equity_lost'])} | "
+            f"{signed_pts_str(e['offense_delta'])} | {signed_pts_str(e['defense_delta'])} | "
+            f"{e['round']} | {opponent_handle(g)} | "
             f"{turn_cell} | {e['stage'] or '—'} | {e['rack']} | {e['played']} ({e['played_score']}) | "
-            f"{e['optimal']} ({e['optimal_score']}) | {sp_str(pts)} | {', '.join(flags)} |"
+            f"{e['optimal']} ({e['optimal_score']}) | {', '.join(flags)} |"
         )
     return "\n".join(lines)
 
@@ -1202,18 +1334,24 @@ def _error_digest_lines(stats, short_label="Rd"):
     if not rows:
         return []
     total = sum(e["win_prob_loss"] for e in rows)
+    equity = sum(e["equity_lost"] or 0 for e in rows)
     lines = [
-        f"Errors (every turn that cost win probability; {len(rows)} in total, "
-        f"{round(total * 100, 1)}% of win probability lost across the collection):"
+        f"Errors (every turn that cost win probability, plus turns where win% was flat "
+        f"but spread was thrown away; {len(rows)} in total, "
+        f"{round(total * 100, 1)}% of win probability and {round(equity, 1)} points of "
+        f"equity lost across the collection):"
     ]
     for stage in STAGES:
         in_stage = [e for e in rows if e["stage"] == stage]
         if not in_stage:
             continue
         lost = sum(e["win_prob_loss"] for e in in_stage)
+        # A collection can consist entirely of spread-only errors (an endgame-heavy
+        # run where nothing swung the result), so never divide by the win% total.
+        share = f" ({round(lost / total * 100)}% of the total)" if total else ""
         lines.append(
-            f"  {stage}: {len(in_stage)} errors, {round(lost * 100, 1)}% win prob lost "
-            f"({round(lost / total * 100)}% of the total)"
+            f"  {stage}: {len(in_stage)} errors, {round(lost * 100, 1)}% win prob lost"
+            f"{share}, {round(sum(e['equity_lost'] or 0 for e in in_stage), 1)} equity lost"
         )
     mb = [e for e in rows if e["missed_bingo"]]
     if mb:
@@ -1221,23 +1359,47 @@ def _error_digest_lines(stats, short_label="Rd"):
             f"  of which missed bingos: {len(mb)}, "
             f"{round(sum(e['win_prob_loss'] for e in mb) * 100, 1)}% win prob lost"
         )
-    lines.append(f"  Worst {min(DIGEST_TOP_ERRORS, len(rows))}, worst first:")
-    for e in rows[:DIGEST_TOP_ERRORS]:
+    def error_line(e):
         tags = []
         if e["missed_bingo"]:
             tags.append("MISSED BINGO")
         if e["is_phony"]:
             tags.append("phony")
-        if e["spread_loss"]:
-            tags.append(f"{e['spread_loss']} spread lost")
+        if e["equity_lost"] is not None:
+            # The offence/defence split is what turns "this cost 9 points" into a
+            # lesson: points forgone vs points handed over are different mistakes.
+            tags.append(
+                f"{e['equity_lost']:.1f} equity lost (offense {e['offense_delta']:+.1f}, "
+                f"defense {e['defense_delta']:+.1f})"
+            )
         tag_str = f" [{', '.join(tags)}]" if tags else ""
-        lines.append(
+        return (
             f"    {round(e['win_prob_loss'] * 100, 1)}% win prob lost — {short_label}"
             f"{e['round']} vs {e['game']['opponent']}, {e['stage']} stage, turn "
             f"{e['turn_number']}: rack {e['rack']}, played {e['played']} "
             f"({e['played_score']}) instead of {e['optimal']} ({e['optimal_score']})"
             f"{tag_str}"
         )
+
+    # rows is ranked by win% lost, so the spread-only errors all sit in a block at
+    # the end and would never survive a plain head-of-list cut. They get their own
+    # ranked slice so the summary can see them at all.
+    by_win_prob = [e for e in rows if not e["spread_only"]]
+    spread_only = sorted(
+        (e for e in rows if e["spread_only"]),
+        key=lambda e: (-(e["equity_lost"] or 0), e["round"], e["turn_number"] or 0),
+    )
+    if by_win_prob:
+        lines.append(f"  Worst {min(DIGEST_TOP_ERRORS, len(by_win_prob))} by win probability, worst first:")
+        lines.extend(error_line(e) for e in by_win_prob[:DIGEST_TOP_ERRORS])
+    if spread_only:
+        lines.append(
+            f"  Spread-only errors (win% flat within {FLAT_WIN_PROB * 100:g}%, at least "
+            f"{SPREAD_ONLY_EQUITY} points of equity thrown away): {len(spread_only)} in "
+            f"total, {round(sum(e['equity_lost'] for e in spread_only), 1)} points; worst "
+            f"{min(DIGEST_TOP_ERRORS, len(spread_only))} first:"
+        )
+        lines.extend(error_line(e) for e in spread_only[:DIGEST_TOP_ERRORS])
     return lines
 
 
