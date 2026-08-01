@@ -1050,9 +1050,9 @@ def error_log_section(stats, short_label="Rd"):
         "on besides the plays' own scores — the value of the leave, and the going-out "
         "bonus and unplayed tiles at the end of an endgame.*",
         "",
-        f"| Win% Lost | Equity Lost | Off Δ | Def Δ | {short_label} | Opponent | Turn | "
-        "Stage | Rack | Played | Best | Flags |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Win% Lost | Opponent | Turn | Stage | Rack | Played | Best | "
+        "Equity Lost | Off Δ | Def Δ | Flags |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for e in rows:
         g = e["game"]
@@ -1065,11 +1065,11 @@ def error_log_section(stats, short_label="Rd"):
             flags.append("spread only")
         turn_cell = f"[{e['turn_number']}]({e['url']})" if e["turn_number"] is not None else f"[↗]({e['url']})"
         lines.append(
-            f"| {round(e['win_prob_loss'] * 100, 1)}% | {pts_str(e['equity_lost'])} | "
-            f"{signed_pts_str(e['offense_delta'])} | {signed_pts_str(e['defense_delta'])} | "
-            f"{e['round']} | {opponent_handle(g)} | "
+            f"| {round(e['win_prob_loss'] * 100, 1)}% | {opponent_handle(g)} | "
             f"{turn_cell} | {e['stage'] or '—'} | {e['rack']} | {e['played']} ({e['played_score']}) | "
-            f"{e['optimal']} ({e['optimal_score']}) | {', '.join(flags)} |"
+            f"{e['optimal']} ({e['optimal_score']}) | {pts_str(e['equity_lost'])} | "
+            f"{signed_pts_str(e['offense_delta'])} | {signed_pts_str(e['defense_delta'])} | "
+            f"{', '.join(flags)} |"
         )
     return "\n".join(lines)
 
