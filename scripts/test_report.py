@@ -259,10 +259,13 @@ def test_render_structure(slug, stats, agg, title):
               f"{tag}: the error log appears iff it was asked for")
         if error_log:
             # The columns the error table promises, in order. Layout may move, but
-            # a silently dropped column would make the numbers beside it lie.
+            # a silently dropped column would make the numbers beside it lie. The
+            # three cost columns sit just left of Flags, since a wall of numbers up
+            # front made the table hard to scan.
             header = next(h for h in md.splitlines() if h.startswith("| Win% Lost |"))
-            check(split_row(header)[:4] == ["Win% Lost", "Equity Lost", "Off Δ", "Def Δ"],
-                  f"{tag}: error table leads with its four cost columns", header)
+            cells = split_row(header)
+            check(cells[0] == "Win% Lost" and cells[-4:] == ["Equity Lost", "Off Δ", "Def Δ", "Flags"],
+                  f"{tag}: error table sorts by Win% Lost and ends with cost columns then Flags", header)
 
     digest = tr.build_digest(stats, agg, notes, title, error_log=True)
     check("Errors (" in digest, f"{slug}: digest carries the error block")
