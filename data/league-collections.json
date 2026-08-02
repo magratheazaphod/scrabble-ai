@@ -71,5 +71,28 @@
   },
   "title": "Collins League - Season 18",
   "username": "magrathean"
+ },
+ "96e9f89d-348b-47ac-ae43-aeb019c4a96a": {
+  "division_id": "f8c4d8f1-d8e1-46cb-a048-a7750c8cf52d",
+  "division_number": 13,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "18f49276-b38b-4049-bd28-30c0e878d820",
+  "season_number": 19,
+  "seeds": {
+   "f9a7pB7BAi": {
+    "opponent": "devdub",
+    "rating": 1614.128513246677,
+    "seed": 5
+   },
+   "ofZHDNPky4": {
+    "opponent": "eideticeve",
+    "rating": 1741.6683786180097,
+    "seed": 2
+   }
+  },
+  "title": "Collins League - Season 19",
+  "username": "magrathean"
  }
 }
