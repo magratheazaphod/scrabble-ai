@@ -37,6 +37,33 @@ uses it independently of the rest of the app. **Never let changes spill outside
   seems to require a change outside it, **stop and check with Jesse** - don't
   assume it's in scope just because it's convenient.
 
+## Let queries run - do not cancel them
+
+**A slow query is not a stuck query. Let it finish.** Jesse's queries routinely
+run for many minutes against a 12M-row `games` table; that is normal and expected,
+and the result is usually the whole point of the task.
+
+- **Never `pg_cancel_backend` a query Jesse is waiting on**, and never cancel one
+  just because you have decided to rewrite it. Cancelling destroys the evidence -
+  the wall-clock time, the actual row counts, the output to diff against.
+- The only justification is a genuinely runaway query: **over ~40 minutes** with
+  no end in sight, or one that is harming the production DB. Say so and ask first
+  if there is any way to ask.
+- If Jesse asks *why* something is slow, answer from `EXPLAIN` while it keeps
+  running. Killing it to "investigate faster" is backwards.
+- Run long queries with `run_in_background: true` so the session stays responsive
+  instead of tempting a timeout-driven cancel.
+
+**`EXPLAIN` before running any new candidate.** A plain `EXPLAIN` (no `ANALYZE`)
+costs nothing and catches the misestimate-driven nested loops documented in
+`reference/db-notes.md` before they burn 20 minutes. When refactoring for
+performance, check the plan shape first, then run.
+
+**Prove a refactor didn't change the numbers.** Run the old and new queries and
+diff the CSVs column-for-column. If the change also alters logic on purpose, build
+a third *perf-only* variant that isolates the two: perf-only must match the old
+output exactly, and the intended delta then shows up only in the final version.
+
 ## Running a query
 
 Use the wrapper script - never PgAdmin's GUI runner, it's cumbersome and gives no
