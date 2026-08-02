@@ -129,6 +129,15 @@ without leaving VSCode.
   Related but distinct from the materialized-CTE trap noted in
   `omgwords/games_per_month.sql`: same root cause (no stats), different symptom.
 
+  Measured on 2026-08-02, `new_user_funnel_monthly.sql` whole history: original
+  four-scan version **6:13**, single-scan version **2:05** (3x). The broken
+  intermediate with the nested loop ran 19+ min and was killed without finishing.
+
+- **Total-cost ratios in `EXPLAIN` are a poor predictor of wall-clock.** The
+  funnel refactor showed 72.2M vs 4.16M estimated cost (~17x) and delivered 3x.
+  Use costs to compare *plan shapes* - a nested loop against a large table versus
+  a merge join - not to promise a speedup. Measure before quoting a number.
+
 - **`COUNT(DISTINCT x)` disqualifies `HashAggregate`.** It forces a sort-based
   `GroupAggregate`, so every input row gets sorted - 8.4M rows in the funnel
   query, spilling to disk. Worth knowing before assuming a slow aggregate is the
