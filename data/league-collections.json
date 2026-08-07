@@ -81,6 +81,11 @@
   "season_id": "18f49276-b38b-4049-bd28-30c0e878d820",
   "season_number": 19,
   "seeds": {
+   "24D2bjydPV": {
+    "opponent": "Zainamirmessi",
+    "rating": 1366.4293182993902,
+    "seed": 12
+   },
    "24fdNFn2vB": {
     "opponent": "Gabzor89",
     "rating": 1678.4422351922044,
@@ -104,7 +109,7 @@
    "Cu3KKf9JHo": {
     "opponent": "Toraganashi",
     "rating": 1396.2074930350727,
-    "seed": 9
+    "seed": 10
    },
    "HAa63Kfmqr": {
     "opponent": "SZRoberson",
@@ -120,6 +125,16 @@
     "opponent": "Wordabble",
     "rating": 1259.7428507727147,
     "seed": 14
+   },
+   "XP2oYViz3s": {
+    "opponent": "Brummybill",
+    "rating": 1343.3678135774912,
+    "seed": 13
+   },
+   "YdZAritgSt": {
+    "opponent": "auricle",
+    "rating": 1717.2402503516203,
+    "seed": 3
    },
    "f9a7pB7BAi": {
     "opponent": "devdub",
