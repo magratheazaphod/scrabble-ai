@@ -1,4 +1,22 @@
 {
+ "12dd6445-9dfc-4859-b110-6fcd966234b7": {
+  "division_id": "9979d4b3-35cc-4751-bd4a-71cbd7bc930d",
+  "division_number": 12,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "4145848e-a9f6-4523-8314-b439c3b752c3",
+  "season_number": 20,
+  "seeds": {
+   "S3qFrvoiRC": {
+    "opponent": "auricle",
+    "rating": 1703.6229498891064,
+    "seed": 4
+   }
+  },
+  "title": "Collins League - Season 20",
+  "username": "magrathean"
+ },
  "19a0eadf-f17a-409e-bf32-46543a2fd6fd": {
   "division_id": "afe6636d-74b2-46e6-9739-d429b0b65859",
   "division_number": 14,
