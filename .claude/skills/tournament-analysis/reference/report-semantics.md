@@ -12,12 +12,25 @@ any prose written around it.
 - **Sanity-check identity in every game before computing stats** - a wrong
   `jesse_idx` silently flips all per-game numbers.
 - `opponent_cell` renders an opponent as
-  `Real Name - [username](profile link) (#seed)`. The leading name is dropped
-  when no real name is on file (the label already *is* the username), and the
-  `(#n)` suffix appears only for a seeded collection (a league, where
-  `render_report` is called with `round_label="Seed"`). Username comes from the
-  game's own account data via `woogles_username`. Profile-link and
+  `[Real Name](WESPA profile) - [username](Woogles profile) (1793 GM) (#seed)`.
+  The leading name is dropped when no real name is on file (the label already
+  *is* the username), and the `(#n)` suffix appears only for a seeded collection
+  (a league, where `render_report` is called with `round_label="Seed"`). Username
+  comes from the game's own account data via `woogles_username`. Profile-link and
   name-registry privacy rules: see `CLAUDE.md`.
+- **The `(1793 GM)` is the opponent's WESPA OTB rating and title**, from
+  `wespa_ratings.py`'s local cache. It is best-effort and silently absent for an
+  unmatched name or a missing cache - the cache is refreshed by the report
+  workflow, never at render time, so a report never depends on WESPA being
+  reachable. Nothing about the rating column is worth a note in the report prose.
+- **Matching is exact, never fuzzy**: the label as written, then the confirmed
+  alias catalog at `.github/wespa-aliases.json`. Labels drift from the roster in
+  ways no algorithm should be trusted with - a spelling ("Oshevire Avwhenaga" /
+  "Avwenagha"), an initials-only nickname ("BNJY"), or an entirely different name
+  ("Henry Yeo" is "Yeo Kian Hung" upstream, "Dr Bing" is David Wiegand). **Never
+  add an alias you inferred yourself** - run `wespa_ratings.py --suggest`, show
+  Jesse the candidates, and record only what he confirms. A `null` value is his
+  confirmed "this person has no WESPA entry" and must be left alone.
 - **Missed Bingos tables show the bare Woogles username** (`opponent_handle`),
   not the display name - they're scanned rather than read, and the full
   `Real Name - username` cell already appears once per game in the per-game

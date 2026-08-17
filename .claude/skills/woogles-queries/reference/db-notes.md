@@ -106,6 +106,43 @@ without leaving VSCode.
   after a join, and check `EXPLAIN` for a seq scan where an index scan should
   apply.
 
+- **A `rows=2` estimate in `EXPLAIN` is a red flag, not a rounding error.**
+  Postgres has no `n_distinct` statistic for a column that a query *manufactured* -
+  a `VALUES` list (`Group Key: "*VALUES*".column1`), an unnest, or an expression
+  over a CTE - so when such a column is the `GROUP BY` key it falls back to a
+  hardcoded guess, typically 2. That guess makes a nested loop look nearly free,
+  so the planner picks `Nested Loop` + `Materialize` and rescans the whole inner
+  result once per outer row.
+
+  This cost `new_user_funnel_monthly.sql` 19+ minutes (killed, no result) on
+  2026-08-02: a `CROSS JOIN LATERAL (VALUES ...)` unpivot fed a per-player
+  `GROUP BY`, estimated at 2 rows against a truth near 100k, joined to ~240k
+  `users` - roughly 2.4x10^10 comparisons for what should be a cheap join.
+
+  **The fix is structural, not a hint - Postgres has no query hints.** Never join
+  a stats-less aggregate at fine grain. Aggregate every side to the *coarse*
+  grain first (month, week) and join on the ~70 resulting rows, where a wrong
+  estimate cannot hurt. The bad estimate remains in the plan; it just stops being
+  load-bearing. Confirm by checking that `Nested Loop ... Join Filter` against a
+  large table is gone and `Merge`/`Hash Join` replaced it.
+
+  Related but distinct from the materialized-CTE trap noted in
+  `omgwords/games_per_month.sql`: same root cause (no stats), different symptom.
+
+  Measured on 2026-08-02, `new_user_funnel_monthly.sql` whole history: original
+  four-scan version **6:13**, single-scan version **2:05** (3x). The broken
+  intermediate with the nested loop ran 19+ min and was killed without finishing.
+
+- **Total-cost ratios in `EXPLAIN` are a poor predictor of wall-clock.** The
+  funnel refactor showed 72.2M vs 4.16M estimated cost (~17x) and delivered 3x.
+  Use costs to compare *plan shapes* - a nested loop against a large table versus
+  a merge join - not to promise a speedup. Measure before quoting a number.
+
+- **`COUNT(DISTINCT x)` disqualifies `HashAggregate`.** It forces a sort-based
+  `GroupAggregate`, so every input row gets sorted - 8.4M rows in the funnel
+  query, spilling to disk. Worth knowing before assuming a slow aggregate is the
+  join's fault; it is often just the `DISTINCT`.
+
 ## Benchmark reference: `omgwords/games_per_month.sql`
 
 Whole-history full run (seq scan of all ~12M `games` + two `users` LEFT JOINs +

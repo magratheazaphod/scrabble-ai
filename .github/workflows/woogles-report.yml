@@ -87,6 +87,13 @@ jobs:
           TARGET_USERNAME: ${{ github.event.inputs.target_username }}
           TARGET_COLLECTION_UUID: ${{ github.event.inputs.target_collection_uuid }}
 
+      # Opponent OTB ratings for the report. Best-effort: the report reads the
+      # cache and never fetches, so a WESPA outage costs the rating column and
+      # nothing else.
+      - name: Refresh WESPA ratings cache
+        continue-on-error: true
+        run: python scripts/wespa_ratings.py --refresh
+
       - run: python scripts/generate_report_email.py
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
