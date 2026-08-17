@@ -1,6 +1,21 @@
 # Handoff: cheapening the Woogles tournament-report pipeline
 
-**Written:** 2026-07-20 · **Status:** analysis done, decision pending · **Branch:** `prompt-cache-skill-md`
+**Written:** 2026-07-20 · **Status:** RESOLVED 2026-07-22 — see Outcome below · **Branch:**
+was `prompt-cache-skill-md`, since deleted; this doc kept on `master` for the reasoning
+
+> **Outcome.** The recommendation in "The key finding that reframes everything" is what
+> happened. Commit `3c90a6a`, *"Make the Woogles tournament-report pipeline deterministic,
+> drop the LLM cost"*, moved Steps 5–8 into `scripts/tournament_report.py` as committed code.
+> The Opus + code-execution + SKILL.md call is gone; the only LLM call left is
+> `generate_summary()`, a small no-tools call over a compact digest.
+>
+> The prompt-caching commit this doc describes was therefore never merged and has been
+> deleted: it cached an ~11K-token SKILL.md prefix that no longer gets sent at all. The rule
+> it taught survives in `CLAUDE.md` — **never feed SKILL.md to a recurring API call.**
+>
+> Kept because the diagnosis is still the clearest account of why the pipeline is shaped the
+> way it is, and because the trap it names (paying a reasoning model to run deterministic
+> code) is easy to walk back into. Everything below is as written on 2026-07-20.
 
 This is a design handoff, not an implementation plan. It captures what we found investigating
 why the report pipeline costs $2–$10/day so a fresh model can produce a concrete plan without
@@ -52,7 +67,7 @@ input price. Break-even = 2 collections; wins on multi-collection/backfill days.
 *within one run*. Runs are 30+ min apart with a 5-min TTL, so there is zero cross-run reuse. It
 does nothing for the *size* axis — the big-collection regenerations that dominate cost.
 
-Not yet pushed. Commit is local-only.
+Never pushed; the branch was deleted once the refactor above superseded it.
 
 ## The key finding that reframes everything
 
