@@ -271,8 +271,18 @@ def main():
             digest = f"{digest}\n{extras['digest_line']}"
             dhash = tr.digest_hash(digest)
 
+        # A league season in progress gets its tables but no written summary. The
+        # standing changes every day the season is running, so a daily summary is
+        # both a Claude call per day and a paragraph that can only restate a
+        # provisional position — Jesse asked for one summary, once the season is
+        # done. `season_complete` is absent for everything that isn't a league,
+        # which is why the default is True rather than False.
+        hold_summary = extras.get("season_complete") is False
         summary_md = None
-        if prior and prior.get("digest_hash") == dhash and prior.get("summary_md"):
+        if hold_summary:
+            print(f"Season in progress for '{col['title']}' — "
+                  "rendering without a summary until it finishes.", file=sys.stderr)
+        elif prior and prior.get("digest_hash") == dhash and prior.get("summary_md"):
             print(f"Reusing cached summary for '{col['title']}' (digest unchanged)", file=sys.stderr)
             summary_md = prior["summary_md"]
         else:

@@ -882,6 +882,12 @@ def report_extras(collection_uuid, stats, agg):
         sections.append(leaderboard)
     return {
         "round_label": "Seed",
+        # False while the division is still playing. The report itself is worth
+        # sending mid-season — the tables are how Jesse follows the season — but a
+        # written summary of a season in progress is not: it re-narrates the same
+        # standing every day and can only ever be provisional. So the caller holds
+        # the summary until this turns True. See generate_report_email.main.
+        "season_complete": division_complete(division),
         # League games are played on Woogles with both racks known every turn, so
         # every turn of Jesse's is analyzable — the full ranked error log is the
         # study material the league report exists to produce.
