@@ -329,20 +329,34 @@ def credential(player):
 
 
 def opponents_in(snapshot_path):
-    """Every distinct opponent label across a snapshot's collections. Reads the
-    raw player lines rather than going through tournament_report, so this stays
-    usable when a game is too broken to compute stats for."""
+    """Every distinct opponent label a report would actually render.
+
+    Must go through `compute_game`, not the raw player lines: the label in a game
+    file is canonicalized before the WESPA lookup ever sees it — "Honeybun,
+    Russell" becomes "Russell Honeybun", and nine spellings of James Curley
+    collapse to one. Scanning the raw lines proposes labels no report will ever
+    ask about ("James"), and misses ones it will ("Sam Crispin", which is written
+    "Samuel Crispin" in the file). It also drops Jesse himself, who is never his
+    own opponent.
+
+    Falls back to the raw lines for a game too broken to compute — better an
+    over-broad suggestion than a silently skipped game.
+    """
     with open(snapshot_path) as f:
         snap = json.load(f)
+    import tournament_report as tr
+
     names = set()
     for col in snap.get("collections", []):
         for game in col.get("games") or []:
-            players = (game.get("history") or {}).get("history", {}).get("players", [])
-            for p in players:
-                nick = (p.get("real_name") or p.get("nickname") or "").strip()
-                if nick:
-                    names.add(nick)
-    return sorted(names)
+            try:
+                names.add(tr.compute_game(game)["opponent"])
+            except Exception:  # noqa: BLE001 — a broken game still deserves a scan
+                for p in (game.get("history") or {}).get("history", {}).get("players", []):
+                    nick = (p.get("real_name") or p.get("nickname") or "").strip()
+                    if nick:
+                        names.add(nick)
+    return sorted(n for n in names if n)
 
 
 def suggest_main(argv):
