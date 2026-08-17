@@ -336,6 +336,57 @@ def test_synthetic(col):
         del os.environ["WOOGLES_NAME_REGISTRY"]
         tr.load_name_registry(force=True)
 
+    # WESPA enrichment. Stubbed rather than fetched: the suite must not touch the
+    # network, and the real ratings drift with every rating run. Structure is
+    # pinned; no number here is.
+    real_lookup = tr.wespa_ratings.lookup
+    stub = {"playerid": 1958, "name": "Rated Player", "country": "USA",
+            "rating": 1793, "title": None}
+    try:
+        tr.wespa_ratings.lookup = lambda n: stub if n == "Rated Player" else None
+        cell = tr.opponent_cell("Rated Player", "somehandle")
+        check(f"({stub['rating']})" in cell,
+              "wespa: a matched opponent shows their rating", cell)
+        check(f"player.html?id={stub['playerid']}" in cell,
+              "wespa: the real name links to the WESPA profile", cell)
+        check("woogles.io/profile/somehandle" in cell,
+              "wespa: the Woogles profile link survives enrichment", cell)
+
+        solo = tr.opponent_cell("Rated Player", None)
+        check(f"({stub['rating']})" in solo,
+              "wespa: enrichment does not require a Woogles handle", solo)
+
+        stub["title"] = "GM"
+        check(f"({stub['rating']} GM)" in tr.opponent_cell("Rated Player", None),
+              "wespa: a titled player shows their title beside the rating")
+
+        # The alias catalog is committed and hand-confirmed, so a typo'd id
+        # would silently drop a rating. Cheap to catch here.
+        alias_file = os.path.join(os.path.dirname(__file__), os.pardir,
+                                  ".github", "wespa-aliases.json")
+        if os.path.exists(alias_file):
+            with open(alias_file) as f:
+                aliases = json.load(f)["aliases"]
+            by_id = tr.wespa_ratings._loaded()["by_id"]
+            if by_id:  # skip when no ratings cache is present (e.g. a fresh clone)
+                dangling = [k for k, v in aliases.items() if v is not None and v not in by_id]
+                check(not dangling,
+                      "wespa: every alias points at a real WESPA player", dangling)
+
+        # The two failure modes that must be invisible: no match, and WESPA down.
+        plain = tr.opponent_cell("Nobody At All", "somehandle")
+        check(plain == "Nobody At All - [somehandle](https://woogles.io/profile/somehandle)",
+              "wespa: an unmatched opponent renders exactly as before", plain)
+
+        def boom(_):
+            raise RuntimeError("WESPA unreachable")
+        tr.wespa_ratings.lookup = boom
+        check(tr.opponent_cell("Rated Player", "somehandle")
+              == "Rated Player - [somehandle](https://woogles.io/profile/somehandle)",
+              "wespa: an unreachable WESPA never breaks a cell")
+    finally:
+        tr.wespa_ratings.lookup = real_lookup
+
     # Nigel Richards sees the bingos and declines them; his are "passed up", never
     # "missed". Applies to opponent-attributed note text only.
     nigel = dict(stat, opponent="Nigel Richards", opp_missed_bingo_words=["BIATHLETE"],

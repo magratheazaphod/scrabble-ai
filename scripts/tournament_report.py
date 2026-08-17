@@ -16,6 +16,11 @@ import random
 
 import requests
 
+try:
+    import wespa_ratings
+except ImportError:  # optional enrichment — never worth failing a report over
+    wespa_ratings = None
+
 BASE = "https://woogles.io/api"
 PROFILE_URL = "https://woogles.io/profile/{}"
 
@@ -101,25 +106,56 @@ def _label_matches_username(name, username):
     return _norm_label(name) == _norm_label(username)
 
 
+def wespa_player(name):
+    """The opponent's WESPA row, or None. The single guarded entry point: an
+    unmatched name, a cold cache, an unreachable WESPA and a missing module all
+    come back as None, so the report renders as it did before this existed. A
+    report must never fail on someone else's website."""
+    if wespa_ratings is None:
+        return None
+    try:
+        p = wespa_ratings.lookup(name)
+    except Exception:
+        return None
+    return p if p and p.get("rating") else None
+
+
+def wespa_cell(player):
+    """"(1793)", or "(2001 GM)" for a titled player — an opponent's real-world
+    OTB standing, or "" for None. The rating is the point of it: a 3-1 result
+    reads very differently against a 1450 than against a GM."""
+    if not player:
+        return ""
+    try:
+        badge = wespa_ratings.credential(player)
+    except Exception:
+        badge = ""
+    return " (" + " ".join(x for x in (str(player["rating"]), badge) if x) + ")"
+
+
 def opponent_cell(name, username, seed=None):
-    """Opponent as displayed in the report: "Real Name - username (#seed)", where
-    the username links to their Woogles profile. Drops the leading name when it
-    adds nothing (no real name on file, so `name` is already the username), and
-    drops the "(#n)" when the collection has no seeding (a normal tournament,
-    where the ordering column is the round).
+    """Opponent as displayed in the report: "Real Name - username (1793 GM) (#seed)",
+    where the real name links to their WESPA profile and the username to their
+    Woogles one. Drops the leading name when it adds nothing (no real name on
+    file, so `name` is already the username), drops the rating when WESPA has no
+    unique match, and drops the "(#n)" when the collection has no seeding (a
+    normal tournament, where the ordering column is the round).
 
     `username` comes from the game's own account data when the game was played on
     Woogles; for an annotator upload there is no account, so fall back to the
     private name registry above (off unless configured).
     """
     username = username or load_name_registry().get(_norm_label(name))
-    suffix = f" (#{seed})" if seed is not None else ""
+    player = wespa_player(name)
+    suffix = wespa_cell(player) + (f" (#{seed})" if seed is not None else "")
+    label = f"[{name}]({wespa_ratings.profile_url(player)})" if player else name
     if not username:
-        return f"{name}{suffix}"
+        return f"{label}{suffix}"
     link = f"[{username}]({PROFILE_URL.format(username)})"
     if _label_matches_username(name, username):
+        # The display name *is* the handle, so there is no real name to link.
         return f"{link}{suffix}"
-    return f"{name} - {link}{suffix}"
+    return f"{label} - {link}{suffix}"
 
 
 def opponent_handle(g):

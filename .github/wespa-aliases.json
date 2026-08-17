@@ -1,0 +1,61 @@
+{
+  "_comment": [
+    "Confirmed matches from an opponent label as it appears in a game's player",
+    "line to a WESPA player id. Every entry is asserted by Jesse, never inferred:",
+    "`python3 scripts/wespa_ratings.py --suggest` proposes candidates, and only a",
+    "yes lands here. null records a confirmed 'no WESPA entry' (a nickname, a",
+    "one-off opponent) so the label stops being proposed.",
+    "Safe to commit: a real name and a public WESPA id both already appear in the",
+    "rendered report. This is NOT the private Woogles handle registry."
+  ],
+  "aliases": {
+    "Anand Buddhev": 675,
+    "Dave Wiegand": 286,
+    "Dr Wenwa Akinyi": 440,
+    "Gerald Carter": 151,
+    "Honeybun, Russell": 917,
+    "Josh Castellano": 3474,
+    "Matt O'Connor": 2765,
+    "Moira Fench": 2156,
+    "Olatunde Oduwale": 840,
+    "Oshevire Avwhenaga": 1021,
+    "Sammy Okosagah": 21847,
+    "Shin, Austin": 753,
+    "Sujana Somonasekar": 5142,
+    "Sukhumrattanaporn, CharnwitS": 44365,
+    "Worasit Suksansumran": 1055,
+
+    "Austin": 753,
+    "Chaiyottha": 28650,
+    "Chollapat": 1046,
+    "Jakkrit": 160,
+    "Komol": 44368,
+    "Nigel": 215,
+    "Puneet": 1128,
+    "Soramet": 22289,
+    "Tarin": 4194,
+    "Vannitha": 541,
+    "Weibin": 987,
+
+    "Etim": 6659,
+    "Henry": 554,
+    "Henry Yeo": 554,
+    "Jared": 1152,
+    "Olatunde": 840,
+
+    "JamesC": 1958,
+    "Day, Jesse": 1420,
+    "Jesse": 1420,
+    "JesseD": 1420,
+
+    "BNJY": 2728,
+    "Dr Bing": 286,
+    "Dielle Pinto": 1066,
+
+    "Bob Linn": null,
+    "Chris Canik": null,
+    "JC": null,
+    "JD": null,
+    "jvc": null
+  }
+}

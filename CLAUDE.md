@@ -98,6 +98,7 @@ historical error in this repo came from.
 | `update_curley_tracker.py` | all Curley tracker sheet reads/writes |
 | `sync_curley_collection.py` | reorder/retitle the Curley collection to match the sheet |
 | `audit_woogles_consistency.py` | tracker ↔ live game ↔ repo file cross-check for OCR games |
+| `wespa_ratings.py` | WESPA OTB ratings/titles: `--refresh` the local cache, `--lookup` a name, `--suggest` unmatched opponents. The only thing that talks to wespa.xerafin.net |
 | `otb_solver.py` | board/scoring/lexicon engine + OTB placement solver. Shared. |
 | `verify_gcg.py` | independent GCG replay verifier - the hard gate on **every** upload, not just OTB |
 | `scripts/otb/` | OTB-only steps: `prep_photos.py`, `check_transcription.py`, `author_gcg.py`, `regression.py` |
