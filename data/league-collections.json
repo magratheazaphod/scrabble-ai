@@ -8,6 +8,11 @@
   "season_id": "4145848e-a9f6-4523-8314-b439c3b752c3",
   "season_number": 20,
   "seeds": {
+   "4Ps38Q6w2J": {
+    "opponent": "fjt",
+    "rating": 1464.361489293399,
+    "seed": 8
+   },
    "88bwKqPoa3": {
     "opponent": "dang3rous",
     "rating": 1589.9749009218124,
@@ -15,7 +20,7 @@
    },
    "B7rMPJi6xp": {
     "opponent": "eideticeve",
-    "rating": 1767.014514747094,
+    "rating": 1757.524192940798,
     "seed": 2
    },
    "GmT8HCSwkA": {
