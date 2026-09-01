@@ -155,6 +155,24 @@
   "title": "Collins League - Season 18",
   "username": "magrathean"
  },
+ "6f8e3ff7-89a7-4700-a9b8-a4cc5aef1354": {
+  "division_id": "ea7863e8-8c19-4c45-95ac-9c41c2b40373",
+  "division_number": 11,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "1fc9ad07-e147-4852-a012-9b7679ade9c0",
+  "season_number": 21,
+  "seeds": {
+   "pJkG25MsQJ": {
+    "opponent": "Splashout",
+    "rating": 1484.943002447625,
+    "seed": 8
+   }
+  },
+  "title": "Collins League - Season 21",
+  "username": "magrathean"
+ },
  "96e9f89d-348b-47ac-ae43-aeb019c4a96a": {
   "division_id": "f8c4d8f1-d8e1-46cb-a048-a7750c8cf52d",
   "division_number": 13,
