@@ -164,6 +164,11 @@
   "season_id": "1fc9ad07-e147-4852-a012-9b7679ade9c0",
   "season_number": 21,
   "seeds": {
+   "557x8wqrLV": {
+    "opponent": "Gabzor89",
+    "rating": 1780.4839155216291,
+    "seed": 3
+   },
    "YWJ7MfhtWT": {
     "opponent": "auricle",
     "rating": 1755.293693124527,
@@ -181,7 +186,7 @@
    },
    "rrPKnaSiCG": {
     "opponent": "SallyD",
-    "rating": 1386.465875836482,
+    "rating": 1379.7486908074864,
     "seed": 15
    }
   },
