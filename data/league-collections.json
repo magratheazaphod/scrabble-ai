@@ -166,13 +166,18 @@
   "seeds": {
    "YWJ7MfhtWT": {
     "opponent": "auricle",
-    "rating": 1744.4349964666606,
+    "rating": 1755.293693124527,
     "seed": 4
+   },
+   "eHziMZftSR": {
+    "opponent": "dang3rous",
+    "rating": 1632.0243500154033,
+    "seed": 5
    },
    "pJkG25MsQJ": {
     "opponent": "Splashout",
-    "rating": 1484.943002447625,
-    "seed": 8
+    "rating": 1464.0782980355598,
+    "seed": 11
    }
   },
   "title": "Collins League - Season 21",
