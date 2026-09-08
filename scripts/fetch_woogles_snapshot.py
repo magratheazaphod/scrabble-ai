@@ -8,8 +8,10 @@ consumer of this snapshot, so report-format changes only ever need to happen in 
 """
 import json
 import os
+import random
 import re
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -144,10 +146,29 @@ def failed_needs_request(game_id, error, now, failed_state):
     return False, f"unchanged since it failed {age_days}d ago: {error or 'no reason given'}", info
 
 
+# A full run makes ~700 reads, so a single dropped connection anywhere in it used
+# to take down the whole nightly job (2026-09-08: ConnectionResetError mid-scan).
+# Four attempts with backoff+jitter rides out a blip; it deliberately stays short
+# (~7s of sleeping in total) so a genuine woogles.io outage still fails the run
+# promptly rather than stalling every request for minutes on end.
+POST_ATTEMPTS = 4
+
+
 def post(endpoint, body):
-    r = requests.post(f"{BASE}/{endpoint}", json=body, headers=HDRS)
-    r.raise_for_status()
-    return r.json()
+    for attempt in range(POST_ATTEMPTS):
+        last = attempt == POST_ATTEMPTS - 1
+        try:
+            r = requests.post(f"{BASE}/{endpoint}", json=body, headers=HDRS, timeout=30)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            if last:
+                raise
+        else:
+            if r.status_code != 429 and r.status_code < 500:
+                r.raise_for_status()
+                return r.json()
+            if last:
+                r.raise_for_status()
+        time.sleep((2 ** attempt) + random.uniform(0, 0.5))
 
 
 def resolve_user_uuid(username):
