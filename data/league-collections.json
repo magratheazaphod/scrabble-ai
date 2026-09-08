@@ -189,9 +189,14 @@
     "rating": 1673.23570026457,
     "seed": 5
    },
+   "VFo5WKtAUU": {
+    "opponent": "ZenHuman",
+    "rating": 1473.6014260330248,
+    "seed": 11
+   },
    "YWJ7MfhtWT": {
     "opponent": "auricle",
-    "rating": 1766.626038244023,
+    "rating": 1779.5611835281957,
     "seed": 3
    },
    "eHziMZftSR": {
@@ -203,6 +208,11 @@
     "opponent": "DawnSwitch",
     "rating": 1495.202082771188,
     "seed": 7
+   },
+   "jzgXfj5q6m": {
+    "opponent": "BouncyBil",
+    "rating": 1457.8556463038908,
+    "seed": 13
    },
    "pJkG25MsQJ": {
     "opponent": "Splashout",
@@ -216,8 +226,8 @@
    },
    "rrPKnaSiCG": {
     "opponent": "SallyD",
-    "rating": 1383.1903565657826,
-    "seed": 15
+    "rating": 1398.5079277915881,
+    "seed": 14
    }
   },
   "title": "Collins League - Season 21",
