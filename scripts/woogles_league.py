@@ -62,10 +62,11 @@ per division (woogles.io/leagues/csw) from the analyzed games and diffs them,
 catching both a bug here and a game the collection is missing. It runs on every
 render but reports to stderr; only a disagreement reaches the report.
 
-**League-wide leaderboard.** `mistake_leaderboard_section` ranks every player in
-the season, across all divisions, by average mistakes score — the one figure that
-survives the division tiering, since it is measured against BestBot rather than
-against whoever was across the board. Top 10 plus the subject's own placement.
+**League-wide leaderboards.** `leaderboard_sections` ranks every player in the
+season, across all divisions, twice: by average mistakes score and by bingo find
+rate — the two figures that survive the division tiering, since both are measured
+against BestBot rather than against whoever was across the board. Top 10 plus the
+subject's own placement in each, over one qualified field.
 Report-only by construction: the only text this module writes back to Woogles is
 a collection title and description, and neither is derived from the leaderboard.
 """
@@ -509,6 +510,19 @@ def _find_rate(found, missed):
     return f"{found}/{total} ({round(found / total * 100, 1)}%)"
 
 
+def _find_pct(row):
+    """found/(found+missed) as a percentage, or None when there were no chances.
+
+    A player with no bingo chances all season has no rate to rank — ordering them
+    as 0% would be wrong and as 100% worse, so they are left out of the bingo
+    table rather than given a number the games don't support.
+    """
+    total = (row.get("found") or 0) + (row.get("missed") or 0)
+    if not total:
+        return None
+    return row["found"] / total * 100
+
+
 def mistake_leaderboard(divisions, username):
     """(rows, my_row) — every league player ranked by mistakes score.
 
@@ -563,11 +577,13 @@ def mistake_leaderboard(divisions, username):
 
 
 def attach_bingo_rates(rows, season_id, max_workers=6):
-    """Fill each row's `find_rate` in place, fetching the analyses concurrently.
+    """Fill each row's `found`/`missed`/`find_rate` in place, concurrently.
 
-    Only ever called on the handful of rows a report actually displays (top 10
-    plus the subject) — computing it for all ~200 league players would be a few
-    thousand reads for numbers nothing prints.
+    Called once per render over every *qualified* row, because the bingo-find
+    leaderboard ranks on this figure and so needs it for everyone eligible, not
+    just for whoever ends up displayed. The per-game analyses are cached across
+    players, so the cost is one read per analyzed game in the season plus one
+    game list per player, not players x games.
     """
     cache = {}
     lock = threading.Lock()
@@ -605,8 +621,13 @@ class _LockedCache(dict):
             self._shared[k] = v
 
 
-def mistake_leaderboard_section(divisions, season, league, username):
-    """Markdown for the league-wide mistakes-score leaderboard.
+def leaderboard_sections(divisions, season, league, username):
+    """[markdown, ...] for the two league-wide leaderboards, in report order.
+
+    Both tables rank the same qualified field on the same rule (`MIN_ANALYZED_GAMES`
+    analyzed games), differing only in the figure they sort on, so they are built
+    together: one pass of `attach_bingo_rates` over the qualified rows serves the
+    bingo table's ranking and the mistakes table's find-rate column alike.
 
     Report-only: nothing here is written back to Woogles. The sync writes exactly
     two pieces of text to the platform — the collection title and description
@@ -616,16 +637,30 @@ def mistake_leaderboard_section(divisions, season, league, username):
     """
     rows, me = mistake_leaderboard(divisions, username)
     if not rows:
-        return ""
+        return []
     total_players = sum(len(d.get("standings") or []) for d in divisions)
+    attach_bingo_rates(rows + ([me] if me is not None and me not in rows else []),
+                       season["uuid"])
+    return [
+        s for s in (
+            _mistake_leaderboard_section(rows, me, divisions, season, league,
+                                         username, total_players),
+            _bingo_leaderboard_section(rows, me, divisions, season, league,
+                                       username, total_players),
+        ) if s
+    ]
 
-    # The top 10 is chosen on mistakes score alone, as asked; the bingo find rate
-    # is a column on those 10, never a factor in who makes the cut.
-    shown = rows[:LEADERBOARD_SIZE]
-    if me is not None and me not in shown:
-        shown = shown + [me]
-    attach_bingo_rates(shown, season["uuid"])
 
+def _emit_row(lines, r, bold, value_cells):
+    b = "**" if bold else ""
+    rank = str(r["rank"]) if r["rank"] else "—"
+    cells = [rank, r["username"], r["division"], *value_cells(r), r["games"]]
+    lines.append("| " + " | ".join(f"{b}{c}{b}" for c in cells) + " |")
+
+
+def _mistake_leaderboard_section(rows, me, divisions, season, league, username,
+                                 total_players):
+    """Markdown for the league-wide mistakes-score leaderboard."""
     lines = ["## League-Wide Mistakes Score Leaderboard", ""]
     lines.append(
         f"*Lowest average mistakes score across all {len(divisions)} divisions of "
@@ -641,18 +676,14 @@ def mistake_leaderboard_section(divisions, season, league, username):
     lines.append("| # | Player | Div | Avg Mistakes | Bingo Find Rate | Games |")
     lines.append("|---|---|---|---|---|---|")
 
-    def emit(r, bold):
-        b = "**" if bold else ""
-        rank = str(r["rank"]) if r["rank"] else "—"
-        cells = [rank, r["username"], r["division"], _fmt(round(r["avg_mi"], 2)),
-                 r.get("find_rate", "—"), r["games"]]
-        lines.append("| " + " | ".join(f"{b}{c}{b}" for c in cells) + " |")
+    def cells(r):
+        return [_fmt(round(r["avg_mi"], 2)), r.get("find_rate", "—")]
 
     for r in rows[:LEADERBOARD_SIZE]:
-        emit(r, me is not None and r["username"] == me["username"])
+        _emit_row(lines, r, me is not None and r["username"] == me["username"], cells)
     if me is not None and (me["rank"] is None or me["rank"] > LEADERBOARD_SIZE):
         lines.append("| … | | | | | |")
-        emit(me, True)
+        _emit_row(lines, me, True, cells)
     lines.append("")
 
     if me is None:
@@ -674,6 +705,74 @@ def mistake_leaderboard_section(divisions, season, league, username):
             f"{me.get('find_rate', '—')}. Qualifying takes "
             f"{MIN_ANALYZED_GAMES} analyzed games, so a player two games into the "
             "season can't top the table on a small sample."
+        )
+    return "\n".join(lines)
+
+
+def _bingo_leaderboard_section(rows, me, divisions, season, league, username,
+                               total_players):
+    """Markdown for the league-wide bingo-find-rate leaderboard.
+
+    The same qualified field as the mistakes table, re-ranked on find rate: bingos
+    found over bingos available, highest first. Percentage alone would let a player
+    with three chances head the table, so ties on the percentage break toward the
+    larger number of chances, then username for a stable order.
+    """
+    ranked = sorted(
+        ((r, _find_pct(r)) for r in rows if _find_pct(r) is not None),
+        key=lambda rp: (-rp[1], -(rp[0]["found"] + rp[0]["missed"]),
+                        (rp[0]["username"] or "").lower()),
+    )
+    if not ranked:
+        return ""
+    # Ranks here are this table's own — a player's mistakes-table rank says nothing
+    # about where they sit on find rate — so re-number rather than reuse `rank`.
+    br = [{**r, "rank": i, "find_pct": pct} for i, (r, pct) in enumerate(ranked, start=1)]
+    mine = next((r for r in br if me is not None
+                 and (r["username"] or "").lower() == (me["username"] or "").lower()), None)
+    if mine is None and me is not None and _find_pct(me) is not None:
+        mine = {**me, "rank": None, "find_pct": _find_pct(me)}
+
+    lines = ["## League-Wide Bingo Find Rate Leaderboard", ""]
+    lines.append(
+        f"*Highest bingo find rate across all {len(divisions)} divisions of "
+        f"{league['name']} League Season {season['season_number']} "
+        f"({len(br)} of {total_players} players qualified). Same qualification as "
+        f"the mistakes table — at least {MIN_ANALYZED_GAMES} analyzed games — and "
+        f"players whose season offered no bingo chances at all are omitted, having "
+        f"no rate to rank. Bingos found over bingos available, counted over the "
+        f"same season games the way the report computes it for the subject.*"
+    )
+    lines.append("")
+    lines.append("| # | Player | Div | Bingo Find Rate | Avg Mistakes | Games |")
+    lines.append("|---|---|---|---|---|---|")
+
+    def cells(r):
+        return [r.get("find_rate", "—"), _fmt(round(r["avg_mi"], 2))]
+
+    for r in br[:LEADERBOARD_SIZE]:
+        _emit_row(lines, r, mine is not None and r["username"] == mine["username"], cells)
+    if mine is not None and (mine["rank"] is None or mine["rank"] > LEADERBOARD_SIZE):
+        lines.append("| … | | | | | |")
+        _emit_row(lines, mine, True, cells)
+    lines.append("")
+
+    if mine is None:
+        lines.append(
+            f"*{username} has no bingo chances in this season's analyzed games, so "
+            "no find-rate placement can be computed.*"
+        )
+    elif mine["rank"] is None:
+        lines.append(
+            f"*{username} is unranked here: the table counts only players with at "
+            f"least {MIN_ANALYZED_GAMES} analyzed games this season, and {username} "
+            f"has {mine['games']}. The rate shown is over those games.*"
+        )
+    else:
+        lines.append(
+            f"**{username} ranks {_ordinal(mine['rank'])} of {len(br)}** qualified "
+            f"players league-wide on bingo find rate ({mine.get('find_rate', '—')} "
+            f"over {mine['games']} games)."
         )
     return "\n".join(lines)
 
@@ -876,10 +975,7 @@ def report_extras(collection_uuid, stats, agg):
 
     # The standings lead the report; the league-wide leaderboard is supplementary
     # and stays below the per-game tables.
-    sections = []
-    leaderboard = mistake_leaderboard_section(divisions, season, league, entry["username"])
-    if leaderboard:
-        sections.append(leaderboard)
+    sections = leaderboard_sections(divisions, season, league, entry["username"])
     return {
         "round_label": "Seed",
         # False while the division is still playing. The report itself is worth
