@@ -233,6 +233,24 @@
   "title": "Collins League - Season 21",
   "username": "magrathean"
  },
+ "8a836271-c7eb-45f4-a691-bff211904d45": {
+  "division_id": "10bbe2ab-ddca-4751-beb1-dcad941aa267",
+  "division_number": 10,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "95921d26-7e0b-4494-b4e6-25f3078ea70c",
+  "season_number": 22,
+  "seeds": {
+   "M7RJDhtBcp": {
+    "opponent": "eideticeve",
+    "rating": 1804.91525536737,
+    "seed": 3
+   }
+  },
+  "title": "Collins League - Season 22",
+  "username": "magrathean"
+ },
  "96e9f89d-348b-47ac-ae43-aeb019c4a96a": {
   "division_id": "f8c4d8f1-d8e1-46cb-a048-a7750c8cf52d",
   "division_number": 13,
