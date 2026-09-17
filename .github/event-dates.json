@@ -1,0 +1,55 @@
+{
+  "_comment": [
+    "Per-collection overrides for scripts/skill_graph.py, keyed by collection uuid",
+    "or by exact collection title. Keys: \"date\" (YYYY-MM-DD or YYYY-MM) to place",
+    "the event on the chronological axis, \"label\" to shorten the x-axis caption,",
+    "\"include\": false to keep a collection off the chart.",
+    "Without a \"date\", an event is dated from its title: a four-digit year (or a",
+    "'YY) plus a month name if one is present. That is enough to order events",
+    "across years, but events sharing a year fall back to alphabetical order, so",
+    "give any year with more than one event explicit dates."
+  ],
+  "2018 World Scrabble Championship Finals": {
+    "label": "WSC 2018 Final",
+    "date": "2018-10-28",
+    "wespa_tourneyid": 706,
+    "wespa_name": "Mattel WSC Finals"
+  },
+  "Jesse Day's (abbreviated) Causeway 2026": {
+    "label": "Causeway 2026",
+    "date": "2026-06-01",
+    "wespa_tourneyid": 1524,
+    "wespa_name": "Causeway Challenge 2026 Bangkok"
+  },
+  "WESPAC 2023 (Las Vegas)": {
+    "label": "WESPAC 2023",
+    "date": "2023-07-25",
+    "wespa_tourneyid": 1015,
+    "wespa_name": "WESPA Championship 2023 Las Vegas - Main Event"
+  },
+  "King's Cup 2019": {
+    "date": "2019-07-07",
+    "wespa_tourneyid": 817,
+    "wespa_name": "34th BRAND's Thailand International Crossword Game"
+  },
+  "NSC 2019 Final": {
+    "date": "2019-07-24",
+    "wespa_tourneyid": 788,
+    "wespa_name": " NASC Collins Finals  "
+  },
+  "NSC 2019": {
+    "date": "2019-07-23",
+    "wespa_tourneyid": 778,
+    "wespa_name": "North American Scrabble Championship - Collins Division"
+  },
+  "WESPAC 2019": {
+    "date": "2019-10-19",
+    "wespa_tourneyid": 749,
+    "wespa_name": "WESPAC Goa Championship"
+  },
+  "2019 WESPAC Final": {
+    "date": "2019-10-20",
+    "wespa_tourneyid": 758,
+    "wespa_name": "WESPAC Goa Finals"
+  }
+}
