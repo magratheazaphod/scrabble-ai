@@ -90,6 +90,7 @@ historical error in this repo came from.
 | `gcg_preflight.py` | scan/heal `.gcg` parser-breaking patterns; `--check` to report only |
 | `replace_uploaded_game.py` | swap a re-uploaded game in for a defective one across its collections, and comment on the orphan |
 | `tournament_report.py` | all stats/aggregation/report rendering (single source of truth, shared with the email job) |
+| `skill_graph.py` | the cross-event skill graph: one stacked bar per event, chronological, split by game stage. Metric registry, so it is not mistake-index-only |
 | `test_report.py` | regression gate - run after any `tournament_report.py` edit. Semantic invariants + structural render checks over `tests/fixtures/`; pins no prose and no numbers |
 | `make_test_fixtures.py` | rebuild the committed, anonymized `tests/fixtures/` corpus from `data/golden-snapshot.json` |
 | `fetch_woogles_snapshot.py` | harvest collections/games into `data/woogles-snapshot.json` |
@@ -98,7 +99,8 @@ historical error in this repo came from.
 | `update_curley_tracker.py` | all Curley tracker sheet reads/writes |
 | `sync_curley_collection.py` | reorder/retitle the Curley collection to match the sheet |
 | `audit_woogles_consistency.py` | tracker ↔ live game ↔ repo file cross-check for OCR games |
-| `wespa_ratings.py` | WESPA OTB ratings/titles: `--refresh` the local cache, `--lookup` a name, `--suggest` unmatched opponents. The only thing that talks to wespa.xerafin.net |
+| `wespa_ratings.py` | WESPA OTB ratings/titles: `--refresh` the local cache, `--lookup` a name, `--suggest` unmatched opponents. Owns the transport to wespa.xerafin.net - nothing else opens a connection to that host |
+| `wespa_tournaments.py` | WESPA results database: identify which real tournament a collection is (by score fingerprint, never by name), its date, division, place and round-by-round scores. Fills `.github/event-dates.json` |
 | `otb_solver.py` | board/scoring/lexicon engine + OTB placement solver. Shared. |
 | `verify_gcg.py` | independent GCG replay verifier - the hard gate on **every** upload, not just OTB |
 | `scripts/otb/` | OTB-only steps: `prep_photos.py`, `check_transcription.py`, `author_gcg.py`, `regression.py` |
@@ -186,5 +188,6 @@ data/                                pipeline state and logs (gitignored, local-
 | `/otb-scrabble-upload` | reconstructing a game from scoresheet + board photos, then uploading it |
 | `/fix-uploaded-game` | a game already on Woogles is wrong - diagnose, and repair in place or replace |
 | `/curley-tracker` | the James Curley practice-game Google Sheet and its collection |
+| `/wespa-tournament-lookup` | which real tournament is this collection, and when was it played - dates, division, place, official round scores |
 | `/lexicon-lookup` | validating words / definitions against CSW, NWL, TWL, foreign sets |
 | `/woogles-queries` | SQL against the woogles.io reporting DB (lives in `~/projects/liwords/reporting/`) |

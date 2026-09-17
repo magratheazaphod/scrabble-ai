@@ -48,6 +48,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
+import skill_graph as sg
 import tournament_report as tr
 
 FIXTURE_GLOB = os.path.join("tests", "fixtures", "*.json.gz")
@@ -110,6 +111,25 @@ def test_invariants(slug, col):
         summary = tr.summary_for_index(result, jesse_idx)
         check(g["mistake_index"] == (summary["mistake_index"] if summary else None),
               f"{who}: mistake_index is selected by player_index")
+
+        # The stage split is the whole basis of the skill graph's stacked bars,
+        # and it is only meaningful if the parts add back to the headline number.
+        # BestBot's index is a plain sum of per-turn weights (tr.MISTAKE_POINTS),
+        # so this is an equality, not an approximation — a drifting weight table
+        # or a turn dropped by game_stage shows up here and nowhere else.
+        sb = g["stage_breakdown"]
+        split_mi = sum(b["mistake_index"] for b in sb.values())
+        if g["mistake_index"] is not None:
+            check(abs(split_mi - g["mistake_index"]) < 1e-6,
+                  f"{who}: stage_breakdown sums to the reported mistake_index",
+                  f"{split_mi} != {g['mistake_index']}")
+        split_wp = sum(b["win_prob_lost"] for b in sb.values())
+        check(abs(split_wp - g["win_prob_lost"]) < 1e-9,
+              f"{who}: stage_breakdown sums to the game's win% lost",
+              f"{split_wp} != {g['win_prob_lost']}")
+        turns_at_idx = sum(1 for t in result["turns"] if t.get("player_index") == jesse_idx)
+        check(sum(b["turns"] for b in sb.values()) == turns_at_idx,
+              f"{who}: every one of the subject's turns lands in exactly one stage")
 
         # Bingos, recounted independently off the event log.
         events = history.get("events") or []
@@ -396,6 +416,78 @@ def test_synthetic(col):
           "synthetic: Nigel Richards passes bingos up rather than missing them", note)
 
 
+# --------------------------------------------------------------------------
+# Layer 4 — the cross-event skill graph
+# --------------------------------------------------------------------------
+
+def test_skill_graph(fixtures):
+    """The chart's arithmetic and its dating, without rendering a pixel."""
+    # Dating. Titles are the only evidence a Woogles collection carries, so the
+    # parser has to survive every shape in the archive — and refuse the ones that
+    # aren't events at all.
+    cases = [
+        ("WESPAC 2019", (2019, 7, 15)),
+        ("Austin One-Day Aug '23", (2023, 8, 15)),
+        ("2019 WESPAC Final", (2019, 7, 15)),
+        ("Jesse Day's (abbreviated) Causeway 2026", (2026, 7, 15)),
+    ]
+    for title, expected in cases:
+        parsed = sg.parse_event_date(title)
+        check(parsed is not None and parsed[0] == expected,
+              f"skill graph: dates '{title}'", str(parsed))
+    # A practice-game collection has no year and must never become a bar: it is
+    # not a discrete event, and one would swamp the axis.
+    check(sg.parse_event_date("James Curley practice games") is None,
+          "skill graph: an undated collection is not an event")
+
+    # Averaging. The bar height must be the collection's own average mistakes
+    # score — the figure the tournament report already prints — or the chart and
+    # the report below it disagree in the same email.
+    for slug, col in fixtures:
+        events = sg.build_events([dict(col, uuid=slug)], "mistake-index",
+                                 overrides={slug: {"date": "2020-01"}})
+        if not events:
+            continue
+        e = events[0]
+        stats = [tr.compute_game(r) for r in col["games"]]
+        agg = tr.aggregate(stats)
+        # Half a last place of agg's own 2dp rounding, plus float dust: the two
+        # means are summed in a different order, so an exact compare would fail
+        # on arithmetic noise rather than on a real disagreement.
+        check(abs(e["total"] - agg["avg_mi"]) <= 0.0051,
+              f"{slug}: skill graph bar height equals the report's average mistakes score",
+              f"{e['total']} != {agg['avg_mi']}")
+        check(abs(sum(e["values"].values()) - e["total"]) < 1e-9,
+              f"{slug}: the stacked segments add up to the bar")
+        check(e["games"] == len([g for g in stats if g["mistake_index"] is not None]),
+              f"{slug}: unanalyzed games are out of the divisor as well as the sum")
+
+        # The table is the non-visual reading of the chart — it has to be
+        # well-formed markdown like every other table in the report.
+        rows = sg.table_rows(events, "mistake-index").splitlines()
+        widths = {len(split_row(r)) for r in rows}
+        check(len(widths) == 1, f"{slug}: skill-graph table rows all match the header",
+              str(widths))
+        check(not any("None" in r or "nan" in r for r in rows),
+              f"{slug}: no None/nan reaches a skill-graph cell")
+
+    # A real date from the overrides file must reach the sort key at day
+    # precision — a main event and its own final sit one day apart, and dropping
+    # the day is what put them in alphabetical order on the axis.
+    col = {"uuid": "u", "title": "Main"}
+    fin = {"uuid": "v", "title": "Final"}
+    ov = {"u": {"date": "2019-10-19"}, "v": {"date": "2019-10-20"}}
+    check(sg.event_date(col, ov)[0] < sg.event_date(fin, ov)[0],
+          "skill graph: same-month events order by day, not alphabetically")
+
+    # Every metric must be additive across stages, since the chart stacks them.
+    for name in sg.METRICS:
+        events = sg.build_events([dict(fixtures[0][1], uuid="x")], name,
+                                 overrides={"x": {"date": "2020-01"}})
+        check(events and abs(sum(events[0]["values"].values()) - events[0]["total"]) < 1e-9,
+              f"skill graph: '{name}' stacks to its own total")
+
+
 def main():
     global VERBOSE
     VERBOSE = "-v" in sys.argv
@@ -412,6 +504,8 @@ def main():
         test_render_structure(slug, stats, agg, col["title"])
     print("\nsynthetic", file=sys.stderr)
     test_synthetic(fixtures[0][1])
+    print("\nskill graph", file=sys.stderr)
+    test_skill_graph(fixtures)
 
     print(f"\n{_PASSES[0]} checks passed, {len(_FAILURES)} failed.", file=sys.stderr)
     for failure in _FAILURES:

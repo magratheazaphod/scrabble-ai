@@ -111,6 +111,41 @@ Save to `reports/<tournament-slug>-report.md`. For a one-off subject report
 identity via `GameHistory players[].nickname` matching, never the Woogles login
 username.
 
+## The skill graph - across events, not within one
+
+One tournament's report cannot say whether Jesse is improving. `scripts/skill_graph.py`
+answers that: one stacked bar per event, ordered chronologically, split by the stage
+of the game each mistake came from.
+
+```
+python3 scripts/skill_graph.py --out reports/skill-graph.png --table
+python3 scripts/skill_graph.py --metric win-pct-lost --snapshot data/golden-snapshot.json
+```
+
+It reads the same snapshot the email job does and needs no network. Points to know:
+
+- Bars are **averaged per game**, so a 30-round world championship and a six-game
+  one-day are comparable; a bar's height is exactly the average mistakes score the
+  tournament's own report prints.
+- The metric is a registry entry (`METRICS`), not a hardcoded column. Adding one
+  means adding a dict there - `stage_breakdown` already carries every per-stage
+  number per game. A new metric must be **additive across stages**; the chart stacks it.
+- Events are dated **from the collection title**, which only ever yields a year -
+  enough to order across years, not within one. Real dates come from
+  `/wespa-tournament-lookup`, which identifies the actual tournament against
+  WESPA's results database and writes its date into `.github/event-dates.json`:
+
+  ```
+  python3 scripts/wespa_tournaments.py --identify-all --write-dates
+  ```
+
+  Run that before reading the chart; without it a main event and its own final
+  order alphabetically. A collection with no year in its title is not an event and
+  never becomes a bar - which is what keeps the practice-game archives off the axis.
+- `generate_report_email.py` renders it once per run and leads the email with it,
+  inline as a `cid:` image with its numbers as a table underneath (which is what an
+  image-blocking client is left with).
+
 **`scripts/test_report.py` is the regression gate.** Run it after any edit to
 `tournament_report.py`; it needs no network and no `data/`.
 

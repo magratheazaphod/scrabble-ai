@@ -3,3 +3,4 @@ anthropic
 markdown
 gspread
 google-auth
+matplotlib

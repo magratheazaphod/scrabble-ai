@@ -114,6 +114,17 @@ requests.post(f'{BASE}/comments_service.GameCommentService/AddGameComment',
 
 `GetGameComments` reads them back. Confirmed working 2026-07-03.
 
+## After the collection exists
+
+Run `/wespa-tournament-lookup` on it. WESPA's results database is the only source
+of the event's real date - a Woogles game history has none - and it also confirms
+the upload is complete by matching game for game against the official round list.
+One command:
+
+```
+python3 scripts/wespa_tournaments.py --identify "<collection title>" --write-dates
+```
+
 ## Ask Jesse rather than guessing
 
 - An endgame line format you haven't seen before (not a clean going-out or
