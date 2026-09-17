@@ -485,6 +485,39 @@ def game_stage(turn):
     return "early" if bag > 50 else "mid"
 
 
+# BestBot's `mistake_index` is a plain unnormalized SUM over a player's turns of
+# these per-turn weights, keyed on the same `mistake_size` the turn already
+# carries (macondo gameanalysis/analyzer.go: `mistakePoints`, summed at
+# `calculatePlayerSummaries`). No averaging, no turn-count normalization, and the
+# loss magnitudes only pick the bucket. That makes the index *exactly*
+# decomposable: bucket each turn by `game_stage` instead, weight it the same way,
+# and the parts sum back to the reported figure to the last decimal — verified
+# across the whole archive. Beware when reading the split: the thresholds behind
+# a bucket differ by stage (win% points early, spread points in the endgame), so
+# a LARGE endgame mistake is not the same underlying loss as a LARGE midgame one.
+MISTAKE_POINTS = {"SMALL": 0.2, "MEDIUM": 0.5, "LARGE": 1.0, "NO_MISTAKE": 0.0}
+
+
+def stage_breakdown(turns, player_index):
+    """Per-stage {mistake_index, win_prob_lost, turns} for one player's turns.
+
+    Keyed by STAGES plus "unknown" for turns with no `tiles_in_bag` to place them
+    (pre-v2 analyses); "unknown" is always present so a caller summing the dict
+    can never silently lose a turn's contribution to the game total.
+    """
+    out = {s: {"mistake_index": 0.0, "win_prob_lost": 0.0, "turns": 0} for s in STAGES + ("unknown",)}
+    for t in turns:
+        if t.get("player_index") != player_index:
+            continue
+        bucket = out[game_stage(t) or "unknown"]
+        bucket["mistake_index"] += MISTAKE_POINTS.get(t.get("mistake_size") or "NO_MISTAKE", 0.0)
+        bucket["win_prob_lost"] += t.get("win_prob_loss") or 0
+        bucket["turns"] += 1
+    for b in out.values():
+        b["mistake_index"] = round(b["mistake_index"], 10)  # kill float-sum dust
+    return out
+
+
 # A turn is worth logging as an error when it cost win probability at all, OR
 # when win% barely moved but real spread did. The second case is the endgame and
 # pre-endgame pattern Jesse cares about: with the game already won or already
@@ -780,6 +813,11 @@ def compute_game(r, subject=None):
         # Draws are rare but real (equal final scores) — never fold one into "L".
         "result": "W" if jesse_score > opp_score else ("L" if jesse_score < opp_score else "D"),
         "mistake_index": mistake_index,
+        # Where the mistake index and the lost win% actually came from. Summing
+        # `mistake_index` over the stages reproduces `mistake_index` exactly (see
+        # MISTAKE_POINTS); it is None-free even when the summary is missing, so
+        # the skill graph can bar-chart a game the headline figure can't score.
+        "stage_breakdown": stage_breakdown(analysis["turns"], jesse_idx),
         "opp_mistake_index": opp_mistake_index,
         "opp_fully_annotated": opp_fully_annotated,
         "jesse_bingos": jesse_bingos,

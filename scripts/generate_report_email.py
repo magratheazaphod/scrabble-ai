@@ -13,6 +13,7 @@ import os
 import smtplib
 import sys
 from datetime import datetime
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from zoneinfo import ZoneInfo
@@ -20,11 +21,14 @@ from zoneinfo import ZoneInfo
 import anthropic
 import markdown
 
+import skill_graph as sg
 import tournament_report as tr
 import woogles_league as wl
 
 CENTRAL = ZoneInfo("America/Chicago")
 SENT_MARKER_PATH = "data/last-report-sent.txt"
+SKILL_GRAPH_PATH = "reports/skill-graph.png"
+SKILL_GRAPH_CID = "skill-graph"
 DRY_RUN = os.environ.get("DRY_RUN", "").strip() == "1"
 
 HTML_TEMPLATE = """\
@@ -40,6 +44,7 @@ HTML_TEMPLATE = """\
   tr:nth-child(even) {{ background: #fafafa; }}
   strong {{ color: #000; }}
   hr {{ border: none; border-top: 1px solid #ccc; margin: 32px 0; }}
+  img {{ max-width: 100%; height: auto; }}
 </style>
 </head>
 <body>
@@ -174,7 +179,38 @@ def build_pending_note(pending):
     return f"\n\n---\n\n**Still being analyzed:**\n{lines}"
 
 
-def send_email(body, recipient, subject):
+def build_skill_graph_section(collections, subject=None):
+    """The cross-event skill graph: "## Skill Graph" markdown, or "".
+
+    Rendered once per run over every collection in the snapshot, not per
+    collection — the whole point is the comparison between events. The markdown
+    carries both the image and its numbers: the table is what a client that
+    blocks images (and the plain-text alternative) is left with, and it is the
+    non-visual reading of the chart besides. Never fatal — a chart is not worth
+    losing the report over.
+    """
+    try:
+        events = sg.build_events(collections, "mistake-index", subject=subject)
+        if not events:
+            return ""
+        if not sg.render(events, "mistake-index", SKILL_GRAPH_PATH):
+            return ""
+        return (
+            "## Skill Graph\n\n"
+            f"![Mistake index per game by event and game stage](cid:{SKILL_GRAPH_CID})\n\n"
+            + sg.table_rows(events, "mistake-index")
+            + "\n\nMistake index averaged per game, so events of different lengths compare;"
+            " each bar is split by the stage of the game the mistakes came from."
+        )
+    except Exception as e:  # noqa: BLE001 — the chart is a bonus, not the report
+        print(f"Skill graph unavailable: {e}", file=sys.stderr)
+        return ""
+
+
+def send_email(body, recipient, subject, inline_images=()):
+    """`inline_images` is [(cid, path)] — each referenced from the HTML as
+    `cid:<cid>`, so the chart travels inside the message rather than as a link
+    to somewhere the mail client cannot reach."""
     if DRY_RUN:
         print("=== DRY_RUN: email body ===", file=sys.stderr)
         print(body)
@@ -184,12 +220,29 @@ def send_email(body, recipient, subject):
 
     html_body = markdown.markdown(body, extensions=["tables", "nl2br"])
 
-    msg = MIMEMultipart("alternative")
+    alternative = MIMEMultipart("alternative")
+    alternative.attach(MIMEText(body, "plain", "utf-8"))
+    alternative.attach(MIMEText(HTML_TEMPLATE.format(body=html_body), "html", "utf-8"))
+
+    images = [(cid, path) for cid, path in inline_images if os.path.exists(path)]
+    if images:
+        # related(alternative, image...) — the nesting order matters: an image
+        # attached as a sibling of the text parts shows up as a download rather
+        # than inline.
+        msg = MIMEMultipart("related")
+        msg.attach(alternative)
+        for cid, path in images:
+            with open(path, "rb") as f:
+                img = MIMEImage(f.read(), _subtype="png")
+            img.add_header("Content-ID", f"<{cid}>")
+            img.add_header("Content-Disposition", "inline", filename=os.path.basename(path))
+            msg.attach(img)
+    else:
+        msg = alternative
+
     msg["Subject"] = subject
     msg["From"] = sender
     msg["To"] = recipient
-    msg.attach(MIMEText(body, "plain", "utf-8"))
-    msg.attach(MIMEText(HTML_TEMPLATE.format(body=html_body), "html", "utf-8"))
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(sender, password)
@@ -320,7 +373,12 @@ def main():
     if pending:
         summary += f", {len(pending)} pending"
     summary += "."
-    body = summary + "\n\n" + "\n\n---\n\n".join(report_sections) + build_pending_note(pending)
+    # The skill graph leads: it is the one cross-event view in the email, and the
+    # question it answers ("am I getting better, and where") is the one worth
+    # asking before reading any single tournament's tables.
+    skill_graph_md = build_skill_graph_section(collections, subject=subject_identity)
+    sections = ([skill_graph_md] if skill_graph_md else []) + report_sections
+    body = summary + "\n\n" + "\n\n---\n\n".join(sections) + build_pending_note(pending)
 
     now = datetime.now(CENTRAL)
     date_str = f"{now.strftime('%A %B')} {now.day} {now.year}"
@@ -332,7 +390,8 @@ def main():
     )
 
     print(f"Sending email to {recipient}...", file=sys.stderr)
-    send_email(body, recipient, email_subject)
+    send_email(body, recipient, email_subject,
+               inline_images=[(SKILL_GRAPH_CID, SKILL_GRAPH_PATH)] if skill_graph_md else [])
 
     if one_off:
         print("Done.", file=sys.stderr)
