@@ -51,5 +51,9 @@
     "date": "2019-10-20",
     "wespa_tourneyid": 758,
     "wespa_name": "WESPAC Goa Finals"
+  },
+  "King's Cup 2019 Finals": {
+    "date": "2019-07-08",
+    "note": "Not WESPA-rated - the best-of-three final was never rated apart from its main event (tourneyid 817, 2019-07-07). Dated a day after it, which is what the axis needs."
   }
 }
