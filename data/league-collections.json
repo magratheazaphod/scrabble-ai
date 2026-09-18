@@ -242,20 +242,45 @@
   "season_id": "95921d26-7e0b-4494-b4e6-25f3078ea70c",
   "season_number": 22,
   "seeds": {
+   "DjxgJijRhu": {
+    "opponent": "Phaeton",
+    "rating": 1562.725353487026,
+    "seed": 9
+   },
    "M7RJDhtBcp": {
     "opponent": "eideticeve",
     "rating": 1815.605494895291,
     "seed": 2
+   },
+   "N3Wi4mU8s3": {
+    "opponent": "Maggieaw",
+    "rating": 1491.1422280550428,
+    "seed": 13
    },
    "Yddpfu4Gdx": {
     "opponent": "Izar88",
     "rating": 1508.3080072681519,
     "seed": 11
    },
+   "c7RDeETrXg": {
+    "opponent": "ChCh62",
+    "rating": 1631.0435486112783,
+    "seed": 5
+   },
    "fXPFH9vDrw": {
     "opponent": "BeautifulWaste",
     "rating": 1492.0507978065455,
     "seed": 12
+   },
+   "hXY7Uy3SCF": {
+    "opponent": "Gabzor89",
+    "rating": 1800.728386610311,
+    "seed": 4
+   },
+   "t9RyRN9moZ": {
+    "opponent": "auricle",
+    "rating": 1809.192931614602,
+    "seed": 3
    },
    "vimBtsoVDc": {
     "opponent": "dang3rous",
@@ -265,7 +290,7 @@
    "zy5fNWZqXJ": {
     "opponent": "avianae",
     "rating": 1617.9153132423323,
-    "seed": 5
+    "seed": 6
    }
   },
   "title": "Collins League - Season 22",
