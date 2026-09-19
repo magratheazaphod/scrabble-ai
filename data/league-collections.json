@@ -242,6 +242,11 @@
   "season_id": "95921d26-7e0b-4494-b4e6-25f3078ea70c",
   "season_number": 22,
   "seeds": {
+   "8ZWSRMkvJK": {
+    "opponent": "AudreyWagner",
+    "rating": 1486.2858109047156,
+    "seed": 13
+   },
    "DjxgJijRhu": {
     "opponent": "Phaeton",
     "rating": 1562.725353487026,
@@ -271,6 +276,11 @@
     "opponent": "BeautifulWaste",
     "rating": 1492.0507978065455,
     "seed": 12
+   },
+   "h7ssGQFMpa": {
+    "opponent": "Keggie",
+    "rating": 1384.7573463736358,
+    "seed": 15
    },
    "hXY7Uy3SCF": {
     "opponent": "Gabzor89",
