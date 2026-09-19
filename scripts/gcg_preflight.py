@@ -28,7 +28,13 @@ Issues handled:
 3. missing #player headers (HEALED): synthesized from the first two distinct
    move-line nicknames.
 
-4. Detection only (flagged, no heal): endgame-line rack/sign mismatch (empty
+4. placeholder rack on a challenge line (HEALED): some exports write
+   ">Nick: UNKNOWN (challenge) +5 CUM". ImportGCG reads UNKNOWN as tiles and
+   fails with "tried to add a tile (U) that is not in the bag", leaving a stuck
+   unfinished game behind. Heal: empty the rack field. Runs before heal 1,
+   whose pattern only matches the rackless form.
+
+5. Detection only (flagged, no heal): endgame-line rack/sign mismatch (empty
    rack + negative score, or populated rack + positive score), files over the
    128,000-byte ImportGCG cap, files with no move lines.
 
@@ -70,6 +76,8 @@ END_RE = re.compile(
     r'^>(?P<nick>[^:]+):(?P<rackfield>[^(]*)\((?P<leftover>[^)]*)\)\s+'
     r'(?P<sign>\+-?|-)(?P<pts>\d+)\s+(?P<cum>\d+)\s*$')
 MOVE_LINE_RE = re.compile(r'^>')
+# ">Nick: UNKNOWN (challenge) ..." — placeholder rack from some exports
+UNKNOWN_CHALLENGE_RE = re.compile(r'^(>[^:]+:)\s+UNKNOWN(\s+\(challenge\))')
 
 
 def parse_pos(pos):
@@ -244,6 +252,13 @@ def scan_file(path):
         elif not rack_empty and not negative:
             issues.append(('endgame-mismatch', 'populated rack but positive score '
                            '(six-scoreless penalty should be negative)', False))
+
+    n_unknown = sum(bool(UNKNOWN_CHALLENGE_RE.match(l)) for l in healed)
+    if n_unknown:
+        healed = [UNKNOWN_CHALLENGE_RE.sub(r'\1 \2', l) for l in healed]
+        issues.append(('placeholder-challenge-rack',
+                       f'{n_unknown} "UNKNOWN (challenge)" line(s) given an empty rack', True))
+        did_heal = True
 
     try:
         healed2, desc = heal_challenge_before_final(healed)

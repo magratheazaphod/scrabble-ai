@@ -50,6 +50,9 @@ def parse_events(lines):
         nick = line[1:line.index(':')]
         toks = line[line.index(':') + 1:].split()
         e = {'line': ln, 'nick': nick, 'raw': line}
+        if toks and toks[0] == 'UNKNOWN':
+            # an export placeholder; ImportGCG reads it as tiles (gcg_preflight heals it)
+            raise ValueError(f"line {ln}: placeholder rack UNKNOWN")
         if toks[0].startswith('(') and toks[0] not in ('(challenge)', '(time)'):
             # end-rack bonus: empty rack field, opponent leftover in parens
             e.update(type='endrack_bonus', tiles=toks[0][1:-1],
