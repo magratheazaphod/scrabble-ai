@@ -54,6 +54,10 @@ def parse_events(lines):
             # end-rack bonus: empty rack field, opponent leftover in parens
             e.update(type='endrack_bonus', tiles=toks[0][1:-1],
                      score=parse_score(toks[1]), cum=int(toks[2]))
+        elif toks[0] in ('(challenge)', '(time)'):
+            # rackless form, as Quackle writes it and gcg_preflight heals it
+            e.update(type=toks[0][1:-1], rack='',
+                     score=parse_score(toks[1]), cum=int(toks[2]))
         elif len(toks) >= 2 and toks[1] == '(challenge)':
             e.update(type='challenge', rack=toks[0],
                      score=parse_score(toks[2]), cum=int(toks[3]))
@@ -143,13 +147,10 @@ def verify(path, lex):
             rack = Counter(e['rack'].upper())
             need = Counter('?' if ch.islower() else ch for _, _, ch in placed)
             if need - rack:
+                # Woogles' ImportGCG rejects this even for a play later withdrawn
                 missing = ''.join(sorted((need - rack).elements()))
-                if withdrawn_next:
-                    warnings.append(f"line {e['line']}: played tiles {missing} not in declared "
-                                    f"rack {e['rack']} — tolerated: the play was challenged off")
-                else:
-                    errors.append(f"line {e['line']}: played tiles {missing} not in declared "
-                                  f"rack {e['rack']}")
+                errors.append(f"line {e['line']}: played tiles {missing} not in declared "
+                              f"rack {e['rack']}")
             for r, c, ch in placed:
                 board[(r, c)] = ch
             last_play[nick] = (placed, e['score'])
@@ -165,6 +166,9 @@ def verify(path, lex):
                                   "(negative = six-pass penalty format, which needs the rack repeated)")
             if typ == 'endrack_penalty' and e['score'] >= 0:
                 errors.append(f"line {e['line']}: rack-repeated endgame line must be negative")
+            if typ == 'exchange' and Counter(e['exchanged'].upper()) - Counter(e['rack'].upper()):
+                errors.append(f"line {e['line']}: exchanged tiles {e['exchanged']} not in "
+                              f"declared rack {e['rack']}")
             if typ in ('pass', 'exchange') and e['score'] != 0:
                 errors.append(f"line {e['line']}: {typ} must score 0")
             cums[nick] = prev + e['score']
