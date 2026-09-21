@@ -381,16 +381,23 @@ def resolve_bingo_word(optimal_move, board):
         dr, dc = 1, 0
     else:
         return word
-    result = ""
+    # Consecutive played-through tiles share one pair of parentheses, per
+    # convention: (THONG)IER, not (T)(H)(O)(N)(G)IER.
+    result, through = "", ""
     r, c = row, col
     for ch in word:
         if ch == ".":
             tile = board[r][c] if 0 <= r < 15 and 0 <= c < 15 else ""
-            result += f"({tile})" if tile else "(?)"
+            through += tile or "?"
         else:
+            if through:
+                result += f"({through})"
+                through = ""
             result += ch
         r += dr
         c += dc
+    if through:
+        result += f"({through})"
     return result
 
 
