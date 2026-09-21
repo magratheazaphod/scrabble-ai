@@ -254,40 +254,39 @@ def split_row(line):
 
 def test_render_structure(slug, stats, agg, title):
     notes = tr.game_notes(stats)
-    for error_log in (False, True):
-        md = tr.render_report(stats, agg, notes, title, error_log=error_log)
-        tag = f"{slug} (error_log={error_log})"
+    md = tr.render_report(stats, agg, notes, title)
+    tag = slug
 
-        for _, header, rows in markdown_tables(md):
-            for lineno, cells in rows:
-                check(len(cells) == len(header),
-                      f"{tag}: every row matches its header's column count",
-                      f"line {lineno}: {len(cells)} cells vs {len(header)} — {cells}")
-                for cell in cells:
-                    check(cell not in CELL_PLACEHOLDERS,
-                          f"{tag}: no placeholder value reaches a cell",
-                          f"line {lineno}: {cells}")
+    for _, header, rows in markdown_tables(md):
+        for lineno, cells in rows:
+            check(len(cells) == len(header),
+                  f"{tag}: every row matches its header's column count",
+                  f"line {lineno}: {len(cells)} cells vs {len(header)} — {cells}")
+            for cell in cells:
+                check(cell not in CELL_PLACEHOLDERS,
+                      f"{tag}: no placeholder value reaches a cell",
+                      f"line {lineno}: {cells}")
 
-        for text, url in LINK.findall(md):
-            check(url.startswith("https://woogles.io/"),
-                  f"{tag}: every link points at woogles.io", url)
-            check(text.strip() != "", f"{tag}: no link has empty text", url)
+    for text, url in LINK.findall(md):
+        check(url.startswith("https://woogles.io/"),
+              f"{tag}: every link points at woogles.io", url)
+        check(text.strip() != "", f"{tag}: no link has empty text", url)
 
-        check("## Aggregate Stats" in md, f"{tag}: aggregate section is present")
-        check(md.startswith(f"# {title}"), f"{tag}: report opens with its title")
-        check(("## All Errors" in md) == error_log,
-              f"{tag}: the error log appears iff it was asked for")
-        if error_log:
-            # The columns the error table promises, in order. Layout may move, but
-            # a silently dropped column would make the numbers beside it lie. The
-            # three cost columns sit just left of Flags, since a wall of numbers up
-            # front made the table hard to scan.
-            header = next(h for h in md.splitlines() if h.startswith("| Win% Lost |"))
-            cells = split_row(header)
-            check(cells[0] == "Win% Lost" and cells[-4:] == ["Equity Lost", "Off Δ", "Def Δ", "Flags"],
-                  f"{tag}: error table sorts by Win% Lost and ends with cost columns then Flags", header)
+    check("## Aggregate Stats" in md, f"{tag}: aggregate section is present")
+    check(md.startswith(f"# {title}"), f"{tag}: report opens with its title")
+    check(("## All Errors" in md) == bool(tr.error_log_rows(stats)),
+          f"{tag}: every report with analyzed errors shows the error log")
+    if "## All Errors" in md:
+        # The columns the error table promises, in order. Layout may move, but
+        # a silently dropped column would make the numbers beside it lie. The
+        # three cost columns sit just left of Flags, since a wall of numbers up
+        # front made the table hard to scan.
+        header = next(h for h in md.splitlines() if h.startswith("| Win% Lost |"))
+        cells = split_row(header)
+        check(cells[0] == "Win% Lost" and cells[-4:] == ["Equity Lost", "Off Δ", "Def Δ", "Flags"],
+              f"{tag}: error table sorts by Win% Lost and ends with cost columns then Flags", header)
 
-    digest = tr.build_digest(stats, agg, notes, title, error_log=True)
+    digest = tr.build_digest(stats, agg, notes, title)
     check("Errors (" in digest, f"{slug}: digest carries the error block")
     # A bare `None` is tolerated on an aggregate key line — it is the deliberate
     # "this collection has no such figure" marker (`games_per_phony` when no phony

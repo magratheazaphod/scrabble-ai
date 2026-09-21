@@ -1156,8 +1156,7 @@ def error_log_section(stats, short_label="Rd"):
 
 
 def render_report(stats, agg, notes, title, summary_md=None, subject_display="Jesse Day",
-                  round_label=None, extra_sections=None, lead_sections=None,
-                  error_log=False):
+                  round_label=None, extra_sections=None, lead_sections=None):
     """Render the report markdown.
 
     `round_label` renames the ordering column when games aren't sequenced by
@@ -1173,9 +1172,7 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
     `extra_sections` is a list of ready-made markdown blocks appended after the
     per-game tables and before the Summary (the league cross-check uses it).
 
-    `error_log` adds the ranked "All Errors" section (see error_log_section). It is
-    off by default so that existing tournament reports render byte-identically;
-    league reports turn it on (woogles_league.report_extras).
+    Every report carries the ranked "All Errors" section (see error_log_section).
     """
     n = agg["n"]
     col_label = round_label or "Rnd"
@@ -1381,11 +1378,10 @@ def render_report(stats, agg, notes, title, summary_md=None, subject_display="Je
         for rnd, opp, cell in opp_mb_rows:
             lines.append(f"| {rnd} | {opp} | {cell} |")
 
-    if error_log:
-        section = error_log_section(stats, short_label)
-        if section:
-            lines.append("")
-            lines.append(section)
+    error_section = error_log_section(stats, short_label)
+    if error_section:
+        lines.append("")
+        lines.append(error_section)
 
     for section in extra_sections or []:
         lines.append("")
@@ -1484,7 +1480,7 @@ def _error_digest_lines(stats, short_label="Rd"):
     return lines
 
 
-def build_digest(stats, agg, notes, title, error_log=False, short_label="Rd"):
+def build_digest(stats, agg, notes, title, short_label="Rd"):
     """Compact text the Summary LLM call reads AND the SHA-256 cache key input.
 
     Deterministic (stable ordering everywhere) — hash stability is the cache.
@@ -1492,11 +1488,9 @@ def build_digest(stats, agg, notes, title, error_log=False, short_label="Rd"):
     (stable key order), and one line per game (round, opponent, result, score,
     spread, mistake index, note). Never raw game/turn data.
 
-    `error_log` appends the ranked error block (see _error_digest_lines). It is off
-    by default, and deliberately keyed to the same flag that shows the "All Errors"
-    section: a summary should only discuss errors in a report the reader can check
-    them in, and leaving it off elsewhere keeps every other collection's digest hash
-    — and so its cached summary — untouched.
+    Ends with the ranked error block (see _error_digest_lines), which every report
+    also shows as "All Errors", so the summary can say where the win probability
+    went and the reader can check it.
     """
     lines = [f"Title: {title}", f"Record: {agg['record']}", f"Progression: {_progression(stats)}"]
     if agg.get("void_challenge"):
@@ -1552,8 +1546,7 @@ def build_digest(stats, agg, notes, title, error_log=False, short_label="Rd"):
             f"  Missed by opponents: "
             f"{'; '.join(f'Rd{r} {o} {w}' for r, o, w in opp) if opp else 'none'}"
         )
-    if error_log:
-        lines.extend(_error_digest_lines(stats, short_label))
+    lines.extend(_error_digest_lines(stats, short_label))
     return "\n".join(lines)
 
 

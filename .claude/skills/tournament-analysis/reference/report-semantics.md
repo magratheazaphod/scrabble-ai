@@ -75,8 +75,9 @@ any prose written around it.
 
 ## The error log ("All Errors")
 
-On by default only in league reports (`error_log=True`), where both racks are
-known every turn. One row per turn of Jesse's, ranked by win% lost.
+In every report - tournament and league alike - and in the summary digest, so
+the written summary can cite it. One row per analyzed turn of Jesse's, ranked by
+win% lost; the section is omitted only when a collection has no analyzed errors.
 
 - **What counts as an error.** Any turn that cost win probability, plus any turn
   where win% stayed flat (within `FLAT_WIN_PROB`, 0.5%) but at least

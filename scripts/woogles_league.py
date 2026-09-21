@@ -984,10 +984,6 @@ def report_extras(collection_uuid, stats, agg):
         # standing every day and can only ever be provisional. So the caller holds
         # the summary until this turns True. See generate_report_email.main.
         "season_complete": division_complete(division),
-        # League games are played on Woogles with both racks known every turn, so
-        # every turn of Jesse's is analyzable — the full ranked error log is the
-        # study material the league report exists to produce.
-        "error_log": True,
         "lead_sections": [league_section(stats, agg, standing, division, season, league)],
         "sections": sections,
         "digest_line": digest_line,

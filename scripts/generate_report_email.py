@@ -309,16 +309,11 @@ def main():
             extras = wl.report_extras(col["uuid"], stats, agg)
         except Exception as e:  # noqa: BLE001 — any failure here is non-fatal
             print(f"League extras unavailable for '{col['title']}': {e}", file=sys.stderr)
-        # The error log goes into the digest as well as the report, so the Summary
-        # can say where the win probability actually went. Rebuilt rather than
-        # appended because it belongs inside the digest body — and it is rebuilt
-        # only for the collections whose report shows the section (leagues), so no
-        # other collection's cached summary is invalidated.
-        if extras.get("error_log"):
-            digest = tr.build_digest(
-                stats, agg, notes, col["title"],
-                error_log=True, short_label=extras.get("round_label") or "Rd",
-            )
+        # A league orders by seed, so its error-block labels must say so; the
+        # default digest from compute_collection already labels by round.
+        if extras.get("round_label"):
+            digest = tr.build_digest(stats, agg, notes, col["title"],
+                                     short_label=extras["round_label"])
             dhash = tr.digest_hash(digest)
         if extras.get("digest_line"):
             digest = f"{digest}\n{extras['digest_line']}"
@@ -352,7 +347,6 @@ def main():
             round_label=extras.get("round_label"),
             lead_sections=extras.get("lead_sections"),
             extra_sections=extras.get("sections"),
-            error_log=extras.get("error_log", False),
         )
         report_sections.append(report_md)
 
