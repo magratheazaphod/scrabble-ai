@@ -1,7 +1,7 @@
 #character-encoding UTF-8
 #player1 JD Jesse Day
 #player2 James_Curley James Curley
-#description Practice game 93, 2026-09-24. Reconstructed from Jesse's scoresheet alone (no board photo). Game number and date are provisional: the tracker was unreachable when this file was authored - confirm both against the tracker row before/at upload.
+#description Practice game 93, 2026-09-24. Reconstructed from Jesse's scoresheet alone (no board photo).
 #note Placements come from an exact-score joint solve over both orientations of every move with no board anchors at all; it closed on a unique zero-mismatch board with a clean 100/100 tile-bag audit, matching the scoresheet exactly (JD 444, James 448, spread -4, James +4 for JD's leftover EI). One sheet read was corrected by arithmetic: James's 27-point play looks like VICES/VECES on paper, but both Cs were already on the board (ANTIC, CURVES) and the E-count rules out VEGES, leaving VEGOS hooking VANG's V onto the 1H triple-word square. JD challenged TARTUFI, which held (+5 to James). JD's racks are the full racks from his sheet; James's are played tiles only mid-game and true full racks in the endgame (AMNOSTU, then ?AAER - which matches the 'AAER?' Jesse jotted in the margin).
 >JD: AJLNORT 8G JOL +20 20
 >James_Curley: FW H7 W.F +9 9
