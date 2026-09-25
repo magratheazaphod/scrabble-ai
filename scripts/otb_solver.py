@@ -20,7 +20,8 @@ Spec format (JSON):
   "leftover": "DIT"   // tiles left on the winner-of-nothing's rack (unplayed), "" if none
 }
 - word: as physically spelled on the board, lowercase letter = blank.
-- dir: "H" or "V".
+- dir: "H" or "V"; omit when no board photo exists and both orientations are
+  tried (fix the first move's dir to break the transpose symmetry).
 - row (1-15) for H moves / col ("A".."O") for V moves: fix if read confidently
   from the photo; omit to leave fully free (rows read from photo row-bands are
   reliable; column offsets are NOT - leave starts free and let scores decide).
@@ -143,13 +144,18 @@ def words_formed(board, word, r0, c0, dr, dc, placed):
 def candidates(board, move, exact=True, lex=True):
     word, target = move['word'], move['score']
     out = []
-    if move['dir'] == 'H':
-        rows = [move['row']-1] if 'row' in move else range(15)
-        it = ((r, c, 0, 1) for r in rows for c in range(15-len(word)+1))
-    else:
-        cols = [ord(move['col'])-65] if 'col' in move else range(15)
-        it = ((r, c, 1, 0) for c in cols for r in range(15-len(word)+1))
-    for r, c, dr, dc in it:
+    # dir may be absent (no board photo): try both orientations. Row/col
+    # anchors only apply to the orientation they were read for.
+    dirs = [move['dir']] if move.get('dir') in ('H', 'V') else ['H', 'V']
+    def gen():
+        for d in dirs:
+            if d == 'H':
+                rows = [move['row']-1] if 'row' in move else range(15)
+                yield from ((r, c, 0, 1) for r in rows for c in range(15-len(word)+1))
+            else:
+                cols = [ord(move['col'])-65] if 'col' in move else range(15)
+                yield from ((r, c, 1, 0) for c in cols for r in range(15-len(word)+1))
+    for r, c, dr, dc in gen():
         res = score_play(board, word, r, c, dr, dc)
         if not res or (exact and res[0] != target):
             continue
@@ -309,7 +315,7 @@ def main():
             flag = '' if sc == m['score'] else f"  ** recorded {m['score']}, board-true {sc} — table error? use board-true in GCG **"
             print(f"{i+1:3d}. {m['player']:3s} {gcg_pos:4s} {play:10s} +{sc}{flag}")
             jmoves.append({
-                'index': i+1, 'player': m['player'], 'word': m['word'], 'dir': m['dir'],
+                'index': i+1, 'player': m['player'], 'word': m['word'], 'dir': 'H' if dc else 'V',
                 'gcg_pos': gcg_pos, 'play': play, 'score': sc,
                 'score_recorded': m['score'], 'mismatch': sc != m['score'],
                 'words_formed': formed,

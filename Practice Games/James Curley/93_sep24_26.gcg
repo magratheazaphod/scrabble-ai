@@ -1,0 +1,29 @@
+#character-encoding UTF-8
+#player1 JD Jesse Day
+#player2 James_Curley James Curley
+#description Practice game 93, 2026-09-24. Reconstructed from Jesse's scoresheet alone (no board photo).
+#note Placements come from an exact-score joint solve over both orientations of every move with no board anchors at all; it closed on a unique zero-mismatch board with a clean 100/100 tile-bag audit, matching the scoresheet exactly (JD 444, James 448, spread -4, James +4 for JD's leftover EI). One sheet read was corrected by arithmetic: James's 27-point play looks like VICES/VECES on paper, but both Cs were already on the board (ANTIC, CURVES) and the E-count rules out VEGES, leaving VEGOS hooking VANG's V onto the 1H triple-word square. JD challenged TARTUFI, which held (+5 to James). JD's racks are the full racks from his sheet; James's are played tiles only mid-game and true full racks in the endgame (AMNOSTU, then ?AAER - which matches the 'AAER?' Jesse jotted in the margin).
+>JD: AJLNORT 8G JOL +20 20
+>James_Curley: FW H7 W.F +9 9
+>JD: ACDINRT J6 ANTIC +26 46
+>James_Curley: CERSUV 11E CURVES +30 39
+>JD: DHIILPR H11 .IRID +30 76
+>James_Curley: AHRTW 12A WRATH +37 76
+>JD: DDEHILP A12 .HID +33 109
+>James_Curley: IMX 10D MIX +61 137
+>JD: DELLOPP B10 PO.ED +39 148
+>James_Curley: BEOY K5 OBEY +39 176
+>JD: ?ELLNPR C11 P.NEL +34 182
+>James_Curley: ILNO A7 LINO +16 192
+>JD: ?ALQRSU 13F Ro.QUALS +102 284
+>James_Curley: AFIRTTU B1 TARTUFI +88 280
+>James_Curley: AGNV (challenge) +5 285
+>JD: ABDEEEN C2 BEANED +45 329
+>James_Curley: AGNV D1 VANG +40 325
+>JD: EEIKOTZ G6 KO.I +29 358
+>James_Curley: EGOS 1D .EGOS +27 352
+>JD: EEEGITZ 12K ZEE +41 399
+>James_Curley: AMNOSTU 2H OUTMANS +74 426
+>JD: EEGIOTY 3I GOETY +45 444
+>James_Curley: ?AAER N8 AREAs +18 444
+>James_Curley:  (EI) +4 448
