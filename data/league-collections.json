@@ -82,6 +82,29 @@
   "title": "Collins League - Season 20",
   "username": "magrathean"
  },
+ "15cda101-1891-44a1-a037-a33f6b3e0e16": {
+  "division_id": "d3a8bc08-128c-4539-9101-3e59f2242ed3",
+  "division_number": 9,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "6a24cd32-eb1b-4d23-be96-9e02351e533a",
+  "season_number": 23,
+  "seeds": {
+   "JqcT5oNEKa": {
+    "opponent": "K2O",
+    "rating": 1648.8104191358998,
+    "seed": 6
+   },
+   "jwM5LbwpR9": {
+    "opponent": "TeddyJohnny",
+    "rating": 1590.8916163999477,
+    "seed": 9
+   }
+  },
+  "title": "Collins League - Season 23",
+  "username": "magrathean"
+ },
  "19a0eadf-f17a-409e-bf32-46543a2fd6fd": {
   "division_id": "afe6636d-74b2-46e6-9739-d429b0b65859",
   "division_number": 14,
