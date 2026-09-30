@@ -10,12 +10,21 @@ report that looks at one collection at a time.
 
     python3 scripts/skill_graph.py --out reports/skill-graph.png
     python3 scripts/skill_graph.py --metric win-pct-lost --snapshot data/golden-snapshot.json
+    python3 scripts/skill_graph.py --kind timeline --out reports/skill-timeline.png
+    python3 scripts/skill_graph.py --by type --out reports/skill-graph-types.png
+
+`--by type` stacks each bar by *kind* of mistake (scripts/mistake_types.py:
+phony, word knowledge, missed bingo, endgame, strategy, offense, defense)
+instead of by game stage. `--kind timeline` plots the same per-event totals as points on a true date
+axis instead of evenly spaced bars, so the gaps between events (2020-21 had
+none) are visible and a cluster of events in one summer reads as a cluster.
 
 The metric is a registry entry (METRICS), not a hardcoded column: adding another
 per-stage measure means adding one dict there, because `stage_breakdown` in
 tournament_report.py already carries the per-stage numbers for every game.
 """
 import argparse
+import datetime
 import json
 import os
 import re
@@ -24,6 +33,7 @@ import sys
 import matplotlib
 
 matplotlib.use("Agg")  # no display in CI
+import matplotlib.dates as mdates  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.ticker import MaxNLocator  # noqa: E402
 
@@ -43,7 +53,7 @@ OVERRIDES_PATH = ".github/event-dates.json"
 METRICS = {
     "mistake-index": {
         "key": "mistake_index",
-        "title": "Mistake index per game, by game stage",
+        "title": "Mistake index per game",
         "ylabel": "Mistake index per game",
         "fmt": lambda v: f"{v:.2f}",
         "per_game": lambda sb, stage: sb[stage]["mistake_index"],
@@ -55,7 +65,7 @@ METRICS = {
     # on spread and weighs them like any other — which is why it is the default.
     "win-pct-lost": {
         "key": "win_prob_lost",
-        "title": "Win probability lost per game, by game stage",
+        "title": "Win probability lost per game",
         "ylabel": "Win % lost per game",
         "fmt": lambda v: f"{v:.1f}%",
         "per_game": lambda sb, stage: sb[stage]["win_prob_lost"] * 100,
@@ -75,6 +85,30 @@ STAGE_COLORS = {
     "pre-endgame": "#1c5cab",
     "endgame": "#0d366b",
 }
+# Mistake types are unordered, so they take the categorical slots in fixed
+# order (reference palette slots 1-7), bottom of the stack first. Validated with
+# `validate_palette.js --mode light`: every adjacent pair clears the CVD and
+# normal-vision floors; aqua, yellow and magenta sit under 3:1 on the surface,
+# which `--table` (and the email's table under the image) answers.
+TYPE_COLORS = {
+    "offense": "#2a78d6",
+    "defense": "#eb6834",
+    "strategy": "#1baf7a",
+    "endgame": "#eda100",
+    "missed bingo": "#e87ba4",
+    "word knowledge": "#008300",
+    "phony": "#4a3aa7",
+}
+
+# What a bar can be split by: which per-game breakdown to read, its parts in
+# stacking order (bottom first), and their colors.
+SPLITS = {
+    "stage": {"key": "stage_breakdown", "parts": tr.STAGES, "colors": STAGE_COLORS,
+              "caption": "game stage"},
+    "type": {"key": "type_breakdown", "parts": tuple(TYPE_COLORS), "colors": TYPE_COLORS,
+             "caption": "mistake type"},
+}
+
 SURFACE = "#fcfcfb"
 TEXT_PRIMARY = "#0b0b0b"
 TEXT_SECONDARY = "#52514e"
@@ -167,7 +201,7 @@ def event_label(col, overrides):
 # Building the series
 # --------------------------------------------------------------------------
 
-def build_events(collections, metric, overrides=None, subject=None):
+def build_events(collections, metric, overrides=None, subject=None, by="stage"):
     """One chart-ready record per datable collection, oldest first.
 
     Averaged per game, never totalled: a 30-round world championship and a
@@ -177,6 +211,8 @@ def build_events(collections, metric, overrides=None, subject=None):
     """
     overrides = overrides if overrides is not None else load_overrides()
     spec = METRICS[metric]
+    split = SPLITS[by]
+    parts = split["parts"]
     events = []
     for col in collections:
         dated = event_date(col, overrides)
@@ -184,28 +220,30 @@ def build_events(collections, metric, overrides=None, subject=None):
             continue
         sort_key, date_display = dated
 
-        totals = {s: 0.0 for s in tr.STAGES}
+        totals = {s: 0.0 for s in parts}
         n = 0
         for r in col.get("games") or []:
             try:
                 g = tr.compute_game(r, subject=subject)
             except (StopIteration, KeyError, TypeError):
                 continue  # not the subject's game, or no usable analysis
-            sb = g.get("stage_breakdown")
+            sb = g.get(split["key"])
             if not sb or g["mistake_index"] is None:
                 continue
-            for stage in tr.STAGES:
+            for stage in parts:
                 totals[stage] += spec["per_game"](sb, stage)
             n += 1
         if not n:
             continue
         events.append({
             "uuid": col["uuid"],
+            "date": datetime.date(*sort_key),
             "label": event_label(col, overrides),
             "date_display": date_display,
             "sort_key": sort_key,
             "games": n,
-            "values": {s: totals[s] / n for s in tr.STAGES},
+            "by": by,
+            "values": {s: totals[s] / n for s in parts},
             "total": sum(totals.values()) / n,
         })
     # Ties on (year, month) are common — a main event and its final share a date.
@@ -231,25 +269,31 @@ def _wrap(label, width=18):
     return "\n".join(lines[:3])
 
 
-def render(events, metric, out_path, title=None):
+def render(events, metric, out_path, title=None, figsize=None):
     """Draw the stacked bars and write the PNG. Returns out_path, or None."""
     if not events:
         print("No datable, analyzed events — no chart.", file=sys.stderr)
         return None
     spec = METRICS[metric]
 
-    width = max(6.0, 1.45 * len(events) + 1.8)
-    fig, ax = plt.subplots(figsize=(width, 4.6), dpi=200)
+    # Default: wide enough for every bar's caption, sized for an email body.
+    # A page (the PDF write-up) wants a squarer figure, hence the override.
+    natural = max(6.0, 1.45 * len(events) + 1.8)
+    figsize = figsize or (natural, 4.6)
+    # Squeezed below its natural width, level captions run into each other.
+    tilt = figsize[0] < natural
+    fig, ax = plt.subplots(figsize=figsize, dpi=200)
     fig.patch.set_facecolor(SURFACE)
     ax.set_facecolor(SURFACE)
 
     xs = range(len(events))
     bottoms = [0.0] * len(events)
-    for stage in tr.STAGES:
+    split = SPLITS[events[0]["by"]]
+    for stage in split["parts"]:
         vals = [e["values"][stage] for e in events]
         ax.bar(
             xs, vals, bottom=bottoms, width=0.62,
-            color=STAGE_COLORS[stage], label=stage,
+            color=split["colors"][stage], label=stage,
             # A surface-colored edge is the 2px gap between stacked segments:
             # without it, two adjacent blues in the ramp read as one block.
             edgecolor=SURFACE, linewidth=1.6,
@@ -269,9 +313,11 @@ def render(events, metric, out_path, title=None):
     ax.set_xticklabels(
         [f"{_wrap(e['label'])}\n{e['date_display']} · {e['games']}g" for e in events],
         fontsize=8, color=TEXT_SECONDARY,
+        rotation=35 if tilt else 0, ha="right" if tilt else "center",
+        rotation_mode="anchor",
     )
     ax.set_ylabel(spec["ylabel"], fontsize=9, color=TEXT_SECONDARY)
-    ax.set_title(title or spec["title"], fontsize=12, color=TEXT_PRIMARY,
+    ax.set_title(title or f"{spec['title']}, by {split['caption']}", fontsize=12, color=TEXT_PRIMARY,
                  loc="left", pad=14)
     ax.yaxis.set_major_locator(MaxNLocator(nbins=5))
     ax.tick_params(axis="y", labelsize=8, colors=TEXT_SECONDARY, length=0)
@@ -285,7 +331,7 @@ def render(events, metric, out_path, title=None):
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(
         handles[::-1], labels[::-1],  # legend order matches the stack, top-down
-        loc="upper left", bbox_to_anchor=(0, -0.28), ncol=4, frameon=False,
+        loc="upper left", bbox_to_anchor=(0, -0.36 if tilt else -0.28), ncol=len(handles), frameon=False,
         fontsize=8, handlelength=1.0, handleheight=1.0, columnspacing=1.4,
     )
     for text in leg.get_texts():
@@ -297,16 +343,92 @@ def render(events, metric, out_path, title=None):
     return out_path
 
 
+# Below this many games an event's average is mostly noise (a 2-game final can
+# land anywhere), so it is drawn hollow: present, but visibly not to be leaned on.
+SMALL_SAMPLE = 10
+TIMELINE_COLOR = STAGE_COLORS["mid"]
+
+
+def render_timeline(events, metric, out_path, title=None):
+    """One point per event on a real date axis. Returns out_path, or None.
+
+    Points are not joined: a line would draw a trend straight across the
+    2020-21 gap where no events happened. Marker area scales with games played,
+    so a 42-round event outweighs a 2-game final to the eye as it does in fact.
+    """
+    if not events:
+        print("No datable, analyzed events — no chart.", file=sys.stderr)
+        return None
+    spec = METRICS[metric]
+
+    fig, ax = plt.subplots(figsize=(11, 4.8), dpi=200)
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+
+    ymax = max(e["total"] for e in events) * 1.18
+    big = [e for e in events if e["games"] >= SMALL_SAMPLE]
+    near = lambda a, b: a is not b and abs((a["date"] - b["date"]).days) < 150
+    # Caption placement within a cluster of events a few months apart: the
+    # highest point is captioned above, the rest below, and captions sharing a
+    # side are pushed apart horizontally (earlier one to the left).
+    above = {id(e): all(e["total"] >= o["total"] for o in big if near(e, o))
+             for e in big}
+    for e in events:
+        small = e["games"] < SMALL_SAMPLE
+        ax.scatter(
+            e["date"], e["total"], s=18 + 5 * e["games"], zorder=3,
+            facecolor=SURFACE if small else TIMELINE_COLOR,
+            edgecolor=TIMELINE_COLOR, linewidth=1.4,
+        )
+        # Only full events get a caption: the small finals sit a day from their
+        # main event and would bury it in text. They are still in --table.
+        if small:
+            continue
+        up = above[id(e)]
+        mates = [o for o in big if near(e, o) and above[id(o)] == up]
+        ha = ("center" if not mates
+              else "right" if all(e["date"] < o["date"] for o in mates)
+              else "left")
+        ax.annotate(
+            f"{e['label']}  {spec['fmt'](e['total'])}", (e["date"], e["total"]),
+            xytext=(0, 13 if up else -13), textcoords="offset points",
+            ha=ha, va="bottom" if up else "top", fontsize=7, color=TEXT_SECONDARY,
+        )
+
+    ax.set_ylim(0, ymax)
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    ax.set_ylabel(spec["ylabel"], fontsize=9, color=TEXT_SECONDARY)
+    ax.set_title(title or f"{spec['title']}, by event date",
+                 fontsize=12, color=TEXT_PRIMARY, loc="left", pad=14)
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=5))
+    ax.tick_params(labelsize=8, colors=TEXT_SECONDARY, length=0)
+    ax.grid(axis="y", color=GRID, linewidth=0.8)
+    ax.set_axisbelow(True)
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+    ax.spines["bottom"].set_color(GRID)
+    ax.text(0, -0.12, f"Marker area = games played; hollow = fewer than "
+            f"{SMALL_SAMPLE} games (noisy).", transform=ax.transAxes,
+            fontsize=7.5, color=TEXT_SECONDARY)
+
+    os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
+    fig.savefig(out_path, bbox_inches="tight", facecolor=SURFACE)
+    plt.close(fig)
+    return out_path
+
+
 def table_rows(events, metric):
     """The chart's own numbers as markdown — the non-visual reading of the PNG,
     and what an email client that blocks images is left with."""
     spec = METRICS[metric]
+    parts = SPLITS[events[0]["by"]]["parts"] if events else tr.STAGES
     lines = [
-        "| Event | Date | Games | " + " | ".join(s.capitalize() for s in tr.STAGES) + " | Total |",
-        "| --- | --- | ---: | " + " | ".join("---:" for _ in tr.STAGES) + " | ---: |",
+        "| Event | Date | Games | " + " | ".join(s.capitalize() for s in parts) + " | Total |",
+        "| --- | --- | ---: | " + " | ".join("---:" for _ in parts) + " | ---: |",
     ]
     for e in events:
-        cells = " | ".join(spec["fmt"](e["values"][s]) for s in tr.STAGES)
+        cells = " | ".join(spec["fmt"](e["values"][s]) for s in parts)
         lines.append(
             f"| {e['label']} | {e['date_display']} | {e['games']} | {cells} | "
             f"**{spec['fmt'](e['total'])}** |"
@@ -319,14 +441,18 @@ def main():
     ap.add_argument("--snapshot", default=DEFAULT_SNAPSHOT)
     ap.add_argument("--metric", default="mistake-index", choices=sorted(METRICS))
     ap.add_argument("--out", default=DEFAULT_OUT)
+    ap.add_argument("--kind", default="bars", choices=["bars", "timeline"])
+    ap.add_argument("--by", default="stage", choices=sorted(SPLITS),
+                    help="what each bar is stacked by")
     ap.add_argument("--title")
     ap.add_argument("--table", action="store_true", help="print the numbers too")
     args = ap.parse_args()
 
     with open(args.snapshot) as f:
         snapshot = json.load(f)
-    events = build_events(snapshot.get("collections") or [], args.metric)
-    path = render(events, args.metric, args.out, title=args.title)
+    events = build_events(snapshot.get("collections") or [], args.metric, by=args.by)
+    draw = render_timeline if args.kind == "timeline" else render
+    path = draw(events, args.metric, args.out, title=args.title)
     if path:
         print(f"Wrote {path} ({len(events)} events)", file=sys.stderr)
     if args.table:

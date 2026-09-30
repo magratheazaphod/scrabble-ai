@@ -55,5 +55,54 @@
   "King's Cup 2019 Finals": {
     "date": "2019-07-08",
     "note": "Not WESPA-rated - the best-of-three final was never rated apart from its main event (tourneyid 817, 2019-07-07). Dated a day after it, which is what the axis needs."
+  },
+  "King's Cup 2016": {
+    "date": "2016-07-03",
+    "wespa_tourneyid": 506,
+    "wespa_name": "31st BRAND's Thailand International Crossword Game King's Cup"
+  },
+  "Cape Town 2016": {
+    "date": "2016-02-07",
+    "wespa_tourneyid": 491,
+    "wespa_name": "City of Cape Town International"
+  },
+  "Causeway 2016": {
+    "date": "2016-12-04",
+    "wespa_tourneyid": 528,
+    "wespa_name": "Causeway Challenge"
+  },
+  "2017 WESPA Championship (Nairobi)": {
+    "date": "2017-11-11",
+    "wespa_tourneyid": 578,
+    "wespa_name": "WESPA Championship",
+    "label": "WESPAC 2017"
+  },
+  "2018 World Scrabble Championship Semifinal": {
+    "date": "2018-10-27",
+    "wespa_tourneyid": 713,
+    "wespa_name": "Mattel WSC Semi-Finals",
+    "note": "Score fingerprint matches main event 710 (its games are in that event's rounds); dated from the Semi-Finals event instead so it sits between QF and Final.",
+    "label": "WSC 2018 SF"
+  },
+  "2018 World Scrabble Championship Quarterfinal": {
+    "date": "2018-10-27",
+    "wespa_tourneyid": 707,
+    "wespa_name": "Mattel WSC Quarter-Finals",
+    "label": "WSC 2018 QF"
+  },
+  "2018 World Scrabble Championship": {
+    "date": "2018-10-26",
+    "wespa_tourneyid": 710,
+    "wespa_name": "World Scrabble Championship",
+    "label": "WSC 2018"
+  },
+  "Hood River 2022": {
+    "date": "2022-02-21",
+    "note": "Not WESPA-rated. CoCo preview posted Mon 2022-02-14; recap describes a Sat-Mon event, i.e. Presidents' Day weekend 2022-02-19..21. https://www.cocoscrabble.org/news/hood-river-2022-recap"
+  },
+  "Austin One-Day Aug '23": {
+    "date": "2023-08-12",
+    "note": "Not WESPA-rated. CoCo recap posted Mon 2023-08-14 says 'Saturday afternoon'; opponent list matches. https://cocoscrabble.org/news/august-2023-tourneys-recap",
+    "label": "Austin 1-Day Aug 2023"
   }
 }

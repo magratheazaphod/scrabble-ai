@@ -131,6 +131,15 @@ def test_invariants(slug, col):
         check(sum(b["turns"] for b in sb.values()) == turns_at_idx,
               f"{who}: every one of the subject's turns lands in exactly one stage")
 
+        # The type split stacks the same bars a different way, so it owes the
+        # same exact sum - including turns it can't classify further.
+        tb = g["type_breakdown"]
+        if g["mistake_index"] is not None:
+            check(abs(sum(b["mistake_index"] for b in tb.values()) - g["mistake_index"]) < 1e-6,
+                  f"{who}: type_breakdown sums to the reported mistake_index")
+        check(sum(b["turns"] for b in tb.values()) == turns_at_idx,
+              f"{who}: every one of the subject's turns lands in exactly one type")
+
         # Bingos, recounted independently off the event log.
         events = history.get("events") or []
         recount = sum(1 for e in events
@@ -479,12 +488,13 @@ def test_skill_graph(fixtures):
     check(sg.event_date(col, ov)[0] < sg.event_date(fin, ov)[0],
           "skill graph: same-month events order by day, not alphabetically")
 
-    # Every metric must be additive across stages, since the chart stacks them.
+    # Every metric must be additive across every split, since the chart stacks them.
     for name in sg.METRICS:
-        events = sg.build_events([dict(fixtures[0][1], uuid="x")], name,
-                                 overrides={"x": {"date": "2020-01"}})
-        check(events and abs(sum(events[0]["values"].values()) - events[0]["total"]) < 1e-9,
-              f"skill graph: '{name}' stacks to its own total")
+        for by in sg.SPLITS:
+            events = sg.build_events([dict(fixtures[0][1], uuid="x")], name,
+                                     overrides={"x": {"date": "2020-01"}}, by=by)
+            check(events and abs(sum(events[0]["values"].values()) - events[0]["total"]) < 1e-9,
+                  f"skill graph: '{name}' by {by} stacks to its own total")
 
 
 def main():
