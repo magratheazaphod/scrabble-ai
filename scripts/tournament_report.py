@@ -16,6 +16,8 @@ import random
 
 import requests
 
+import mistake_types
+
 try:
     import wespa_ratings
 except ImportError:  # optional enrichment — never worth failing a report over
@@ -505,6 +507,17 @@ def game_stage(turn):
 MISTAKE_POINTS = {"SMALL": 0.2, "MEDIUM": 0.5, "LARGE": 1.0, "NO_MISTAKE": 0.0}
 
 
+_PLAYABILITY = None
+
+
+def _playability():
+    """One shared Zyzzyva handle: it loads the quiz history once per process."""
+    global _PLAYABILITY
+    if _PLAYABILITY is None:
+        _PLAYABILITY = mistake_types.Playability()
+    return _PLAYABILITY
+
+
 def stage_breakdown(turns, player_index):
     """Per-stage {mistake_index, win_prob_lost, turns} for one player's turns.
 
@@ -825,6 +838,11 @@ def compute_game(r, subject=None):
         # MISTAKE_POINTS); it is None-free even when the summary is missing, so
         # the skill graph can bar-chart a game the headline figure can't score.
         "stage_breakdown": stage_breakdown(analysis["turns"], jesse_idx),
+        # The same mistake index split by what kind of mistake it was
+        # (scripts/mistake_types.py). Word knowledge needs the local Zyzzyva
+        # databases; without them those turns fall to the other types.
+        "type_breakdown": mistake_types.type_breakdown(
+            history, analysis["turns"], jesse_idx, MISTAKE_POINTS, _playability()),
         "opp_mistake_index": opp_mistake_index,
         "opp_fully_annotated": opp_fully_annotated,
         "jesse_bingos": jesse_bingos,

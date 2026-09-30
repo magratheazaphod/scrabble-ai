@@ -90,7 +90,9 @@ historical error in this repo came from.
 | `gcg_preflight.py` | scan/heal `.gcg` parser-breaking patterns; `--check` to report only |
 | `replace_uploaded_game.py` | swap a re-uploaded game in for a defective one across its collections, and comment on the orphan |
 | `tournament_report.py` | all stats/aggregation/report rendering (single source of truth, shared with the email job) |
-| `skill_graph.py` | the cross-event skill graph: one stacked bar per event, chronological, split by game stage. Metric registry, so it is not mistake-index-only |
+| `skill_graph.py` | the cross-event skill graph: one stacked bar per event, chronological, split by game stage (`--by type` for mistake type; `--kind timeline` for a true date axis). Metric registry, so it is not mistake-index-only |
+| `mistake_types.py` | classify each BestBot mistake as phony / word knowledge / missed bingo / endgame / strategy / offense / defense; `--impact` for win% cost per type |
+| `zyzzyva_export.py` | build the slim Zyzzyva playability + quiz export the word-knowledge check reads; `--publish` refreshes the private `zyzzyva-data` repo CI checks out. Collins-derived: never commit it here |
 | `test_report.py` | regression gate - run after any `tournament_report.py` edit. Semantic invariants + structural render checks over `tests/fixtures/`; pins no prose and no numbers |
 | `make_test_fixtures.py` | rebuild the committed, anonymized `tests/fixtures/` corpus from `data/golden-snapshot.json` |
 | `fetch_woogles_snapshot.py` | harvest collections/games into `data/woogles-snapshot.json` |

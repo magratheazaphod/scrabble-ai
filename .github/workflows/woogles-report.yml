@@ -46,6 +46,25 @@ jobs:
 
       - run: pip install -r requirements.txt
 
+      # The word-knowledge mistake type (scripts/mistake_types.py) needs word
+      # playability and Jesse's quiz record, derived from Collins Zyzzyva data
+      # that can't live in this public repo. It comes from the private
+      # zyzzyva-data repo via a read-only deploy key; refresh it locally with
+      # `scripts/zyzzyva_export.py --publish`. Under data/ (gitignored) so no
+      # commit step here can pick it up. Never fails the report: without it the
+      # word-knowledge type just goes unfilled.
+      - name: Check out private Zyzzyva knowledge export
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: magratheazaphod/zyzzyva-data
+          ssh-key: ${{ secrets.ZYZZYVA_DATA_DEPLOY_KEY }}
+          path: data/zyzzyva-data
+      - name: Point mistake_types at the export
+        run: |
+          f="$GITHUB_WORKSPACE/data/zyzzyva-data/zyzzyva-knowledge.sqlite"
+          if [ -f "$f" ]; then echo "ZYZZYVA_KNOWLEDGE=$f" >> "$GITHUB_ENV"; else echo "::warning::No Zyzzyva export - word-knowledge mistakes will be unclassified"; fi
+
       - name: Fetch send-status and rate-limit markers from woogles-data branch
         run: |
           mkdir -p data

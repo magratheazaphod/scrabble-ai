@@ -29,6 +29,8 @@ CENTRAL = ZoneInfo("America/Chicago")
 SENT_MARKER_PATH = "data/last-report-sent.txt"
 SKILL_GRAPH_PATH = "reports/skill-graph.png"
 SKILL_GRAPH_CID = "skill-graph"
+TYPE_GRAPH_PATH = "reports/skill-graph-types.png"
+TYPE_GRAPH_CID = "skill-graph-types"
 DRY_RUN = os.environ.get("DRY_RUN", "").strip() == "1"
 
 HTML_TEMPLATE = """\
@@ -180,7 +182,8 @@ def build_pending_note(pending):
 
 
 def build_skill_graph_section(collections, subject=None):
-    """The cross-event skill graph: "## Skill Graph" markdown, or "".
+    """The cross-event skill graphs: ("## Skill Graph" markdown, [(cid, png)]),
+    or ("", []). One chart split by game stage, one by mistake type.
 
     Rendered once per run over every collection in the snapshot, not per
     collection — the whole point is the comparison between events. The markdown
@@ -192,19 +195,37 @@ def build_skill_graph_section(collections, subject=None):
     try:
         events = sg.build_events(collections, "mistake-index", subject=subject)
         if not events:
-            return ""
+            return "", []
         if not sg.render(events, "mistake-index", SKILL_GRAPH_PATH):
-            return ""
-        return (
+            return "", []
+        md = (
             "## Skill Graph\n\n"
             f"![Mistake index per game by event and game stage](cid:{SKILL_GRAPH_CID})\n\n"
             + sg.table_rows(events, "mistake-index")
             + "\n\nMistake index averaged per game, so events of different lengths compare;"
             " each bar is split by the stage of the game the mistakes came from."
         )
+        images = [(SKILL_GRAPH_CID, SKILL_GRAPH_PATH)]
     except Exception as e:  # noqa: BLE001 — the chart is a bonus, not the report
         print(f"Skill graph unavailable: {e}", file=sys.stderr)
-        return ""
+        return "", []
+    # The same bars split by kind of mistake (scripts/mistake_types.py). Its own
+    # try: losing this chart must not cost the stage chart above.
+    try:
+        events = sg.build_events(collections, "mistake-index", subject=subject, by="type")
+        if events and sg.render(events, "mistake-index", TYPE_GRAPH_PATH):
+            md += (
+                "\n\n### By mistake type\n\n"
+                f"![Mistake index per game by event and mistake type](cid:{TYPE_GRAPH_CID})\n\n"
+                + sg.table_rows(events, "mistake-index")
+                + "\n\nThe same totals, split by what kind of mistake each was: phony"
+                " challenged off, word knowledge, missed bingo, endgame, strategy (win% lost"
+                " beyond what equity explains), and offense or defense judgment."
+            )
+            images.append((TYPE_GRAPH_CID, TYPE_GRAPH_PATH))
+    except Exception as e:  # noqa: BLE001
+        print(f"Mistake-type graph unavailable: {e}", file=sys.stderr)
+    return md, images
 
 
 def send_email(body, recipient, subject, inline_images=()):
@@ -370,7 +391,8 @@ def main():
     # The skill graph leads: it is the one cross-event view in the email, and the
     # question it answers ("am I getting better, and where") is the one worth
     # asking before reading any single tournament's tables.
-    skill_graph_md = build_skill_graph_section(collections, subject=subject_identity)
+    skill_graph_md, skill_graph_images = build_skill_graph_section(
+        collections, subject=subject_identity)
     sections = ([skill_graph_md] if skill_graph_md else []) + report_sections
     body = summary + "\n\n" + "\n\n---\n\n".join(sections) + build_pending_note(pending)
 
@@ -385,7 +407,7 @@ def main():
 
     print(f"Sending email to {recipient}...", file=sys.stderr)
     send_email(body, recipient, email_subject,
-               inline_images=[(SKILL_GRAPH_CID, SKILL_GRAPH_PATH)] if skill_graph_md else [])
+               inline_images=skill_graph_images)
 
     if one_off:
         print("Done.", file=sys.stderr)

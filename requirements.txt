@@ -4,3 +4,4 @@ markdown
 gspread
 google-auth
 matplotlib
+wordfreq
