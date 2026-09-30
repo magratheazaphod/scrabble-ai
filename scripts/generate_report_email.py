@@ -29,8 +29,31 @@ CENTRAL = ZoneInfo("America/Chicago")
 SENT_MARKER_PATH = "data/last-report-sent.txt"
 SKILL_GRAPH_PATH = "reports/skill-graph.png"
 SKILL_GRAPH_CID = "skill-graph"
-TYPE_GRAPH_PATH = "reports/skill-graph-types.png"
-TYPE_GRAPH_CID = "skill-graph-types"
+
+# The charts after the first, each (cid, heading, alt text, metric, split, kind,
+# whether to print its table, caption). All read the same per-event records;
+# the first chart's table already carries every event's mistake-index total,
+# so the timeline doesn't repeat it.
+EXTRA_GRAPHS = (
+    ("skill-timeline", "On a real date axis",
+     "Mistake index per game by event, on a date axis",
+     "mistake-index", "stage", "timeline", False,
+     "The same per-event totals as the table above, placed by when each event was"
+     " played. Marker area is games played; hollow markers are events with fewer"
+     " than 10 games, whose averages are noisy."),
+    ("skill-graph-types", "By mistake type",
+     "Mistake index per game by event and mistake type",
+     "mistake-index", "type", "bars", True,
+     "The same totals, split by what kind of mistake each was: phony challenged"
+     " off, word knowledge, missed bingo, endgame, strategy (win% lost beyond what"
+     " equity explains), and offense or defense judgment."),
+    ("skill-graph-types-win", "Win % lost, by mistake type",
+     "Win probability lost per game by event and mistake type",
+     "win-pct-lost", "type", "bars", True,
+     "What each kind of mistake cost in win probability. Endgame turns are judged"
+     " by BestBot in spread, not win%, so that segment is structurally near zero"
+     " here - it does not mean the endgames were played well."),
+)
 DRY_RUN = os.environ.get("DRY_RUN", "").strip() == "1"
 
 HTML_TEMPLATE = """\
@@ -183,7 +206,7 @@ def build_pending_note(pending):
 
 def build_skill_graph_section(collections, subject=None):
     """The cross-event skill graphs: ("## Skill Graph" markdown, [(cid, png)]),
-    or ("", []). One chart split by game stage, one by mistake type.
+    or ("", []). The stage-split bars first, then EXTRA_GRAPHS.
 
     Rendered once per run over every collection in the snapshot, not per
     collection — the whole point is the comparison between events. The markdown
@@ -209,22 +232,19 @@ def build_skill_graph_section(collections, subject=None):
     except Exception as e:  # noqa: BLE001 — the chart is a bonus, not the report
         print(f"Skill graph unavailable: {e}", file=sys.stderr)
         return "", []
-    # The same bars split by kind of mistake (scripts/mistake_types.py). Its own
-    # try: losing this chart must not cost the stage chart above.
-    try:
-        events = sg.build_events(collections, "mistake-index", subject=subject, by="type")
-        if events and sg.render(events, "mistake-index", TYPE_GRAPH_PATH):
-            md += (
-                "\n\n### By mistake type\n\n"
-                f"![Mistake index per game by event and mistake type](cid:{TYPE_GRAPH_CID})\n\n"
-                + sg.table_rows(events, "mistake-index")
-                + "\n\nThe same totals, split by what kind of mistake each was: phony"
-                " challenged off, word knowledge, missed bingo, endgame, strategy (win% lost"
-                " beyond what equity explains), and offense or defense judgment."
-            )
-            images.append((TYPE_GRAPH_CID, TYPE_GRAPH_PATH))
-    except Exception as e:  # noqa: BLE001
-        print(f"Mistake-type graph unavailable: {e}", file=sys.stderr)
+    # Each further chart gets its own try: losing one must not cost the others.
+    for cid, heading, alt, metric, by, kind, table, caption in EXTRA_GRAPHS:
+        try:
+            events = sg.build_events(collections, metric, subject=subject, by=by)
+            draw = sg.render_timeline if kind == "timeline" else sg.render
+            path = f"reports/{cid}.png"
+            if events and draw(events, metric, path):
+                md += (f"\n\n### {heading}\n\n![{alt}](cid:{cid})\n\n"
+                       + (sg.table_rows(events, metric) + "\n\n" if table else "")
+                       + caption)
+                images.append((cid, path))
+        except Exception as e:  # noqa: BLE001
+            print(f"{heading} graph unavailable: {e}", file=sys.stderr)
     return md, images
 
 
