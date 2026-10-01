@@ -91,6 +91,11 @@
   "season_id": "6a24cd32-eb1b-4d23-be96-9e02351e533a",
   "season_number": 23,
   "seeds": {
+   "JGeK9VsQEC": {
+    "opponent": "mootmound",
+    "rating": 1523.248178542285,
+    "seed": 15
+   },
    "JqcT5oNEKa": {
     "opponent": "K2O",
     "rating": 1637.422419444021,
@@ -98,7 +103,7 @@
    },
    "NFbmBX3ntS": {
     "opponent": "eideticeve",
-    "rating": 1803.5633390281057,
+    "rating": 1807.5730552568623,
     "seed": 2
    },
    "Wmy2opnTVD": {
@@ -108,7 +113,7 @@
    },
    "jwM5LbwpR9": {
     "opponent": "TeddyJohnny",
-    "rating": 1580.67316444253,
+    "rating": 1571.0103171283195,
     "seed": 11
    },
    "kHnrybXHFK": {
