@@ -91,15 +91,20 @@
   "season_id": "6a24cd32-eb1b-4d23-be96-9e02351e533a",
   "season_number": 23,
   "seeds": {
+   "5ayfD28XYM": {
+    "opponent": "jaygeekay",
+    "rating": 1545.460930077164,
+    "seed": 12
+   },
    "JGeK9VsQEC": {
     "opponent": "mootmound",
-    "rating": 1539.168190248921,
-    "seed": 13
+    "rating": 1531.2141885374615,
+    "seed": 15
    },
    "JqcT5oNEKa": {
     "opponent": "K2O",
     "rating": 1644.8328161593406,
-    "seed": 6
+    "seed": 7
    },
    "NFbmBX3ntS": {
     "opponent": "eideticeve",
@@ -128,23 +133,23 @@
    },
    "qWSGuy39Ex": {
     "opponent": "Catie",
-    "rating": 1520.6595611678106,
-    "seed": 15
+    "rating": 1541.2166687975766,
+    "seed": 13
    },
    "thohTdbfbx": {
     "opponent": "LoveLetters",
-    "rating": 1617.139245667053,
+    "rating": 1625.4317202928469,
     "seed": 9
    },
    "xcUFzpCprg": {
     "opponent": "CynicalAd",
-    "rating": 1633.7751299740673,
-    "seed": 7
+    "rating": 1648.0389912317148,
+    "seed": 6
    },
    "xqMdduex4c": {
     "opponent": "Douglas2388",
-    "rating": 1547.6233466355604,
-    "seed": 12
+    "rating": 1532.5909003050388,
+    "seed": 14
    },
    "yeAogkZvng": {
     "opponent": "auricle",
