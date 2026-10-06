@@ -94,6 +94,11 @@ so a `none` from WESPA plus an empty cross-tables page is normal for them.
 - **Read the raw HTML** (`curl` it and strip tags), not a summarizing fetch. The
   results tables are plain HTML, and a summary can blur two events that happen
   to share a line (Jesse went 10-4 +688 at both Austin 2023 and Austin 2025).
+- **Recaps under `/news/` quote individual game scores and big plays.** Use them
+  when the totals disagree. Austin 2023 was off by a whole win because one GCG
+  had the nicknames swapped. Tell-tale: Jesse's side carries full 7-tile racks,
+  and the opponent's side only the tiles played. Nicknames also vary ("Dr Bing"
+  is Dave Wiegand).
 - Record the source in `.github/event-dates.json` as `"coco_url"` beside the date.
 
 ## The rest of the CLI
