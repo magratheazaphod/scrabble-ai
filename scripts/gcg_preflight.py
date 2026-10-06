@@ -5,16 +5,12 @@ Detects the failure modes that break the Woogles ImportGCG parser and, where
 possible, heals them automatically. Verified against the live API 2026-07-06
 (see .claude/skills/gcg-upload/SKILL.md for the full findings).
 
-Issues handled:
+Issues handled (numbering kept stable; heal 1 was retired):
 
-1. challenge-before-final-bonus (HEALED): a trailing "(challenge) +N" bonus
-   line immediately before the final going-out bonus line triggers a liwords
-   server bug — ImportGCG returns 200 but the game is stuck permanently
-   unfinished and blocks all further imports on the account. Heal: move the
-   challenge line to just before that player's final play, adjusting
-   cumulative scores. This preserves the true final score (verified: the
-   server recomputes end-rack points from the leftover tiles, so folding the
-   challenge points into the final bonus line silently loses them).
+1. (retired 2026-10-06) challenge-before-final-bonus: a trailing
+   "(challenge) +N" line just before the going-out bonus used to leave the
+   import stuck unfinished (liwords#1350). Fixed server-side by liwords#1983
+   and confirmed live, so such files now upload as written.
 
 2. played-through letters written literally (HEALED): some transcriptions
    (e.g. NSC '15 finals, NSC 2010 annotated games) write the full word
@@ -31,8 +27,7 @@ Issues handled:
 4. placeholder rack on a challenge line (HEALED): some exports write
    ">Nick: UNKNOWN (challenge) +5 CUM". ImportGCG reads UNKNOWN as tiles and
    fails with "tried to add a tile (U) that is not in the bag", leaving a stuck
-   unfinished game behind. Heal: empty the rack field. Runs before heal 1,
-   whose pattern only matches the rackless form.
+   unfinished game behind. Heal: empty the rack field.
 
 5. Detection only (flagged, no heal): endgame-line rack/sign mismatch (empty
    rack + negative score, or populated rack + positive score), files over the
@@ -67,9 +62,6 @@ PLAY_RE = re.compile(
     r'(?P<word>[A-Za-z.]+)\s+\+(?P<score>\d+)(?P<rest>.*)$')
 # ">Nick: RACK -- -N CUM" — withdrawn (successfully challenged) play
 WITHDRAWN_RE = re.compile(r'^>(?P<nick>[^:]+):\s+\S+\s+--\s+-\d+')
-# ">Nick:  (challenge) +N CUM"
-CHALLENGE_RE = re.compile(
-    r'^>(?P<nick>[^:]+):\s+\(challenge\)\s+\+(?P<bonus>\d+)\s+(?P<cum>\d+)\s*$')
 # ">Nick: [RACK] (LEFTOVER) +/-N CUM" — going-out bonus (empty rack, +N) or
 # six-scoreless penalty (populated rack, -N); "+-N" is server-tolerated
 END_RE = re.compile(
@@ -149,54 +141,6 @@ def heal_playthrough(lines):
     return out, changed
 
 
-def heal_challenge_before_final(lines):
-    """Move a trailing challenge-bonus line before the player's final play.
-
-    Returns (new_lines, description) or (lines, None) if the pattern is absent.
-    Raises Unhealable if the pattern is present but can't be safely rewritten.
-    """
-    events = [i for i, l in enumerate(lines) if MOVE_LINE_RE.match(l)]
-    if len(events) < 3:
-        return lines, None
-    last, second = lines[events[-1]], lines[events[-2]]
-    m_end = END_RE.match(last)
-    m_chal = CHALLENGE_RE.match(second)
-    if not (m_end and m_chal):
-        return lines, None
-    nick = m_chal.group('nick').strip()
-    if m_end.group('nick').strip() != nick:
-        raise Unhealable('trailing challenge and final bonus belong to different players')
-    bonus = int(m_chal.group('bonus'))
-    # find the player's final play (the move the challenge bonus came from)
-    play_idx = None
-    for i in reversed(events[:-2]):
-        pm = PLAY_RE.match(lines[i])
-        if pm and pm.group('nick').strip() == nick:
-            play_idx = i
-            play_m = pm
-            break
-        if lines[i].startswith(f'>{nick}:') or lines[i].startswith(f'>{m_chal.group("nick")}:'):
-            raise Unhealable(f'unexpected event for {nick} before trailing challenge: '
-                             f'{lines[i].strip()}')
-    if play_idx is None:
-        raise Unhealable(f'no final play found for {nick} before trailing challenge')
-    tail = play_m.group('rest')
-    cum_m = re.match(r'\s+(\d+)\s*$', tail)
-    if not cum_m:
-        raise Unhealable(f'final play line has no cumulative score: {lines[play_idx].strip()}')
-    play_cum = int(cum_m.group(1))
-    play_score = int(play_m.group('score'))
-    prev_cum = play_cum - play_score
-    new_challenge = f'>{nick}:  (challenge) +{bonus} {prev_cum + bonus}\n'
-    new_play = (lines[play_idx][:play_m.start('rest')]
-                + f' {play_cum + bonus}' + ('\n' if lines[play_idx].endswith('\n') else ''))
-    out = list(lines)
-    del out[events[-2]]  # drop trailing challenge line
-    out[play_idx:play_idx + 1] = [new_challenge, new_play]
-    return out, (f'moved trailing "(challenge) +{bonus}" before final play '
-                 f'(true final score preserved)')
-
-
 def scan_file(path):
     """Return (issues, healed_lines_or_None). issues: list of (kind, detail, healed?)."""
     issues = []
@@ -259,15 +203,6 @@ def scan_file(path):
         issues.append(('placeholder-challenge-rack',
                        f'{n_unknown} "UNKNOWN (challenge)" line(s) given an empty rack', True))
         did_heal = True
-
-    try:
-        healed2, desc = heal_challenge_before_final(healed)
-        if desc:
-            healed = healed2
-            issues.append(('challenge-before-final-bonus', desc, True))
-            did_heal = True
-    except Unhealable as e:
-        issues.append(('challenge-before-final-bonus', f'UNHEALABLE: {e}', False))
 
     try:
         healed2, n = heal_playthrough(healed)

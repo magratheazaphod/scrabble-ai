@@ -99,6 +99,11 @@ def verify(path, lex):
     for i, e in enumerate(events):
         nick, typ = e['nick'], e['type']
         prev = cums.get(nick, 0)
+        # imports fine, but BestBot fails the whole analysis on it, and a
+        # finished game can't be fixed in place (WSC '18 Rd 1, 2026-10)
+        if len(e.get('rack') or '') > 7:
+            errors.append(f"line {e['line']}: rack {e['rack']} has {len(e['rack'])} tiles, max is 7 "
+                          "(BestBot analysis fails on it)")
         if typ == 'withdrawal':
             if nick not in last_play:
                 errors.append(f"line {e['line']}: withdrawal (--) with no preceding play")
@@ -169,7 +174,13 @@ def verify(path, lex):
                                   "(negative = six-pass penalty format, which needs the rack repeated)")
             if typ == 'endrack_penalty' and e['score'] >= 0:
                 errors.append(f"line {e['line']}: rack-repeated endgame line must be negative")
-            if typ == 'exchange' and Counter(e['exchanged'].upper()) - Counter(e['rack'].upper()):
+            # "-N" (a count, tiles unknown) is legal: macondo's gcgio takes the
+            # first N rack tiles. It only has to fit on the rack.
+            if typ == 'exchange' and e['exchanged'].isdigit():
+                if int(e['exchanged']) > len(e['rack']):
+                    errors.append(f"line {e['line']}: exchanged {e['exchanged']} tiles from "
+                                  f"a {len(e['rack'])}-tile rack {e['rack']}")
+            elif typ == 'exchange' and Counter(e['exchanged'].upper()) - Counter(e['rack'].upper()):
                 errors.append(f"line {e['line']}: exchanged tiles {e['exchanged']} not in "
                               f"declared rack {e['rack']}")
             if typ in ('pass', 'exchange') and e['score'] != 0:

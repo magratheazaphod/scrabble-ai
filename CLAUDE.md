@@ -17,7 +17,10 @@ this file and do not repeat it.
   recorded name isn't obviously his. Use the **CSW edition current at the time of
   play**, not today's: CSW15 / CSW19 / CSW21 / CSW24. For practice games, CSW21
   before 2025-01-01 and CSW24 after. Codes are short forms (`CSW21`, not
-  `CSW2021`; the long form 500s with "lexicon file not found").
+  `CSW2021`; the long form 500s with "lexicon file not found"). **Woogles has
+  nothing older than CSW15** (live since 2026-09-19), so games played under
+  CSW07/CSW12 (2010 to mid-2015) cannot be uploaded yet - never substitute a
+  later edition.
 - **Never trust your own sense of whether a word is valid.** Scrabble lexica
   contain thousands of words that look wrong and exclude things that look right.
   Always check the list - `/lexicon-lookup`. This is a standing instruction, not
@@ -70,6 +73,10 @@ live service.
   reaches a tracker row or a report. A short rack still analyzes "successfully",
   which freezes the meaningless result forever. Games #91/#92 are permanently
   un-analyzable for exactly this reason.
+- **Read the live collection before filling a "missing" round.**
+  `data/woogles-snapshot.json` only carries games with a usable analysis, so a
+  game that is uploaded but pending or FAILED looks absent there. Trusting it
+  produced an undeletable duplicate of WSC '18 Rd 1 (2026-10-06).
 - **An unterminated GCG imports as a stuck unfinished game** that blocks *all*
   further `ImportGCG` calls on the account until deleted. Unfinished games are
   deletable; finished ones aren't.

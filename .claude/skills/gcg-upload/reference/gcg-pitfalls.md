@@ -33,27 +33,19 @@ no edit is needed. Authoritative spec: <https://www.poslfit.com/scrabble/gcg/>.
 When editing, only touch the rack field and the parenthetical/sign - never the
 scores or moves.
 
-## The challenge-before-final-bonus bug
+## The challenge-before-final-bonus bug (fixed - liwords#1983)
 
-If the going-out bonus line is immediately preceded by a mid-game
-`(challenge) +N` bonus line, `ImportGCG` returns 200 with a `game_id` but the
-game is server-side broken: permanently stuck "unfinished" (`GetGameHistory`
-returns "please wait until the game is over to download GCG"), and it **blocks
-all further `ImportGCG` calls on the account** with "please finish or delete your
-unfinished games before starting a new one" until deleted.
+A going-out play followed by a trailing `(challenge) +N` line and then the
+going-out bonus used to import as a game stuck "unfinished" that blocked every
+further `ImportGCG` on the account (liwords#1350, found 2026-07-03 on WESPAC
+2023 Round 13). liwords#1983 fixed it server-side. **Confirmed live 2026-10-06**:
+Austin '23 Rd 5 imported unhealed, finished, with the challenge event kept in
+order and the exact 420-450 final. Upload these files as written.
 
-This is a genuine liwords bug (`pkg/omgwords/service.go` - the dummy-terminal-pass
-insertion is skipped specifically when the event before `END_RACK_PTS` is
-`CHALLENGE_BONUS`), not fixable via lexicon/rules params. Confirmed 2026-07-03,
-WESPAC 2023 Round 13.
-
-**Correct heal (applied automatically by the preflight scanner):** *move* the
-trailing `(challenge) +N` line to just before that player's final play, adjusting
-cumulatives. The game then finishes with the true final score.
-
-**Do NOT fold the points into the final bonus line.** The server *recomputes*
-end-rack points from the leftover tiles and silently discards the extra -
-verified: a folded `+17` came back as `+12`, final 415 instead of the true 420.
+The preflight used to work around it by moving the challenge line before the
+player's final play; that heal is retired. The 9 games uploaded in that healed
+form were re-uploaded unhealed and swapped into their collections the same
+day, so no live game carries the moved line any more.
 
 If you hit `"game not found"` (400) on `RequestAnalysis`/`GetAnalysisStatus` for
 a game_id that *is* listed in a collection, check `GetGameHistory` for "no rows in
@@ -80,7 +72,7 @@ and replace it once a working game_id exists.
   the probe deletes it.
 
 Full-archive scan, 2026-07-06: 2,421 files → 2,296 clean, 45 auto-healed (31
-challenge-before-final-bonus + play-through rewrites), 80 flagged unterminated
+challenge-before-final-bonus, since retired, + play-through rewrites), 80 flagged unterminated
 (including the 20 casual 2010 blitz files, which also omit cumulative scores and
 won't parse at all).
 
@@ -92,6 +84,15 @@ matching the GCG; the other 2 (`Manhattan Mar '19 Rd 3 Kurt`, `Niagara '18 Rd 1
 Caroline Polak Scowcroft`) have pre-existing rack/tile transcription defects that
 fail identically before healing and need manual correction.
 
+## Count-only exchanges (`-4`) are fine
+
+`>Nick: RACK -4 +0 CUM` (a count, tiles unknown) parses: macondo's `gcgio`
+treats a numeric exchange as the first N tiles of the rack. `verify_gcg.py`
+accepts it as long as N fits the rack (before 2026-10-06 it wrongly failed ~48
+archive files on this). Harmless for analysis when it's the opponent's exchange,
+which it nearly always is; on Jesse's own turn BestBot would judge an exchange of
+the wrong tiles, so recover the real tiles if the record has them.
+
 ## Racks with more than 7 tiles
 
 A `>Player: RACK POS WORD +score cum` line whose rack field has **more than 7
@@ -100,6 +101,10 @@ it - `GetAnalysisStatus` returns `FAILED` with e.g. `turn N: rack
 "ADEEEILRSXY" has 11 tiles, max is 7`. That blocks the game from ever completing
 and, since the report pipeline defers a collection until every game is
 analysis-complete, silently drops the whole collection from the daily report.
+
+`verify_gcg.py` fails these since 2026-10-06, so they no longer reach an upload;
+the archive scan that day found 21 such files (WSC '18 Rd 1 had already gone up
+and FAILED).
 
 **The played tiles are always a subset of the true rack, so the play tells you
 what the rack should have been.** Cleanest case: when that turn's move is a bingo
@@ -183,7 +188,8 @@ POST {BASE}/omgwords_service.GameEventService/ImportGCG
 
 # 2. Find or create the collection
 POST {BASE}/collections_service.CollectionsService/GetUserCollections
-{'user_uuid': '', 'limit': 100, 'offset': 0}     # empty uuid = authenticated user
+{'user_uuid': '', 'limit': 50, 'offset': 0}      # empty uuid = authenticated user
+# limit > 50 silently becomes 20 (pkg/collections/service.go) - page at 50 until a short page
 POST {BASE}/collections_service.CollectionsService/CreateCollection
 {'title': tournament_title, 'description': '', 'public': True}
 # → {"collection_uuid": "..."}

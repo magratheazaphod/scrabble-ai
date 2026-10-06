@@ -54,7 +54,7 @@ unfinished game that blocks all further imports on the account until deleted.
 ```bash
 python3 scripts/woogles_upload.py "path/to/game.gcg" --lexicon CSW21 \
     --collection "Austin One-Day Aug '23" --chapter "Round 4 - JD vs Becky Dyer" \
-    [--comment "..."] [--create-collection] [--dry-run] [--cleanup]
+    [--comment "..."] [--create-collection] [--slot N] [--dry-run] [--cleanup]
 ```
 
 One script does the whole tail: preflight → `ImportGCG` → verify the game
@@ -66,6 +66,12 @@ defect, pass `--verify-warn-only`.
 - `--create-collection` is required to create a new one; **confirm public/private
   with Jesse for a brand-new collection** (existing ones default to public).
 - `--cleanup` deletes stuck unfinished games (it cannot touch finished ones).
+- `--slot N` puts the game at position N instead of appending it - for filling
+  in a round that was skipped at upload time.
+- **Before filling a gap, read the live collection (`GetCollection`), not
+  `data/woogles-snapshot.json`.** The snapshot leaves out games whose analysis
+  isn't usable yet (FAILED, pending), so a round can look missing when it's
+  there. On 2026-10-06 that produced an undeletable duplicate of WSC '18 Rd 1.
 - Chapter titles: one consistent convention per tournament,
   `Round N - JD vs <Opponent>`. For the Curley collection, follow the tracker
   convention instead (`/curley-tracker`).

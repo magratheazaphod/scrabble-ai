@@ -9,7 +9,7 @@ Usage:
       [--collection "James Curley practice games"] [--create-collection] \
       [--chapter "2026-07-12 - JD vs James Curley (Game 92)"] \
       [--comment "Reconstructed from ..."] \
-      [--dry-run] [--cleanup]
+      [--slot N] [--dry-run] [--cleanup]
 
 - --lexicon is REQUIRED and cannot be changed after import (finished games
   cannot be deleted). Jesse's own games are ALWAYS CSW — the edition current
@@ -22,6 +22,8 @@ Usage:
   cannot destroy a finished game.
 - --collection must already exist unless --create-collection is also given
   (new collections are created public; confirm with Jesse for a new one).
+- --slot N: put the game at 1-based position N in the collection instead of
+  appending it (for a round that was skipped and is being filled in later).
 - Exit 0 only when the game is imported AND verified finished server-side.
 
 Auth: WOOGLES_API_KEY in .env at the repo root (same as tournament-analysis).
@@ -99,6 +101,8 @@ def main():
     ap.add_argument('--comment')
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--cleanup', action='store_true')
+    ap.add_argument('--slot', type=int,
+                    help='1-based position in the collection (default: append at the end)')
     ap.add_argument('--otb', action='store_true',
                     help='this upload came from the /otb-scrabble-upload photo pipeline — '
                          'record it in data/otb-upload-log.jsonl. Only reconstructed games '
@@ -113,6 +117,8 @@ def main():
 
     if args.collection and not args.chapter:
         sys.exit('--collection requires --chapter')
+    if args.slot is not None and (not args.collection or args.slot < 1):
+        sys.exit('--slot needs --collection and a position >= 1')
 
     # 1. preflight (parser-breaking pattern scan)
     pf = subprocess.run([sys.executable, os.path.join(REPO, 'scripts', 'gcg_preflight.py'),
@@ -234,8 +240,15 @@ def main():
 
     # 5. collection
     if args.collection:
-        cols = rpc(hdrs, 'collections_service.CollectionsService/GetUserCollections',
-                   {'user_uuid': '', 'limit': 100, 'offset': 0}).get('collections', [])
+        # the server silently caps any limit over 50 to 20, so page at 50
+        cols, offset = [], 0
+        while True:
+            batch = rpc(hdrs, 'collections_service.CollectionsService/GetUserCollections',
+                        {'user_uuid': '', 'limit': 50, 'offset': offset}).get('collections', [])
+            cols.extend(batch)
+            if len(batch) < 50:
+                break
+            offset += 50
         match = next((c for c in cols if c['title'] == args.collection), None)
         if not match:
             if not args.create_collection:
@@ -249,6 +262,14 @@ def main():
             {'collection_uuid': match['uuid'], 'game_id': game_id,
              'chapter_title': args.chapter, 'is_annotated': True})
         print(f'added to {args.collection!r} as {args.chapter!r}')
+        if args.slot is not None:
+            games = rpc(hdrs, 'collections_service.CollectionsService/GetCollection',
+                        {'collection_uuid': match['uuid']}).get('collection', {}).get('games') or []
+            order = [g['game_id'] for g in games if g['game_id'] != game_id]
+            order.insert(min(args.slot, len(order) + 1) - 1, game_id)
+            rpc(hdrs, 'collections_service.CollectionsService/ReorderGames',
+                {'collection_uuid': match['uuid'], 'game_ids': order})
+            print(f'moved to slot {order.index(game_id) + 1}/{len(order)}')
 
     # 6. comment
     if args.comment:
