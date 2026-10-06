@@ -114,5 +114,11 @@
     "date": "2016-07-10",
     "wespa_tourneyid": 458,
     "wespa_name": "Hong Kong Scrabble Challenge - Extra"
+  },
+  "Austin '23": {
+    "date": "2023-04-01",
+    "label": "Austin 2023",
+    "coco_url": "https://www.cocoscrabble.org/tournaments/austin-2023",
+    "note": "CoCo 2nd Annual Austin Tile X-Words, 1-2 Apr 2023. Field and lexicon fit, but the official line is 10-4 +688 while the 14 GCGs sum to 11-3 +1250, and Rd 11 'Dr Bing' is not in the 12-player field (Dave Wiegand is, and appears in no file). Unresolved as of 2026-10-06."
   }
 }

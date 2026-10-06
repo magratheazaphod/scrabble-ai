@@ -21,6 +21,13 @@ this file and do not repeat it.
   nothing older than CSW15** (live since 2026-09-19), so games played under
   CSW07/CSW12 (2010 to mid-2015) cannot be uploaded yet - never substitute a
   later edition.
+- **Three rating bodies.** WESPA (international; `/wespa-tournament-lookup`),
+  NASPA (North America; rates NWL and, separately, CSW; results on
+  cross-tables), and **CoCo, the Collins Coalition** (North American,
+  Collins-only, its own Glicko-2 ratings since 2020; results only on
+  cocoscrabble.org). Most of Jesse's US Collins events since 2020, Austin and
+  Hood River included, are CoCo: on neither WESPA nor cross-tables. Don't call
+  them NASPA events.
 - **Never trust your own sense of whether a word is valid.** Scrabble lexica
   contain thousands of words that look wrong and exclude things that look right.
   Always check the list - `/lexicon-lookup`. This is a standing instruction, not

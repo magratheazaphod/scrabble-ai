@@ -57,8 +57,9 @@ what `scripts/skill_graph.py` reads for its chronological axis.
 It usually means the event genuinely isn't WESPA-rated, which is a real answer,
 not a failure. Two known cases in this archive:
 
-- **Club and one-day events** (`Austin One-Day Aug '23`) - NASPA-rated, so WESPA
-  has nothing. Date it by hand in `.github/event-dates.json`.
+- **CoCo events** - every Austin event (`Austin '23`, `Austin One-Day Aug '23`),
+  Hood River, the 2020 virtual `cure*` events, and most North American Collins
+  play since 2020. See "CoCo events" below.
 - **A playoff that wasn't rated separately** (`King's Cup 2019 Finals`) - the main
   event is rated but the best-of-three final isn't. Date it a day after its parent
   event, which is what the axis needs anyway.
@@ -70,6 +71,30 @@ database, not just Jesse's events:
 python3 scripts/wespa_tournaments.py --search "Causeway"
 python3 scripts/wespa_tournaments.py --search "Open" --country USA --from-date 2023-08-01
 ```
+
+## CoCo events
+
+The **Collins Coalition** (CoCo, <https://www.cocoscrabble.org>) is a third
+organization, parallel to WESPA and NASPA: North American, Collins-only,
+sanctioning and rating its own events since Hood River in February 2020 (about
+30 events a year by 2024). Its events are on neither WESPA nor cross-tables,
+so a `none` from WESPA plus an empty cross-tables page is normal for them.
+
+- **Ratings:** CoCo's own Glicko-2, rated on spread against opponent strength,
+  not just wins. The whole history was recomputed after a fix to the deviation
+  term, so an old pre/post rating quoted elsewhere may not match today's page.
+  Division placement uses the average of a player's CoCo, WESPA and WGPO peak
+  ratings. List at `/ratings`.
+- **Results:** `/results` indexes every event, and each event page is
+  `/tournaments/<slug>` (e.g. `austin-2023`, `austin-april-2024`,
+  `austin-june-2025`). It has the date, final standings (record, spread,
+  pre/post rating) and often a recap post under `/news/`. **There are no
+  round-by-round scores**, so the fingerprint is only the total record and spread.
+  Sum the folder's GCG finals and compare; a match is `likely`, never `certain`.
+- **Read the raw HTML** (`curl` it and strip tags), not a summarizing fetch. The
+  results tables are plain HTML, and a summary can blur two events that happen
+  to share a line (Jesse went 10-4 +688 at both Austin 2023 and Austin 2025).
+- Record the source in `.github/event-dates.json` as `"coco_url"` beside the date.
 
 ## The rest of the CLI
 
