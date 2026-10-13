@@ -481,5 +481,38 @@
   },
   "title": "Collins League - Season 19",
   "username": "magrathean"
+ },
+ "c29206c8-3491-4297-87d4-a3fab33e7d10": {
+  "division_id": "32c90411-1c9b-4b2c-a7fb-470b0440ccf3",
+  "division_number": 9,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "bb637308-ac80-408e-8b4c-ccb029a98121",
+  "season_number": 24,
+  "seeds": {
+   "hR9rEdKfo2": {
+    "opponent": "dang3rous",
+    "rating": 1682.2766329789788,
+    "seed": 5
+   },
+   "iBhwXaa9c2": {
+    "opponent": "TeddyJohnny",
+    "rating": 1573.978034156858,
+    "seed": 9
+   },
+   "ivwUPGuL3n": {
+    "opponent": "LoveLetters",
+    "rating": 1578.6170454368557,
+    "seed": 8
+   },
+   "seufJk2zKN": {
+    "opponent": "ninjasloth",
+    "rating": 1678.9773446795543,
+    "seed": 6
+   }
+  },
+  "title": "Collins League - Season 24",
+  "username": "magrathean"
  }
 }
