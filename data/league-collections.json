@@ -491,25 +491,35 @@
   "season_id": "bb637308-ac80-408e-8b4c-ccb029a98121",
   "season_number": 24,
   "seeds": {
+   "7vWh6fQHen": {
+    "opponent": "Gabzor89",
+    "rating": 1748.1972106408311,
+    "seed": 2
+   },
+   "DGcG9UaK3W": {
+    "opponent": "Catie",
+    "rating": 1544.1365114893429,
+    "seed": 12
+   },
    "hR9rEdKfo2": {
     "opponent": "dang3rous",
     "rating": 1668.5069205145319,
-    "seed": 6
+    "seed": 5
    },
    "iBhwXaa9c2": {
     "opponent": "TeddyJohnny",
     "rating": 1573.978034156858,
-    "seed": 8
+    "seed": 9
    },
    "ivwUPGuL3n": {
     "opponent": "LoveLetters",
-    "rating": 1573.7795032354868,
-    "seed": 9
+    "rating": 1582.6736446272137,
+    "seed": 8
    },
    "seufJk2zKN": {
     "opponent": "ninjasloth",
-    "rating": 1678.9773446795543,
-    "seed": 5
+    "rating": 1667.0806662421744,
+    "seed": 6
    }
   },
   "title": "Collins League - Season 24",
