@@ -491,6 +491,11 @@
   "season_id": "bb637308-ac80-408e-8b4c-ccb029a98121",
   "season_number": 24,
   "seeds": {
+   "2vMEDSi3K8": {
+    "opponent": "kiroro",
+    "rating": 1542.6038164391755,
+    "seed": 13
+   },
    "7vWh6fQHen": {
     "opponent": "Gabzor89",
     "rating": 1748.1972106408311,
@@ -501,6 +506,11 @@
     "rating": 1552.8507701058718,
     "seed": 12
    },
+   "hJhjrTJPQv": {
+    "opponent": "Michel",
+    "rating": 1724.628419889602,
+    "seed": 4
+   },
    "hR9rEdKfo2": {
     "opponent": "dang3rous",
     "rating": 1668.5069205145319,
@@ -508,12 +518,17 @@
    },
    "iBhwXaa9c2": {
     "opponent": "TeddyJohnny",
-    "rating": 1573.978034156858,
-    "seed": 9
+    "rating": 1564.7126880197154,
+    "seed": 11
+   },
+   "iVLHr9y76m": {
+    "opponent": "wajin",
+    "rating": 1732.1509881300133,
+    "seed": 3
    },
    "ivwUPGuL3n": {
     "opponent": "LoveLetters",
-    "rating": 1582.6736446272137,
+    "rating": 1584.2782096798915,
     "seed": 8
    },
    "seufJk2zKN": {
