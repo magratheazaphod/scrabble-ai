@@ -118,6 +118,7 @@ historical error in this repo came from.
 | `wespa_ratings.py` | WESPA OTB ratings/titles: `--refresh` the local cache, `--lookup` a name, `--suggest` unmatched opponents. Owns the transport to wespa.xerafin.net - nothing else opens a connection to that host |
 | `wespa_tournaments.py` | WESPA results database: identify which real tournament a collection is (by score fingerprint, never by name), its date, division, place and round-by-round scores. Fills `.github/event-dates.json` |
 | `wespa_coverage.py` | render `WESPA-COVERAGE.md`: per WESPA-rated event, how many rounds have a `.gcg` in the archive (matched by score, not folder name). Re-run after archiving a tournament |
+| `sync_woogles_archive.py` | mirror every finished game in Jesse's Woogles collections into the `.gcg` archive (`Tournament Games/`, `Practice Games/James Curley/`, `Woogles League/`). Runs in `woogles-report.yml`. Pre-existing files stay canonical; files it created track later Woogles edits. State and per-collection folder overrides: `.github/woogles-archive.json` |
 | `otb_solver.py` | board/scoring/lexicon engine + OTB placement solver. Shared. |
 | `verify_gcg.py` | independent GCG replay verifier - the hard gate on **every** upload, not just OTB |
 | `scripts/otb/` | OTB-only steps: `prep_photos.py`, `check_transcription.py`, `author_gcg.py`, `regression.py` |
@@ -161,6 +162,7 @@ archive (~700 reads, ~2 minutes).
 Tournament Games/<year>/<event>/     .gcg archive, 2010-2025 (+ non-game notes files)
 Practice Games/James Curley/         <N>_<mon><day>_<YY>.gcg, N = tracker Game #
 Practice Games/YYYY-MM-DD <Opp>.gcg  other opponents
+Woogles League/Season <N>/           league games, synced down from Woogles
 board-pictures/                      scoresheet/board photos awaiting reconstruction (gitignored)
 reports/                             generated markdown reports
 scripts/                             all deterministic logic
@@ -175,6 +177,8 @@ data/                                pipeline state and logs (gitignored, local-
   `toughies`, `stats`). A real GCG starts with a `#player1`/`#character-encoding`
   header followed by `>Name:` move lines; those files don't. Never upload one.
 - **Every uploaded game lands on GitHub.** Commit the `.gcg` and push to master.
+  Games annotated directly on Woogles are pulled down by `sync_woogles_archive.py`
+  in the report workflow - no manual download needed.
 - **Never `git add -A` / `git add .`** - `data/`, `.env`, `.secrets/`, and photos
   are gitignored for good reason and a broad add is how they escape.
 - **Don't delete untracked files** without checking `git status` from the start of

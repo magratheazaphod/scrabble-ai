@@ -135,6 +135,27 @@ jobs:
           git diff --cached --quiet || git commit -m "Update report state ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git push origin HEAD:master
 
+      # Games are annotated on Woogles first now, so pull every finished game in
+      # Jesse's collections down into the .gcg archive (state and the
+      # repo-vs-Woogles canonical rule live in .github/woogles-archive.json).
+      # The WESPA coverage table is re-rendered only when the archive changed,
+      # which keeps this step off wespa.xerafin.net on the usual no-op run.
+      - name: Sync Woogles collections into the .gcg archive
+        if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
+        continue-on-error: true
+        env:
+          WOOGLES_API_KEY: ${{ secrets.WOOGLES_API_KEY }}
+        run: |
+          python scripts/sync_woogles_archive.py
+          paths=(.github/woogles-archive.json "Tournament Games" "Practice Games" "Woogles League")
+          if [ -n "$(git status --porcelain -- "${paths[@]}")" ]; then
+            python scripts/wespa_coverage.py || echo "::warning::WESPA coverage not refreshed"
+            git add -- "${paths[@]}" WESPA-COVERAGE.md
+            git commit -m "Sync Woogles collections into the archive ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+            git pull --rebase origin master
+            git push origin HEAD:master
+          fi
+
       - name: Enrich the Curley tracker sheet with fresh analysis
         if: ${{ github.event.inputs.target_username == '' && github.event.inputs.target_collection_uuid == '' }}
         env:

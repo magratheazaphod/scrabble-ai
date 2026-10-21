@@ -1,0 +1,2494 @@
+{
+  "collections": {
+    "0c04dd0f-498b-4bc9-9451-070da386823e": {
+      "folder": "Tournament Games/2019/King's Cup '19",
+      "title": "King's Cup 2019"
+    },
+    "12dd6445-9dfc-4859-b110-6fcd966234b7": {
+      "folder": "Woogles League/Season 20",
+      "title": "Collins League - Season 20"
+    },
+    "15cda101-1891-44a1-a037-a33f6b3e0e16": {
+      "folder": "Woogles League/Season 23",
+      "title": "Collins League - Season 23"
+    },
+    "19a0eadf-f17a-409e-bf32-46543a2fd6fd": {
+      "folder": "Woogles League/Season 18",
+      "title": "Collins League - Season 18"
+    },
+    "1d2f1b9e-d71a-4b7d-9738-2b17f911da3f": {
+      "folder": "Tournament Games/2018/WSC '18/qf",
+      "title": "2018 World Scrabble Championship Quarterfinal"
+    },
+    "1f5498a6-7e3b-4848-af4d-e22c3dcf49e3": {
+      "folder": "Tournament Games/2016/King's Cup 2016",
+      "title": "King's Cup 2016"
+    },
+    "3224c261-c41c-43f6-b202-22ff4caa267f": {
+      "folder": "Tournament Games/2016/Cape Town '16",
+      "title": "Cape Town 2016"
+    },
+    "331d202e-0e1b-4af2-9559-ec30cb9bc928": {
+      "folder": "Tournament Games/2019/NSC '19",
+      "title": "NSC 2019 Final"
+    },
+    "342e1637-8b17-458c-b367-b9b3ba753cbb": {
+      "folder": "Tournament Games/2019/WESPAC '19/Finals",
+      "title": "2019 WESPAC Final"
+    },
+    "38341b8a-a16b-4cd6-96f5-5b4c01864f95": {
+      "folder": "Tournament Games/2023/WESPAC '23",
+      "title": "WESPAC 2023 (Las Vegas)"
+    },
+    "40331217-c0c6-481b-a887-a0b4dae7aeea": {
+      "folder": "Tournament Games/2017/WESPAC '17",
+      "title": "2017 WESPA Championship (Nairobi)"
+    },
+    "47dba05b-b56a-4a26-affb-55e023fb77f8": {
+      "folder": "Tournament Games/2022/Hood River 2022",
+      "title": "Hood River 2022"
+    },
+    "55b29df3-10fd-471b-9e87-135ed5bbb2f6": {
+      "folder": "Practice Games/James Curley",
+      "title": "James Curley practice games"
+    },
+    "56fd9e2f-07d9-4a43-beb9-30e1d432843e": {
+      "folder": "Tournament Games/2019/King's Cup '19",
+      "title": "King's Cup 2019 Finals"
+    },
+    "6233325b-fc7c-4246-ae59-80cbea736000": {
+      "folder": "Tournament Games/2023/Austin '23",
+      "title": "Austin '23"
+    },
+    "6f8e3ff7-89a7-4700-a9b8-a4cc5aef1354": {
+      "folder": "Woogles League/Season 21",
+      "title": "Collins League - Season 21"
+    },
+    "74d2ef6e-711f-4baa-9ac5-eb119cea6fa9": {
+      "folder": "Tournament Games/2016/HK '16",
+      "title": "Hong Kong Challenge 2016"
+    },
+    "7c16ae2b-ec5a-4606-8612-3f2d92f77c64": {
+      "folder": "Tournament Games/2019/WESPAC '19",
+      "title": "WESPAC 2019"
+    },
+    "7c1c6c22-acf1-4475-abb7-a220418b1742": {
+      "folder": "Tournament Games/2018/WSC '18/sf",
+      "title": "2018 World Scrabble Championship Semifinal"
+    },
+    "8a836271-c7eb-45f4-a691-bff211904d45": {
+      "folder": "Woogles League/Season 22",
+      "title": "Collins League - Season 22"
+    },
+    "96e9f89d-348b-47ac-ae43-aeb019c4a96a": {
+      "folder": "Woogles League/Season 19",
+      "title": "Collins League - Season 19"
+    },
+    "a42ad414-5817-421c-a826-863f3a9265e5": {
+      "folder": "Tournament Games/2018/WSC '18",
+      "title": "2018 World Scrabble Championship"
+    },
+    "b2aa32e7-ab1d-45c2-8d59-362eeec37cb1": {
+      "folder": "Tournament Games/2019/NSC '19",
+      "title": "NSC 2019"
+    },
+    "c0709ecf-1a40-4a10-8706-732ab3d5ba75": {
+      "folder": "Tournament Games/2019/NOLA '19",
+      "title": "Crescent City Cup 2019"
+    },
+    "c29206c8-3491-4297-87d4-a3fab33e7d10": {
+      "folder": "Woogles League/Season 24",
+      "title": "Collins League - Season 24"
+    },
+    "cf677d39-81ad-4a59-aec9-227c38340572": {
+      "folder": "Tournament Games/2026/Causeway 2026",
+      "title": "Jesse Day's (abbreviated) Causeway 2026"
+    },
+    "d1212bee-bc38-4f19-8619-6be460686182": {
+      "folder": "Tournament Games/2023/Austin One-Day Aug '23",
+      "title": "Austin One-Day Aug '23"
+    },
+    "e87cdf09-ffc4-477b-ae68-95cc8856e101": {
+      "folder": "Tournament Games/2016/Causeway '16",
+      "title": "Causeway 2016"
+    },
+    "ffe31e07-d5fb-4937-bc08-691958053a8e": {
+      "folder": "Tournament Games/2018/WSC '18/finals",
+      "title": "2018 World Scrabble Championship Finals"
+    }
+  },
+  "games": {
+    "22bVfLHNd4mveexZp3ZTHc": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 22 Dennis Ikekeregor.gcg"
+    },
+    "24D2bjydPV": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/11 Seed 12 - Zainamirmessi vs JD.gcg",
+      "sha1": "b0489a21dc7917a601174d1e4cc2e68eb8050c78"
+    },
+    "24fdNFn2vB": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/03 Seed 4 - Gabzor89 vs JD.gcg",
+      "sha1": "5bbbc27cdff6e570a6c061666a183b2a6027da77"
+    },
+    "2AZYuUoBjsLTCZXJHeNs5H": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 12 Solomon Lephoto.gcg"
+    },
+    "2MCRzM42GgdoLpabosvU68": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 23 Nigel Richards.gcg"
+    },
+    "2NQZQbfeUnrpdF5ctGQ4yV": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 18 David Whitley.gcg"
+    },
+    "2NYSgKAmjA9GLiCKBxxQC7": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 9 Nigel Richards.gcg"
+    },
+    "2YcXFCdFDYzc8tYdukeNRe": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 26 Dylan Early.gcg"
+    },
+    "2YnXvEsAaQbWttsgKWQdB9": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 8 Jayaska Baranage.gcg"
+    },
+    "2feS8avqwHybRfsXxcE4PS": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 19 Ricky Purnomo.gcg"
+    },
+    "2jwPfpfCun3LWmazDCEqoT": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 5 Terry Kang.gcg"
+    },
+    "2vMEDSi3K8": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/12 Seed 13 - kiroro vs JD.gcg",
+      "sha1": "9b200982dd49fa838f0fe8c73834a407ec19f76a"
+    },
+    "2zaeUuwtSLCufkn3F9s9Rj": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/1_nov3_22.gcg"
+    },
+    "36GjDuUFMzvYnkSjBjpNs5": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 29 Kevin Fraley.gcg"
+    },
+    "3FcJ7hB8Pf3B8nmw5VmazU": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 27 Nigel Richards.gcg"
+    },
+    "3H5Uwqcv5eR9sgS2HFDcEr": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/Finals/WESPAC '19 Finals Rd 4 Nigel.gcg"
+    },
+    "3XxhhbYHAZeP2WABLFuBC4": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 3 Rahil Parkar.gcg"
+    },
+    "3YTjeaH7bYnefaPPzPKW8T": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 9 Nigel Richards ANNO.gcg"
+    },
+    "3bdhLhUP55Vgfi4d3SNhQy": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/4_nov3_22.gcg"
+    },
+    "3bqJ9CQ5vfyxnzra2efNZD": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin One-Day Aug '23/Austin One-Day Aug '23 Rd 2 Anuj.gcg"
+    },
+    "3zrSptjGvgbFeFBu6ZZkUc": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 4 Matt O'Connor.gcg"
+    },
+    "42jM4VuL9AF8aVmbsiJhJx": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 7 Evans.gcg"
+    },
+    "46uoGqCwdtx9hQNX2b8HbN": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 9 Becky Dyer.gcg"
+    },
+    "4B9fF9RMa7v39Dhtn2EHQK": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 25 David Whitley.gcg"
+    },
+    "4CEbb26JnESdQQCSDSaggG": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin One-Day Aug '23/Austin One-Day Aug '23 Rd 6 Becky Dyer.gcg"
+    },
+    "4Dh4FivQFmnzpEbc3HytCG": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 13 Hubert Wee.gcg"
+    },
+    "4JJbovovaRGxDKVVVhhdYE": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 7 David Delicata.gcg"
+    },
+    "4Ps38Q6w2J": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/07 Seed 8 - fjt vs JD.gcg",
+      "sha1": "2a9b9a6caaab131845c32e5e76ab8a05f2748912"
+    },
+    "4RW85LmL3kb7A9tfAQo56k": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 12 Dielle Pinto.gcg"
+    },
+    "4ZAfGYs9wNeBtbcPNZ48nF": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/sf/WSC '18 SF Rd 2.gcg"
+    },
+    "527PKFM5SsWxrLuTjZqiu6": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/20_nov20_23.gcg"
+    },
+    "557x8wqrLV": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/02 Seed 3 - Gabzor89 vs JD.gcg",
+      "sha1": "87b0f53efc831bb2f1c87756cd4db52b20ffada3"
+    },
+    "5BsjYhiHbBD7k55pxjcLSE": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 16 Noah Slatkoff.gcg"
+    },
+    "5C5s8njuw4VgmD2dKk8sJm": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 13 Esther Perrins.gcg"
+    },
+    "5L6rsbdyXKNbqCCrmPtXZV": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/75_nov4_24.gcg"
+    },
+    "5LZNVsd9RkrYT2ZC2mRKzT": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/21_jan7_24.gcg"
+    },
+    "5MZAs5jVek": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/11 Seed 12 - Lynzy vs JD.gcg",
+      "sha1": "18cbc7ed26f51454d41bcb2fd129e6c6731373c7"
+    },
+    "5PMjmULJekP7XT7gZsuuKm": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 13 Tarin.gcg"
+    },
+    "5SYCS27DJK": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/05 Seed 6 - wajin vs JD.gcg",
+      "sha1": "78209f5a18765348e5a33522a34a074ab4432a0b"
+    },
+    "5ayfD28XYM": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/14 Seed 15 - jaygeekay vs JD.gcg",
+      "sha1": "d089f95d364267a497839b1d47c9012a0eda8ad4"
+    },
+    "5qL7vgexRM4dX4xRSbgN53": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/72_oct28_24.gcg"
+    },
+    "5qQ6LizkAuwmbMgHvF8imR": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 21 Austin Shin.gcg"
+    },
+    "5qnjWstuswqLMgoWzpprRK": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/52_jun17_24.gcg"
+    },
+    "5tuQhRrLKxsAyR8iEo5pch": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 31 Olatunde.gcg"
+    },
+    "5vgCnuZTDd": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/06 Seed 7 - dang3rous vs JD.gcg",
+      "sha1": "f8b747d68913cf66efd17955f672ea8ecc4aa20b"
+    },
+    "5wE7PuGJjLkFbdEiEdYYj7": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 33 Kevin McMahon.gcg"
+    },
+    "6JdeQqEHJm3N45CRjMcfam": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/67_oct7_24.gcg"
+    },
+    "6UFvF56TD6dogKZU9apUP7": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/27_mar8_24.gcg"
+    },
+    "6hJfWSnQtnjXtwxwduqnsu": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 35 Kevin McMahon.gcg"
+    },
+    "6hqAHjNGcDyTxZo3zaY5tJ": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 25 Lewis Mackay.gcg"
+    },
+    "6sqayWgBbMbAPGwGirZYa4": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/93_sep24_26.gcg"
+    },
+    "6wJnc2XZXqb8Vhzo3JvxzE": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 11 James Curley.gcg"
+    },
+    "6xqEQF4mt47VX2FJnTG45n": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 3 Nigel.gcg"
+    },
+    "74XnBtvNQn": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/07 Seed 8 - carysers vs JD.gcg",
+      "sha1": "80cf9288abb2d6f489328f268c462ddeb83468e0"
+    },
+    "7FuaQzLLkXiuwGhrF5Tcp8": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/07 Rd 8 JD vs Sam Crispin.gcg",
+      "sha1": "737cefdd860796cd268974b11ea552eccc2124ac"
+    },
+    "7Ra7WKAduNWQ4nLtvJM9Z2": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 27 Mark Nyman ANNO.gcg"
+    },
+    "7Tb9M6nJJE68RYjXBJkHcX": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 20 Waseem.gcg"
+    },
+    "7UAjVcfxF8wZBFvGnDvwyp": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/14 Rd 15 JD vs Soramet.gcg",
+      "sha1": "dc99ee7cfe109f336ccda7109c841b2b5398fd6d"
+    },
+    "7WGzgSMn4xAuJDh2YJqnDA": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 9 Mohamed Kamara.gcg"
+    },
+    "7gmvwAn5RvKnK7qLHLyYn9": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/74_nov4_24.gcg"
+    },
+    "7nZEGYPxPWVLsKUnjCdSyN": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 28 Thacha.gcg"
+    },
+    "7tLCmTxkX7": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/06 Seed 7 - GrandyLu vs JD.gcg",
+      "sha1": "4ad7155f9bc87593b44a96c24b6c4bfaa6527ee5"
+    },
+    "7vWh6fQHen": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/01 Seed 2 - Gabzor89 vs JD.gcg",
+      "sha1": "82ccdfe7ff38fd263feb5a710c7580cdbecdcee5"
+    },
+    "7yvBkDgqmjiDc6qP6ZWKfT": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 8 Russell Honeybun.gcg"
+    },
+    "87qCKCHjzeWHeEzekHMvbB": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/3_nov3_22.gcg"
+    },
+    "88bwKqPoa3": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/05 Seed 6 - dang3rous vs JD.gcg",
+      "sha1": "c008337ab711e623c3775c71e3093b1712fce39d"
+    },
+    "89qvcLVky8xohcLrmaucxU": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 2 Andrei Russell Gibbett.gcg"
+    },
+    "8BtufVzaV5zAxESeTjcEeU": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 14 Pichai.gcg"
+    },
+    "8Hu4NUmSWaFVeqBAaCfyww": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 31 Tony Leah.gcg"
+    },
+    "8HwdaiLyutqqcVBM3fktBB": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 15 Komol.gcg"
+    },
+    "8VdeAjiYFbqir88ECT9JJ2": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 18 Akshay Bhandarkar.gcg"
+    },
+    "8YXBu544xZEAZK24oJqdqz": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 18 Waseem Khatri.gcg"
+    },
+    "8YtjtDNYS7pmzeaZGqxouF": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 1 Sandy.gcg"
+    },
+    "8ZWSRMkvJK": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/12 Seed 13 - AudreyWagner vs JD.gcg",
+      "sha1": "b4ada34ec4245ab2f9f1966d710a7a59cc47b171"
+    },
+    "8uRxUmtyKnrPv9sxWD6Sp8": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/5_nov14_22.gcg"
+    },
+    "9AZPVPnMHevAV6Tc7w3zZX": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 26 Gitonga Nderitu.gcg"
+    },
+    "9ExNs3mziodZsBKVyz8mWs": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 24 Josh Castellano.gcg"
+    },
+    "9G2uCPfVaXKhXpT9tCR84w": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/90_jul12_26.gcg"
+    },
+    "9Ue86ZRHDyTi5sTw7LaA6A": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 2 Randi Goldberg.gcg"
+    },
+    "9ftYcHvv4x6tVQJBYX2GCc": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 2 Mark Francillon.gcg"
+    },
+    "9iZUvZS2hDd3FQ93NRK2aj": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 24 Gitonga.gcg"
+    },
+    "9u9MySsUyPD56vBXRVFs3V": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 4 Evans.gcg"
+    },
+    "A3QuZ37D8A": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/09 Seed 10 - Vegewey vs JD.gcg",
+      "sha1": "43051e182f040238553a3c299744eb4b463a6517"
+    },
+    "A7Kk6XcuT2Pq4gRqgr5oaV": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 15 Josh Castellano.gcg"
+    },
+    "A8UgxTaAyP5wWoxkcmHM57": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 11 Puneet Sharma.gcg"
+    },
+    "A95uiN6LPuSoWw4QvQno6m": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/finals/WSC '18 Finals Rd 4.gcg"
+    },
+    "ABoKypkeoLynZS9SNxc35P": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/HK '16/HK '16 Rd 4 Pok Hin Tam.gcg"
+    },
+    "AC9NrEm7MS": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/09 Seed 10 - hiiamrayne vs JD.gcg",
+      "sha1": "9acf50cf03b32799e14f49ad9fe646be71b5e032"
+    },
+    "ACesVa7qD4E2EfMZFFxNZf": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 5 Michael Tang.gcg"
+    },
+    "AEe7gMpriy9WKQYWceRBfj": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 8 Tuoyo Mayuku.gcg"
+    },
+    "AKKxSFU69PNbYN2Wpndbch": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/24_feb26_24.gcg"
+    },
+    "Ag6pM5t76NwJrGkXDrRoqg": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/76_nov12_24.gcg"
+    },
+    "AhNvyHPVqQ3rEYVweVutXs": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 22 Nigel Richards.gcg"
+    },
+    "AwkvsnHs3LcrLkgKcB49AT": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/50_jun11_24.gcg"
+    },
+    "AzPPNcTrwoDPXH4Gx5TmsF": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 8 James Curley.gcg"
+    },
+    "AzpMjdyS4Cp9jQbGQYw7PG": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 12 Rasheed.gcg"
+    },
+    "AzqBbNTctN9ar76W9yDMRa": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 15 Nigel Richards ANNO.gcg"
+    },
+    "B4S8M6gv7VozHH9oYZwMvH": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 15 Nathan Benedict.gcg"
+    },
+    "B4c2ZtU27mjpvxXFDE73Fj": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 31 Mark Nyman ANNO.gcg"
+    },
+    "B7rMPJi6xp": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/01 Seed 2 - eideticeve vs JD.gcg",
+      "sha1": "e9a08c6bc8026c1fdb5d48836101298eba096a94"
+    },
+    "B8kRDvHktipfKJa3VD7fV9": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 15 Jack Moran.gcg"
+    },
+    "BDTRnE9VtzdbN3uJWmTK58": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/54_jun17_24.gcg"
+    },
+    "BQH3As2AALyFLamRqBkcjt": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 7 Alastair Richards.gcg"
+    },
+    "BSwQEj7oGtKdoQkBRKiM7a": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 15 Feargal Weatherhead.gcg"
+    },
+    "BU5abmmEmaseJ4hHbF9qXe": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 6 Tim Weiss.gcg"
+    },
+    "BgSCopnBTR87ksWrgRK6so": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 14 Allen Oyende.gcg"
+    },
+    "BgmGzNLbqZhP6Eo9mEBVao": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 2 John Holgate.gcg"
+    },
+    "BoHkxARjfHvhCQRYGMJHaB": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 40 Mark Nyman ANNO.gcg"
+    },
+    "BsELJd2qDwkVFxXf5t3fVg": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 16 Thacha.gcg"
+    },
+    "Bujtx2HZfH3VcqEBFTRtfN": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/23_jan7_24.gcg"
+    },
+    "BxwW4XCfJjfeKSSDXEj4yb": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 26 Anand Bharadwaj.gcg"
+    },
+    "C2R45zPQN4yfGCd332KGo4": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 4 Kathy Cameron.gcg"
+    },
+    "CFBgAyJhTu7qXPf6bYhW4C": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 2 Elie Dangoor.gcg"
+    },
+    "CULfNZ7drapRjDSKdo7mJo": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 36 Saidu ANNO.gcg"
+    },
+    "CZiBAVxKZD": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/09 Seed 10 - Tsmart vs JD.gcg",
+      "sha1": "211143759a24c4ffb5de4ee153cce7a0ec7290d4"
+    },
+    "CaThMRDFM7ufvk8CNtm2vL": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 13 Nathan Benedict.gcg"
+    },
+    "Cj6nMt68xs": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/04 Seed 5 - auricle vs JD.gcg",
+      "sha1": "ef6969aa14e3819be7e7a9b499371e419fcf2e94"
+    },
+    "CkUgrmdzPZZpLi6PtiLTeC": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 16 Craig Beevers.gcg"
+    },
+    "CnkK65x9Gd": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/08 Seed 9 - suki45 vs JD.gcg",
+      "sha1": "9798995bf7e1c8fa3b7e76cdd12a3f771e5e4c24"
+    },
+    "Cu3KKf9JHo": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/10 Seed 11 - Toraganashi vs JD.gcg",
+      "sha1": "009ac1afec04ee674a93d3d495a95b2454e106fe"
+    },
+    "Cu4ueXAyct8p3Nh4Yo3nRM": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 13 Henry Yeo.gcg"
+    },
+    "Cv9xLMHqjf": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/06 Seed 7 - devdub vs JD.gcg",
+      "sha1": "d3d98de0fe41a8f78df0b814adca947518af3fc6"
+    },
+    "DGcG9UaK3W": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/11 Seed 12 - Catie vs JD.gcg",
+      "sha1": "0d511d0f520a88b524205518e54f2b1d73528580"
+    },
+    "DYjoiXvk3DxBQdKyiBPCbg": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 13 Bright Idahosa.gcg"
+    },
+    "DZygagBfeWgcWgZLXQgHmA": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 38 Chinedu Okwelogu.gcg"
+    },
+    "Dao2ZgQ6C42pQ64t7KGeQW": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/Finals/WESPAC '19 Finals Rd 5 Nigel.gcg"
+    },
+    "DhQG6DEkg26kq27xkHoTaY": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 1 Prashant.gcg"
+    },
+    "DhbWsTyCgKyhSU9VaswAGZ": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 28 Tony Leah.gcg"
+    },
+    "DjV8TVW8HBkLECPM44Qqx3": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 30 Ralph Owusu.gcg"
+    },
+    "DjxgJijRhu": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/08 Seed 9 - Phaeton vs JD.gcg",
+      "sha1": "a278ed0965b960cf3b908b11da45f109419079dc"
+    },
+    "DwBNuuBjxnDnuiQRqM7yFr": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 7 Sinatarn.gcg"
+    },
+    "DxU9XeoGsRqDB2uGEYz3ta": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/68_oct7_24.gcg"
+    },
+    "E4VXSqVDtNSNJpwko5rosh": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 24 kevin mcmahon.gcg"
+    },
+    "E9QRN2jQbYCLQt9aSLVM68": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/06 Rd 7 Vannitha vs JD.gcg",
+      "sha1": "b513884968fe9d8c45e79a9ee18bb512694a894c"
+    },
+    "EEKxafEcXcwdC4mVDFeyXt": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/17 Round 18 JD vs Chollapat.gcg",
+      "sha1": "4605b7d95009e7647aa22891584974b2ce0b0c18"
+    },
+    "EJy3aKPdLABV2ebMFRQ7Nz": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 8 Moira Fenech.gcg"
+    },
+    "EKgHWqRXoxD8KcmsErRuaF": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 5 Tim Weiss.gcg"
+    },
+    "EPvXRNNv6FC3CJynPyPzWR": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 23 Becky Dyer.gcg"
+    },
+    "Ec6bHCPZMytWtmourGRiaJ": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 17 Nigel Richards.gcg"
+    },
+    "F3aSpwvtYRJMiKpTKxkj4w": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 2 Rex Ogbakpa.gcg"
+    },
+    "F459gDLoQ2tAdYgeBoLQRM": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 8 Lipe.gcg"
+    },
+    "F8dSrcW3KK": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/03 Seed 4 - eideticeve vs JD.gcg",
+      "sha1": "0f9afecae1b8b79043d1f61e5acfea58cb3a9293"
+    },
+    "FFNnNWoArrvHydYerSEesN": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/58_jul8_24.gcg"
+    },
+    "FPrMqY36wBeRnJvquSWuBU": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 10 Nigel.gcg"
+    },
+    "FT7z7zHdXmMXxgtgRKSWpH": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin One-Day Aug '23/Austin One-Day Aug '23 Rd 4 Becky Dyer.gcg"
+    },
+    "FiewG7a6e6JszsLca94pfZ": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 38 Komol ANNO.gcg"
+    },
+    "FmSSzLUdCuWPu2DoMiP6fq": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 40 Andrew Goldberg.gcg"
+    },
+    "FumkaB5oYPE4CdG27d4WSe": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 37 Rex Ogbakpa.gcg"
+    },
+    "FvBHcfMh8a4t22u2rjgfCR": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/46_jun3_24.gcg"
+    },
+    "FxWtbaWYnD8tTJ5WcDyEb4": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 3 Toh Weibin.gcg"
+    },
+    "G2cZBo28WrnTfXwE3HWLP9": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 10 Phenomenon.gcg"
+    },
+    "G5kzNNAHhcYjmiac6Q6YLn": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 4 John Holgate.gcg"
+    },
+    "G9JZ9xNiS7ejVicpFCdsfH": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/80_jun2_25.gcg"
+    },
+    "GDLqxr7g9AuXKZsxaTPnLc": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup 19 Finals Rd 1 Nigel.gcg"
+    },
+    "GDZCcoVgxbysHoZY4FeiT6": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 1 Edwin Boama.gcg"
+    },
+    "GRiWjVUYnf6WYeqe3zkDRQ": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/15 Rd 16 LKB vs JD.gcg",
+      "sha1": "b0dca6e4bf865162713bddc1db690395bfa0eb7b"
+    },
+    "GcTThXmnSkPgSH22Vp5Wdc": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/65_jul22_24.gcg"
+    },
+    "GiqNWpwKanMrbysqTGvQiH": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/Finals/WESPAC '19 Finals Rd 2 Nigel.gcg"
+    },
+    "GkhYMtx7dbTqesMToc7wVP": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 25 Yong Jian Rong.gcg"
+    },
+    "GmT8HCSwkA": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/13 Seed 14 - gearoid vs JD.gcg",
+      "sha1": "b6cc4fe8371433bf1ad1874158a4ae9c4cdbfc7e"
+    },
+    "GrnwAkaYoD": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/07 Seed 8 - Dajashby vs JD.gcg",
+      "sha1": "4b20bbdc78313cc0a313f9744ede6fdd7dcbc719"
+    },
+    "H7LexmMLyXyJKoKSonpr9h": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 8 Mwenya Munkonge.gcg"
+    },
+    "H9HEz7SPES9zThvvVZ7aGK": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 24 Thacha ANNO.gcg"
+    },
+    "HAa63Kfmqr": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/14 Seed 15 - SZRoberson vs JD.gcg",
+      "sha1": "eba38820e7181832e3fa9901a08dd9a4790c58bb"
+    },
+    "HGbdHLEhuYGexXJT9Ki6aH": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Final Rd 1 Austin Shin.gcg"
+    },
+    "HHaxQj9ygYde2YfHEQMps4": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 23 Weera.gcg"
+    },
+    "HHvbpFECvW8JhadkN869Gx": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 28 Nigel ANNO.gcg"
+    },
+    "HJbp6ZGWFM": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/02 Seed 3 - Gabzor89 vs JD.gcg",
+      "sha1": "afdceb8e2cde235230c4dc1e82baae24d555ec36"
+    },
+    "HKCMAaDXSdDeBMHkNbQPXN": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/92_jul12_26.gcg"
+    },
+    "HLUy4cdraZgehQ9k2Jp6mt": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 22 Wellington Jighere.gcg"
+    },
+    "HM8LhwFRXLGC5CXbBuXUDk": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 17 Steve Polatnick.gcg"
+    },
+    "HiA43rZ2PL8fEZiUtGnv4E": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 5 Evan Berofsky.gcg"
+    },
+    "Hjjhbk6Z2nL6RKmqxBUSMW": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 20 Conrad.gcg"
+    },
+    "HvRhjJZEWUh7Jfy6KYmBwc": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 21 Tony Ikolo.gcg"
+    },
+    "J3dw9ox4Hg47bPjgjwnF2w": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 16 Weibin.gcg"
+    },
+    "JGeK9VsQEC": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/10 Seed 11 - mootmound vs JD.gcg",
+      "sha1": "b948cb5bc37582797cc6a7e307b3170d2145537f"
+    },
+    "JeSAcYCXjKvbD9G9cqjgp2": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 24 Cameron Farlow.gcg"
+    },
+    "Jib3ixT3v48wC2dE32Lh6a": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 8 Lipe.gcg"
+    },
+    "JjmQ5Y9S7xHZaGzyU8nZbo": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup Rd 2 Manop.gcg"
+    },
+    "JpdK6cZjndki5j574PP4cn": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 1 Tony Ikolo.gcg"
+    },
+    "JqcT5oNEKa": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/06 Seed 7 - K2O vs JD.gcg",
+      "sha1": "c8955725937080f70e006ecefa6081305caedf90"
+    },
+    "JtPEwDgUd76roK3epZD7WU": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 41 Phenomenon.gcg"
+    },
+    "JtW5rZbsDoZVVdQEdd3xqi": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/29_mar24_24.gcg"
+    },
+    "K775CGkMc2": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/10 Seed 11 - vblock vs JD.gcg",
+      "sha1": "b9a98eeb62185bdd4b0c9abc82a58d9fd3d28710"
+    },
+    "KG4NyeQLHBkQm34yCSjEv3": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 29 Komol.gcg"
+    },
+    "KGGZaGqPZM2EebQWXJEHyp": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 28 Oshevire Avwhenaga.gcg"
+    },
+    "KJixB6fiSjK6vB5MWogEMQ": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/28_mar8_24.gcg"
+    },
+    "KRRBxFn4hLgztyA4weL5pq": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 12 Bob Jackman.gcg"
+    },
+    "KU9WWqXBooyC6Yx2zbWLD3": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 6 Maureen McDonald.gcg"
+    },
+    "KXWZUXJSHHRDkriL7mfVcw": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/66_jul22_24.gcg"
+    },
+    "KetKpAfwNUnoxBWeqafoCD": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/finals/WSC '18 Finals Rd 3.gcg"
+    },
+    "KgELNLLmDsJLjJPJD4wL66": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 27 Ranganathan Chakravarthy.gcg"
+    },
+    "Kq54E6WxQchogCvQKjrS3V": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 32 Brett Smitheram.gcg"
+    },
+    "KySGYBLG6crk6gF4xw3rhD": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 19 Akshay Bhandarkar.gcg"
+    },
+    "L5rgjDYTUMUCzedzBPTL29": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 4 Weibin ANNO.gcg"
+    },
+    "LHhQjrM63jcKkPQG9VGMME": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 27 Yong Jian Rong.gcg"
+    },
+    "LLAobwtPwQ": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/08 Seed 9 - Jobwoge vs JD.gcg",
+      "sha1": "3f3504a8c33f5c92aa4eef1e5bcf0625019f75d6"
+    },
+    "LSxqDBKUTggdyTsqWV9MNq": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 30 Sammy Okosagah.gcg"
+    },
+    "LXBQutas8GthwrJRVGEL8h": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 9 Charles Kimani.gcg"
+    },
+    "LbHrvrD2XsbwMLvk6YUBy9": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 25 Henry Yeo.gcg"
+    },
+    "LomRvXqcBsmtRsn9NN7zKE": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 3 Jakkrit.gcg"
+    },
+    "Lospv8UwAX9HbubPsCtZzh": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 31 Paul Allan.gcg"
+    },
+    "Lpv7jaTQ7WYeABqvcRv77v": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/48_jun3_24.gcg"
+    },
+    "LrjJTFok7nkE7VUeB3zTht": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 12 Chris Lipe.gcg"
+    },
+    "Luer4ZiDZsWxVVe579ZmKq": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 13 Jason Ubeika.gcg"
+    },
+    "M7RJDhtBcp": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/01 Seed 2 - eideticeve vs JD.gcg",
+      "sha1": "549e964987cf1dc8a9d2a8efcfa147019c25db9d"
+    },
+    "M8LM8Ss7Km7XSLzNAyHMwP": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 17 Ben.gcg"
+    },
+    "MBfenvBJRQFkwTrdLgr9AQ": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 10 Sam K.gcg"
+    },
+    "MDMer8c5ssRbzjoEyN2UD2": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 20 Jared Robinson.gcg"
+    },
+    "MDgLcNxZiu": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/05 Seed 6 - Pollyanna25 vs JD.gcg",
+      "sha1": "24a152e87007b8749ae248cc70c9e5639f7784db"
+    },
+    "MUCsyJYAthepWoup5gs9qL": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 1 Terry Kang.gcg"
+    },
+    "MWnt6zFQUi": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/08 Seed 9 - Bhawani vs JD.gcg",
+      "sha1": "5d62ec43feef39c9463dbf932bd0e88513058ac1"
+    },
+    "MguZPN4HiUD4k4eFybceQB": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 33 Esther Perrins.gcg"
+    },
+    "MxfLSe56xTyCwm7udVLYiy": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/09 Rd 10 JD vs Chollapat.gcg",
+      "sha1": "fa625eec481126a4cdaff70f1fa39cccd3e56da4"
+    },
+    "N3Wi4mU8s3": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/13 Seed 14 - Maggieaw vs JD.gcg",
+      "sha1": "a97b8a835049fa6cb41b485f0fb2ce363136e4c2"
+    },
+    "N472WSD8Gi2S2TT4QLG2Xh": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 23 Nsikan Etim.gcg"
+    },
+    "N4Jgf8UDDRhJtwSNLdYSCa": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 27 David Eldar.gcg"
+    },
+    "ND4FjaUR7wNajcJfo7VScG": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 4 Prince Omosefe.gcg"
+    },
+    "NE3QG8GpbWHu6odN68rej9": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/10_jan20_23.gcg"
+    },
+    "NFbmBX3ntS": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/02 Seed 3 - eideticeve vs JD.gcg",
+      "sha1": "fc3a832d0f4abeb5d381f68c8559050cb8afd292"
+    },
+    "NNhFYUH7FdafQ7wgfSAng7": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/Finals/WESPAC '19 Finals Rd 1 Nigel.gcg"
+    },
+    "NfUNpezpwYB8678jEe6yEm": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 7 Henry Yeo.gcg"
+    },
+    "NgvEEKarnQ5UnvmmewngFQ": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/69_oct7_24.gcg"
+    },
+    "NkP5gT5zWML4eKLHELGaRb": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 14 Rasheed.gcg"
+    },
+    "NxAu9fibj94rwXehHY4r7T": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/qf/WSC '18 QF Rd 1.gcg"
+    },
+    "NzZAvrdMKxUM45MzWiSSCP": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/35_apr15_24.gcg"
+    },
+    "P3vKgb5inW36Ayk8CwhqzH": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 12 Nigel Richards ANNO.gcg"
+    },
+    "P7sY9WK7dkQDHLWPmzhQF7": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 13 Hubert Wee ANNO.gcg"
+    },
+    "PDDjrgSuGWEZjBDUSQBd2U": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 1 Eden Choo.gcg"
+    },
+    "PFMzeNh6VVY9B8nhqyaZba": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 27 Wale Fashina.gcg"
+    },
+    "PQDGPawHTHDyVxS7E5JXAj": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 21 Joanne Craig.gcg"
+    },
+    "PoNQHiAepE3dZzpxRaFszR": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 2 Vannitha.gcg"
+    },
+    "PouB7V5rWJUD4omggKEyPB": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/25_feb26_24.gcg"
+    },
+    "PsPn7v4SimHTQMjCBJ3CEU": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 24 Hubert Wee.gcg"
+    },
+    "QHzDFrYNKmruh2GkffHvdF": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/33_apr1_24.gcg"
+    },
+    "QSKfQLFj94xhdiVNLKA9Mc": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 12 Puneet.gcg"
+    },
+    "QTdPGQVv6BgysszXigDquF": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 25 Nigel Richards ANNO.gcg"
+    },
+    "Qk4sBdJKs3pNGnL56RoKtw": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 7 Josh Castellano.gcg"
+    },
+    "Qkanrqa8VzUaJVKAGnqLnQ": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/57_jul1_24.gcg"
+    },
+    "QksYvzuQw6faSXo2ZNWDgD": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 17 Chief Toke.gcg"
+    },
+    "QmDgCJLYK9QVG8E8oJrxyV": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 6 Ben Weaver.gcg"
+    },
+    "QxP3VmJ6KkmdSjexgQ7i74": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 45 Thacha ANNO.gcg"
+    },
+    "QybFTZBMeoL4oS2TxE8wBo": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 22 Martin DeMello.gcg"
+    },
+    "QzWEfU8HsqvG8LGQ23ENjQ": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 23 Nigel.gcg"
+    },
+    "R3GYL5omUu8wg2mamWCgNW": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 20 Abdullah Abbasi.gcg"
+    },
+    "RDvs2rEBt35KDGZdpxZrKs": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/qf/WSC '18 QF Rd 3.gcg"
+    },
+    "RXjof385YpJwDEPZeX2kgy": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin One-Day Aug '23/Austin One-Day Aug '23 Rd 3 James Curley.gcg"
+    },
+    "RaDJCU6Es8VhUY9vcE6w5n": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 4 Peter Arriola.gcg"
+    },
+    "RgLGptEnnkACPsULH5gPqB": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 15 Noah Slatkoff.gcg"
+    },
+    "RiFj2p3YdHRs6oTC6i6Gko": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/79_jun2_25.gcg"
+    },
+    "Rsvk9xnHa8L6qzjQJDzwfN": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 7 Fern Wheelwright.gcg"
+    },
+    "RxeAYppZFGXus7HqAve6nk": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 32 Hubert Wee.gcg"
+    },
+    "S3qFrvoiRC": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/03 Seed 4 - auricle vs JD.gcg",
+      "sha1": "9596ef11fce7e89de782c4d163e55313b6fe0c27"
+    },
+    "S597yCKxMKXrNm6259BFQ6": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/59_jul8_24.gcg"
+    },
+    "S6t7jnEnVkbqABpejJ4x9c": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 14 Piotr Andronowski.gcg"
+    },
+    "S7QstMvxDQFkfXAPMVjVj6": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/02 Round 3 - Komol vs JD.gcg",
+      "sha1": "cb2d158d1474685dcb70bd71fdce52e60a6d3f76"
+    },
+    "S7hED5bo4pgyZAGqJSKdqM": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 12 Chang Ching Wei.gcg"
+    },
+    "S9HkNGRzAp3Sb6khYMHMug": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 25 Brett Smitheram.gcg"
+    },
+    "SFHCUxojqkRztnQwVUmmXD": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 8 Dean Saldanha.gcg"
+    },
+    "STCnk8gLqGQEqqubEQeji3": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/13 Rd 14 Josh Castellano vs JD.gcg",
+      "sha1": "5680ded9a5e46bd06a2b5f2ef6efe7421ffdd99d"
+    },
+    "SgrzRDxiGvnBkJvnoU6CBc": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 25 Chinedu Okwelogu.gcg"
+    },
+    "ShngonaSpzec3hvDuMPw29": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 31 Gerald Davids.gcg"
+    },
+    "SjBZWqeRda545PuojvRAUM": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin One-Day Aug '23/Austin One-Day Aug '23 Rd 5 Chris Canik.gcg"
+    },
+    "Sp728fkye65kFtK7hTsVY9": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 6 Mohamed Kamara.gcg"
+    },
+    "StgLV5zufR": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/04 Seed 5 - swagatn vs JD.gcg",
+      "sha1": "00a8247da35a1140c59db98d49629ff031879c14"
+    },
+    "T3m4mP9PxAKJdwtxfxYxFU": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 10 Akshay Bhandarkar.gcg"
+    },
+    "T7tkFVAKELJdVkmyf4NZw7": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 21 Olatunde.gcg"
+    },
+    "TADk9h3r6uXfpPKiqA6YXd": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 24 Raymond Gbaraba.gcg"
+    },
+    "TM9dNcaLXSqNVMWm2STrqD": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/77_jun2_25.gcg"
+    },
+    "TPwqeoJi2eqKZ35Qrd8ALm": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 1 Lola.gcg"
+    },
+    "TX83zoMq9AdcBqESqiEALf": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 44 Harshan Lamabadasuriya ANNO.gcg"
+    },
+    "TdAidnmz2dLMKRweD2fz3q": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 32 Nigel Richards.gcg"
+    },
+    "TfuEZaz2AQ6iwaLvLAhdyu": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 9 Austin Shin.gcg"
+    },
+    "Ti8Cdr2oSJZZTvPwShfEEv": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 11 Tony Sim.gcg"
+    },
+    "TiCMWrTHPNajzNF8CTMCX9": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 17 Opeyemi Oloro.gcg"
+    },
+    "TssAkURcucUX9afUcmNzeV": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 9 Marlon Prudencio.gcg"
+    },
+    "TtEgK48d2bMXnUZxs8Ch7F": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/78_jun2_25.gcg"
+    },
+    "UBU48z2Wqvw7wpNCLPiEJQ": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 1 Amnuay.gcg"
+    },
+    "UBghd4vCbkjKEXcJek6YHF": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 39 Komol ANNO.gcg"
+    },
+    "UEb6Z9WPSAuGwYWXPB8pfn": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 17 Nigel Richards ANNO.gcg"
+    },
+    "UHhgXq7bRcbxm4Sz4oN7tp": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 3 Howard Rayner.gcg"
+    },
+    "UJ7yhds5Mj": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/12 Seed 13 - Hassan123456789 vs JD.gcg",
+      "sha1": "410c64d5e15549fbf67e753d2b72eb78787d3280"
+    },
+    "UNuZ7pCNP2YjHpMStkDHVD": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/63_jul15_24.gcg"
+    },
+    "UU5jpbAHyFc7CE6nHJ6wLF": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 27 Jakkrit.gcg"
+    },
+    "UZ6vuCjXDK3Hs6VeUrxave": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 6 Nigel Richards.gcg"
+    },
+    "Uat8xFYNgxdvutaqbiASRT": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 12 Howard Warner.gcg"
+    },
+    "Uf8efEWFrmtUPy94LuUUay": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/finals/WSC '18 Finals Rd 2.gcg"
+    },
+    "UfE5cQEoECyB4L9cP2EEqD": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 7 Russell Honeybun.gcg"
+    },
+    "UhN8GrnpLpGFng5UcVVQ9o": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 28 Nigel Richards.gcg"
+    },
+    "UhiwG7a4XL6ZTayz82Sywg": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 30 Russell Honeybun.gcg"
+    },
+    "Uk7t78eT5bAij4jkCgGA9q": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 11 Harshan Lamabadasuriya.gcg"
+    },
+    "UwYf9NdTih3LtqCdZD4eKJ": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/49_jun11_24.gcg"
+    },
+    "UxV6gTRCBWDacazym4boPy": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 12 Cedric.gcg"
+    },
+    "UzYcjTquyXSRhYxhoT8hwD": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 19 Bing.gcg"
+    },
+    "V4tss4qhdhMbX8eFQ4GiEy": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/Finals/WESPAC '19 Finals Rd 7 Nigel.gcg"
+    },
+    "V66UhenARzADNW9hxTheYz": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 35 Komol.gcg"
+    },
+    "V7TCbb8RNmfjKBYNMLFFyQ": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 8 Puneet.gcg"
+    },
+    "VFo5WKtAUU": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/10 Seed 11 - ZenHuman vs JD.gcg",
+      "sha1": "e1e28be3324271ef21d4ad279bfe119ab9185f73"
+    },
+    "VJq2mPmjnrNLZpUatEvqW9": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 19 Leslie Charles.gcg"
+    },
+    "VNyo2gv3Tk": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/07 Seed 8 - CynicalAd vs JD.gcg",
+      "sha1": "635c49408c6dcbb47a7ca44cdcab003cc31c2816"
+    },
+    "VSkJLkDEKcXVAwdPFSpupA": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 20 John Ashmore.gcg"
+    },
+    "VWukhaHkbkKNc7uDanA8Ro": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 17 Abdullah Abbasi.gcg"
+    },
+    "VcHYmfNRLijw8DNuo5UY56": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 33 Fern Wheelwright.gcg"
+    },
+    "VcTFNa3fUVymhTFWgtJ3eM": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 1 Victor Tung.gcg"
+    },
+    "Vkxuv2xwog5fA2aF7V3QCa": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup 19 Finals Rd 3 Nigel.gcg"
+    },
+    "VmkfDJeD8reWoF9qTfVgRE": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 25 Jakkrit.gcg"
+    },
+    "VnaiQzvLAQ": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/13 Seed 14 - Wordabble vs JD.gcg",
+      "sha1": "32490d7fc4687d63f2b7262b23b1ac62bbcb8fce"
+    },
+    "VpYTzHbmmq2rXyXGkHzLXT": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 42 Elie Dangoor.gcg"
+    },
+    "VqoKfbMCGNhd6dxiZDgHFE": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 11 Mohamed Sulaiman.gcg"
+    },
+    "VrABx8rXqJ6g3tuSqFgpbv": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 30 Deldar ANNO.gcg"
+    },
+    "VyxojDHvaWgbBpxdbJj3es": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 9 Jakkrit.gcg"
+    },
+    "W8HPeeKRtCS8VuB8rqE5nQ": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 17 Tarin.gcg"
+    },
+    "WFhEfrhbiDHW9pGuXWVn5f": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/HK '16/HK '16 Rd 5 Chun Hung Ho.gcg"
+    },
+    "WGScMxnCLQxkLJ9kpXApA9": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 19 Rex Ogbakpa.gcg"
+    },
+    "WLFB6ZjfpzkYcTx9rkHvHo": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 16 Jack Mpaka.gcg"
+    },
+    "WMkNSCDz5qNzgzXjAZgKPv": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 14 Mark Nyman ANNO.gcg"
+    },
+    "WUtf6cpEPSpwUEhJgHbq6x": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 31 Evan Berofsky.gcg"
+    },
+    "WVQpfRCUxuDCwtMZNyst67": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/16 Round 17 JD vs Euclid.gcg",
+      "sha1": "ab02e22af576ed80123b1fbfec26aff455a96e9a"
+    },
+    "WWJhaU6UFXgCtspS4wZSpo": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 5 David Whitley.gcg"
+    },
+    "WZMTw9kcfLZ5NTDwgy9FAp": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 5 Alexius Quarshie.gcg"
+    },
+    "WZrseZuiWXXcH6fZBqbrDm": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 2 Jason Ubeika.gcg"
+    },
+    "WgbGBWwnujMoCvirAGUVeZ": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 10 Jason Keller.gcg"
+    },
+    "Wge58WCgEWgqCiUoVwh4rm": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 29 Yong Jian Rong.gcg"
+    },
+    "WmGRQC9kTWvWfSENJdojDx": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 19 Peter Armstrong.gcg"
+    },
+    "Wmy2opnTVD": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/03 Seed 4 - Gabzor89 vs JD.gcg",
+      "sha1": "74130df0e3fdee56cecb87d0bb5b6314877c3b54"
+    },
+    "WoVBhzjaGNUV6MYvp47H69": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 4 Ruth Hamilton.gcg"
+    },
+    "WpSbPHAowUhfPiRw9EXDM7": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 10 Chris Lipe.gcg"
+    },
+    "X6w5VNBvQXpELuyYX5x2KK": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 11 Emmanuel Umujose.gcg"
+    },
+    "X9rPAcvyyDP8LpEMgfLKKU": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 29 Jeremy Khoo.gcg"
+    },
+    "XLAjcmfjtdMkBRiCyuKPcP": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 18 Patrick Litunya.gcg"
+    },
+    "XLuZJcneV8GHX4dRhAUM9u": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 7 Stefan Rau.gcg"
+    },
+    "XP2oYViz3s": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/12 Seed 13 - Brummybill vs JD.gcg",
+      "sha1": "056e660402b1e2a791f578058ce07f639fbe38b2"
+    },
+    "XQAYJfeGxVAf2xNcWvkHRY": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 11 Denise LeBron.gcg"
+    },
+    "XUfrtQ7xCYogsBvpWdUjct": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/64_jul22_24.gcg"
+    },
+    "Xc7AAD5xbMd6h7Ni8xoJBK": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 13 Dr Wenwa Akinyi.gcg"
+    },
+    "Xd9at463PGYXbfNAJWMM8K": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 23 Odette Rio.gcg"
+    },
+    "XoywXGAjUEuZZ5kFRajHcz": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 18 Wellington Jighere.gcg"
+    },
+    "XpQe7bEaQjrEQGCtV6MiDM": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/44_may20_24.gcg"
+    },
+    "Xr3UM3Nu8t3mYJeYHbd96t": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/Finals/WESPAC '19 Finals Rd 3 Nigel.gcg"
+    },
+    "XwaQUPt4gKPiaSPtw2zy4E": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/finals/WSC '18 Finals Rd 1.gcg"
+    },
+    "YEHxg8PN5ekE3qLSRZCZnD": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/62_jul15_24.gcg"
+    },
+    "YTSozfG9i6BA8Ryao547rJ": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 2 Bob Linn.gcg"
+    },
+    "YWJ7MfhtWT": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/01 Seed 2 - auricle vs JD.gcg",
+      "sha1": "efd960fa3e2175889927368e56741f3afe62c718"
+    },
+    "YdZAritgSt": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/02 Seed 3 - auricle vs JD.gcg",
+      "sha1": "d1644f3dac16bca9f864b4273fe8d7faa28e0555"
+    },
+    "Yddpfu4Gdx": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/10 Seed 11 - Izar88 vs JD.gcg",
+      "sha1": "a65d8c8b2a160b40c73f190b035c6c597bd651cb"
+    },
+    "YePxr7tbxLmEvRJCkqfeZr": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 17 Dr Bing.gcg"
+    },
+    "YiGZrsLcbGbcbXT4xtNwzZ": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 17 Tim Weiss.gcg"
+    },
+    "YwQLXa2eYSijG97WVNhBcU": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 26 Charles Tachi-Menson.gcg"
+    },
+    "YwaUAPAcCXo7QidSEudyHm": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 30 Femi Awowade.gcg"
+    },
+    "Z2QaQkmxRwYZZ6vGAfCCRu": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 16 Thacha.gcg"
+    },
+    "Z8N5dqugB53Z8kCvjaBxQN": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 10 Dennis Ikekeregor.gcg"
+    },
+    "ZBwBSLf4ThD9ecY88dbxS3": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 34 Dave Wiegand.gcg"
+    },
+    "ZUvwU4H6tx5obXLPqbz84C": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 6 Vincent Boyle.gcg"
+    },
+    "ZY92PF8qnSCeeZxjbjAGi9": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 5 Enoch Nwali.gcg"
+    },
+    "ZaSTNUUvfswRemaLpSGy5t": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 10 Dan Sandu.gcg"
+    },
+    "ZdMwZszmyiu5wxXukoSWkU": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 15 Helen Gipson.gcg"
+    },
+    "Zf5jira8YdAcjeQ5krhMGw": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 29 David Whitley.gcg"
+    },
+    "Zhp7GSJ7L7RaxsXPwG9NZH": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/42_may13_24.gcg"
+    },
+    "ZnLYJXwhL2DrQWYFehK6vo": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/8_jan7_23.gcg"
+    },
+    "ZpUyndj7tUdae7LRdmHUn8": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/9_jan7_23.gcg"
+    },
+    "ZqrzYhuxpPyaLMmfV8t2Dz": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 14 Evans.gcg"
+    },
+    "ZqyMWBSSwRyZxkyMs7CLoX": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 26 Craig Beevers.gcg"
+    },
+    "Ztujr4nzwy": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/12 Seed 13 - Stevo0861 vs JD.gcg",
+      "sha1": "6de7d894497927b2c908871e946830f8c5ebb97b"
+    },
+    "a3LkeYe9Lsi7johVcxH4uf": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 5 Mike McKenna.gcg"
+    },
+    "a8NFAXXqCrSAw92tgrN63Y": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/Finals/WESPAC '19 Finals Rd 6 Nigel.gcg"
+    },
+    "a9WJ7c45DzhLsJfe4Bb4gv": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/61_jul15_24.gcg"
+    },
+    "aDG68x8rkHesKP4kytvfyb": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/53_jun17_24.gcg"
+    },
+    "aEB8Pw7ges75MSCsjVXzFK": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 9 Rasheed.gcg"
+    },
+    "aJjNy8tCAdF4HD626VPCbP": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 2 Anand Buddhev.gcg"
+    },
+    "aKd3mg9QRyZweUmrRcX3aB": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 20 Ashley Wallenberg.gcg"
+    },
+    "aNVm75yS7r": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/14 Seed 15 - Douglas2388 vs JD.gcg",
+      "sha1": "100df0a63799efec1d26e505be781bcec65c15f4"
+    },
+    "aNWxufCDpwiBtBRB4uMumJ": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/qf/WSC '18 QF Rd 2.gcg"
+    },
+    "aR5MSr3wLeJDBgdNkXhky8": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 25 Janul de Silva.gcg"
+    },
+    "acYpT2KrTnEoTtkh4uHLzM": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/37_apr15_24.gcg"
+    },
+    "amB35rP2m2SNb8erTt8Z6n": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 30 Dave Koenig.gcg"
+    },
+    "aqeibdmgxnXTYoNk3Tztp4": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/40_may9_24.gcg"
+    },
+    "atmeeEpZY4YtJKoUEcBZex": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/84_jun19_25.gcg"
+    },
+    "auwzEbdRLbWcxSMYDL7NX2": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/05 Rd 6 JD vs Ishika.gcg",
+      "sha1": "910f8a9a617d3f61d1c4a3a1be28fbdea78161b4"
+    },
+    "awfYF4eRMZp59QeggHGkWT": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/HK '16/HK '16 Rd 1 Calvin Ma.gcg"
+    },
+    "axGoBKS6rBRFLR3ggZXWRt": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 5 Odette Rio.gcg"
+    },
+    "ayAVK3LPyBxsKu4Zxm4VVc": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 4 Paul Allan.gcg"
+    },
+    "b3oherdk8E": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/03 Seed 4 - devdub vs JD.gcg",
+      "sha1": "926c5d120d6e9c724781271d941cfe38b537b689"
+    },
+    "b6aqDP7XU4Yvism599rZUD": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 6 Gerry Carter.gcg"
+    },
+    "bMcLXQByPTSLERSuYGayg5": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 6 Joy Palm.gcg"
+    },
+    "bQWmpYxuExChFQD95QLmaf": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 26 Waseem.gcg"
+    },
+    "baueVNXNmsCEW6ABbonJMu": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/22_jan7_24.gcg"
+    },
+    "bccX3fCNXQZqubgiffZgER": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 22 Allan Oyende.gcg"
+    },
+    "bcw8iiiX6ok8jEG3f5cQAa": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/HK '16/HK '16 Rd 3 Gab.gcg"
+    },
+    "bfAKFV5G8RZ9sSM7GrmrW4": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 11 Olatunde Odewale.gcg"
+    },
+    "bgYr5WqWRvye4kyie43QUf": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 17 Allan Oyende.gcg"
+    },
+    "bknZ8FpiZL": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/10 Seed 11 - Johnnymango vs JD.gcg",
+      "sha1": "3a25b71278ef3da2ffd693b74b23221badfb8bdc"
+    },
+    "bn79tCybDFyoDREJsrqkud": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/12_jan20_23.gcg"
+    },
+    "btbnz4DbitAb7EzGe2jWU7": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup 19 Finals Rd 2 Nigel.gcg"
+    },
+    "bzB4NniC6Ba8n3etTnW6E3": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 9 Becky Dyer.gcg"
+    },
+    "c7RDeETrXg": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/04 Seed 5 - ChCh62 vs JD.gcg",
+      "sha1": "12c8d658642de7cd5970a856de38828ad8a77b7d"
+    },
+    "c9tbinMpMn8HnU9dm9ij7F": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 1 John Ashmore.gcg"
+    },
+    "cAyFaQUTkHdQ7kiXnBQkri": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 18 Chollapat ANNO.gcg"
+    },
+    "cNF72jBYiwGWYoJ45YJEFS": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 34 Dave Wiegand ANNO.gcg"
+    },
+    "cSKWCP9mERHovKo9vB7UoZ": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/19 Round 20 JD vs Sujana Somonasekar.gcg",
+      "sha1": "cf59dc1cfe744f2bf18e1865331de5169224f1a5"
+    },
+    "cYdJ3qg8wRnCbxenXtBo6w": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/08 Rd 9 Soramet vs JD.gcg",
+      "sha1": "37f361c41b233a39928eb730d3433b3bf6ba3abf"
+    },
+    "cZgDNDc6zpZLezTNLm9Zk3": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 15 Bnjy.gcg"
+    },
+    "ccpvpS4oMNN8aJdX2u69HK": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 29 Paul Gallen.gcg"
+    },
+    "cjHsffb5VjACk7APdVqeBf": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 12 Kevin McMahon.gcg"
+    },
+    "cjXGBkRhRhufotnn5rW9nQ": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/39_may9_24.gcg"
+    },
+    "ckATXDfXP8x6AtFYGJQxPL": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 24 Jakkrit.gcg"
+    },
+    "cni6kLv7C78XqwZfWQDoxw": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/56_jul1_24.gcg"
+    },
+    "cths8xgtP5": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/11 Seed 12 - NickTheMe1on vs JD.gcg",
+      "sha1": "4960f003c706a262462a81d6b9af51f8f5abd1e4"
+    },
+    "cv9gLBtaQV9dbsAhFwbfR8": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 27 Josh Castellano.gcg"
+    },
+    "d5dZuB26MRsHqVv7hmFUSy": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 18 Nick Ball.gcg"
+    },
+    "d88HHcxGQfSkPGGnpiCxvc": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/41_may13_24.gcg"
+    },
+    "d9JuXw6zAWox7Le4Mz9QBj": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 18 Brett Smitheram.gcg"
+    },
+    "dCDadKizeo9riCywaoAQau": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 6 Mark Nyman ANNO.gcg"
+    },
+    "dMyEXBmPxMFAihB6Zeor2a": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/2_nov3_22.gcg"
+    },
+    "dQKPUvLpskDb4QhKs64T7B": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/11_jan20_23.gcg"
+    },
+    "dQMm9ejpid4wCDoy5gEugU": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 2 Ricky Purnomo.gcg"
+    },
+    "dUjquiaDgcUBATPkfu7TyM": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/36_apr15_24.gcg"
+    },
+    "dcaUFVMA8RS5UX6AXiBqDe": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 11 Elie Dangoor.gcg"
+    },
+    "deK4sYzZpZLLwbngdkNHcJ": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 10 Nigel Richards ANNO.gcg"
+    },
+    "dexBdoGBeEskE9YkaTHAby": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 18 Allan Oyende.gcg"
+    },
+    "dpCedpUnpDuMbq22Yi52KA": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 3 BNJY.gcg"
+    },
+    "e6YtgxZMDYgVNGwUnuMGYH": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/73_nov4_24.gcg"
+    },
+    "eDhZ2eKX3LmoXMEBRYLgnX": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 16 Peter Armstrong.gcg"
+    },
+    "eEJN3TkGZFYiERx8r6KX9S": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 14 James Curley.gcg"
+    },
+    "eEy2tbsHgX6x9DSYDrExd9": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 3 Jennifer Clinchy.gcg"
+    },
+    "eHziMZftSR": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/05 Seed 6 - dang3rous vs JD.gcg",
+      "sha1": "5bdabeef27987fde1f784fabb84967deb8b96b91"
+    },
+    "eJGC7ANMrhzA6v4HfkHYpd": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Final Rd 2 Austin Shin.gcg"
+    },
+    "eMwuuUh9gayqvaqNcn8PE4": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/30_mar24_24.gcg"
+    },
+    "eNRPmTmBXhz7PKAZteFg7v": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 4 Dipo Akanbi.gcg"
+    },
+    "eWEzxGyes8YUCCuWQfkBVv": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 10 Betty Cornelison.gcg"
+    },
+    "eXYjWSNzrfHea6MKBEKpDz": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 13 Chrys Placca.gcg"
+    },
+    "eYvqVy46hJrs7EU8R2dp8W": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 26 Jason Keller.gcg"
+    },
+    "ebLLSciQry": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/10 Seed 11 - jaygeekay vs JD.gcg",
+      "sha1": "3df826c92d9b1251f94470c0562cdebc6b00bf81"
+    },
+    "ebRBmMvs5jaM9PRmcHNcLi": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/7_nov14_22.gcg"
+    },
+    "egwJcJLqFu": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/06 Seed 7 - DawnSwitch vs JD.gcg",
+      "sha1": "c76e543f9d81738d499779f1b7ebeca5a45e6a57"
+    },
+    "ejfXBWa55r5odfLBduAqYd": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 16 Dave Wiegand ANNO.gcg"
+    },
+    "erjHEExFkRsU8ffzh89582": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 22 Chollapat.gcg"
+    },
+    "euTscNAPGbhs8x4kwyG5Jy": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 4 Dr Bing.gcg"
+    },
+    "euhk9WPxD8JtS8ChFJCymY": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 3 Winter.gcg"
+    },
+    "ev6svmaz7zUHqMChXhaexr": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 19 Tarin.gcg"
+    },
+    "ex5Em2WqpW9vdUHP3jkuuD": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 6 Austin Shin.gcg"
+    },
+    "f2u9ZjmLTcQy6syU8vfxgi": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 12 Lukeman Owolabi.gcg"
+    },
+    "f9a7pB7BAi": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/04 Seed 5 - devdub vs JD.gcg",
+      "sha1": "cdc8294a81edb1cc009c7cf13a672d5e71bd471b"
+    },
+    "fJLadE6cfHXFjW4DxdMnRv": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/32_apr1_24.gcg"
+    },
+    "fKBh9WbKQsRxNNUyhzzqY3": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/60_jul8_24.gcg"
+    },
+    "fMQ2CAGoaw2KWy43rERTau": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/18 Round 19 Odette Rio vs JD.gcg",
+      "sha1": "b602e94e0dd91d7fa061273d2f67df6f5a04a3db"
+    },
+    "fMh8BSDqNBbSr79b6dyTyv": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 14 Jason Keller.gcg"
+    },
+    "fRxmZGddDe9KrQktjGP5rz": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 6 Bob Linn.gcg"
+    },
+    "fTVB9D2C9scYZkhaUrCWyv": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 10 Dave Wiegand.gcg"
+    },
+    "fXPFH9vDrw": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/11 Seed 12 - BeautifulWaste vs JD.gcg",
+      "sha1": "896c960fd22d57dbf6a109209e79a52df3c2a36f"
+    },
+    "feuPapHqv4KuJWwXv7NyJ9": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 21 Akkarapol.gcg"
+    },
+    "ffx8u7V5na5fNRJe3cMLhB": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 14 Tarin.gcg"
+    },
+    "fnC9nWLdm4ew4VgVw729iZ": {
+      "origin": "woogles",
+      "path": "Practice Games/James Curley/89_apr4_26.gcg",
+      "sha1": "d8ab3117f1ec4cdb3f93e7c661857e575141f74d"
+    },
+    "ftSEZXTPqXnnaDUKviFrsf": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 5 Zubeida Brey.gcg"
+    },
+    "g2MVj5DtUT8djRRsmM7FhH": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/04 Rd 5 JD vs Chaiyottha.gcg",
+      "sha1": "9b56553eebf7582f305c2f95cafaf2cd2230929f"
+    },
+    "gCht2CJDN6GD4xLZaEWKdk": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 8 Hubert Wee.gcg"
+    },
+    "gJiCramprJ": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/14 Seed 15 - Villaboy vs JD.gcg",
+      "sha1": "f0225d614f09952f85dd239fcb2ff10642132557"
+    },
+    "gKpYtR3yh8GyDxZLSXCPct": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/sf/WSC '18 SF Rd 3.gcg"
+    },
+    "gLUyWgCxqvfRdZ8KRW72rk": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/38_may9_24.gcg"
+    },
+    "gM4EBma4KtnkJVBkcvox2h": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 16 Cheah Siu Hean.gcg"
+    },
+    "gNNe8Ghtf7M8t5XriZFidX": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 20 Nigel.gcg"
+    },
+    "gY6moQmV4FyhsvQBpo3BvP": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/11 (annotated) Rd 12 Russell Honeybun vs JD.gcg",
+      "sha1": "c643a9e093324b046b9d1af22a923638ffe86514"
+    },
+    "ge5aNVEW6d": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/01 Seed 2 - eideticeve vs JD.gcg",
+      "sha1": "cec8587330a1c7d310f8f1a55a9dc07b34ecccfd"
+    },
+    "geB5uCBZPbDMbaj4dpRxi2": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/01 Round 2 Thacha vs JD.gcg",
+      "sha1": "77b704f300373a71f370d919bfb8f52f5a66c689"
+    },
+    "gf7qfGEsJr4UYRsBDPZySe": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/King's Cup 2016/King's Cup 2016 Rd 26 Odette Rio.gcg"
+    },
+    "ghiVYaVpQHcNZPxEacrE2A": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/51_jun11_24.gcg"
+    },
+    "gopAPaVEgJLKmBjVKZyNM6": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/19_nov20_23.gcg"
+    },
+    "gpJSQ8EDEj6tNY3FjmtLst": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 27 Colin Northmore.gcg"
+    },
+    "h7AgUDVjDwhu26KKXbPfYt": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 20 David Whitley.gcg"
+    },
+    "h7myfPunJaMipaLHyD4uwV": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 23 Hubert Wee.gcg"
+    },
+    "h7ssGQFMpa": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/14 Seed 15 - Keggie vs JD.gcg",
+      "sha1": "fba5864fd9b8292d2ee643d8e5cb706e92a4a9c2"
+    },
+    "hAnueKBtGoHANHQJ7erbNe": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 29 Deldar ANNO.gcg"
+    },
+    "hGLgg3j2NmfvguMmyJdMMJ": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 18 Rik Kennedy.gcg"
+    },
+    "hJhjrTJPQv": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/03 Seed 4 - Michel vs JD.gcg",
+      "sha1": "1effe45ee73a3c57c68ff81ff36d4d655701695e"
+    },
+    "hR9rEdKfo2": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/04 Seed 5 - dang3rous vs JD.gcg",
+      "sha1": "86700f3ed5b18d987448d8e6307fb4939e779111"
+    },
+    "hWB6wqqBkUr9V3nqjk2hgH": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/10 (annotated) Rd 11 Austin Shin vs JD.gcg",
+      "sha1": "bcc868fbae03e697d36c4e4aecd459de6a4430a2"
+    },
+    "hXY7Uy3SCF": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/03 Seed 4 - Gabzor89 vs JD.gcg",
+      "sha1": "0ecb317e0b016438a8b41c06c7b2f20bf17b9450"
+    },
+    "hZACHvqR7d6teqwceNvWLp": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 3 Puneet.gcg"
+    },
+    "hc5YcbJLy2ifchiZeGm49i": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 32 Dr Bing.gcg"
+    },
+    "hfaeKGQyoiBihz3EmX3JQe": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin One-Day Aug '23/Austin One-Day Aug '23 Rd 1 Michael Donegan.gcg"
+    },
+    "hfkrKFscFt7Jk2EktwKLgE": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 3 Paul Allan.gcg"
+    },
+    "hroQQTtSw5B7pq3XFwtyJf": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 21 Jason Keller.gcg"
+    },
+    "i2NRKBKu2gqMdm4afYhrNW": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 22 Wellington.gcg"
+    },
+    "i7yyTgHLMg": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/07 Seed 8 - Lynzy vs JD.gcg",
+      "sha1": "2587c3cbd0669398d61c8c60063e9139c4821bd1"
+    },
+    "iBhwXaa9c2": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/09 Seed 10 - TeddyJohnny vs JD.gcg",
+      "sha1": "c9ab83bb876efd3ec6540d248695fe3ebf8fb85f"
+    },
+    "iCNuxQDnboVymQMEcnkKyb": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 3 Marlon Prudencio.gcg"
+    },
+    "iCwsKGgnLCXKmpiqmp7A7x": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 36 Llewellin Jegels.gcg"
+    },
+    "iKUUUJFF7BXHZdi2KXfKkU": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 14 Matthew Pinner.gcg"
+    },
+    "iV6apFGatXuiiiRnAfFBbR": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 16 Tim Weiss.gcg"
+    },
+    "iVLHr9y76m": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/02 Seed 3 - wajin vs JD.gcg",
+      "sha1": "f07c5771c9a365b5bf624ecba68802fccdcdbf51"
+    },
+    "ik9B3nnGocTWKHSBaJQkaM": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 28 Curtis John.gcg"
+    },
+    "iv6yiCLPJPptXGGWdH3CJu": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/91_jul12_26.gcg"
+    },
+    "ivwUPGuL3n": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/07 Seed 8 - LoveLetters vs JD.gcg",
+      "sha1": "cec86b0c231f3341e01f7ec721841d42d7796214"
+    },
+    "iyqKS5dQbdUomqXykVwWxX": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/12 (annotated) Rd 13 JD vs Charnwit Sukhumrattanaporn.gcg",
+      "sha1": "bfffb21268262b7a15290d1fd1f6ad808f269f60"
+    },
+    "jAypy7snDEVdinzDeYCG2F": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 23 Dayo Tayo.gcg"
+    },
+    "jCKKJyDFFSTz68upyeZHAW": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 29 Andrew Fisher.gcg"
+    },
+    "jJpcmMwodUBmb87Lk4aDCc": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/70_oct28_24.gcg"
+    },
+    "jYWmTk9ZwFGKaMZBV7ZxVK": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 21 Hubert Wee ANNO.gcg"
+    },
+    "ja6jmerFRRcaGjycLce7sY": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 11 Dr Bing.gcg"
+    },
+    "jaUdyGFM9NPHXMLgZ7X8Gc": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 7 Wayne Kelly.gcg"
+    },
+    "jch4fpf9Dso9v8rtVSZca5": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 7 Ibrahim Deen Swaray.gcg"
+    },
+    "jdM5MFZfHegfZm644nrAwz": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/47_jun3_24.gcg"
+    },
+    "jdkwE9uw7UMCQYqWHTneA5": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 21 Yong Jian Rong.gcg"
+    },
+    "jnNpzUTcbszXZUD5VPxnjv": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 24 Mark Nyman.gcg"
+    },
+    "jqs9Nnfw4H7tZBfaGRL2Tq": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/31_apr1_24.gcg"
+    },
+    "jtJQs22ke4Vby9PRbFMQHQ": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 39 Ata Sonday.gcg"
+    },
+    "jtf96TRTtXmjnevu3ytSd3": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/HK '16/HK '16 Rd 6 Kelvin Lam.gcg"
+    },
+    "jtgqpbwdMm": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/02 Seed 3 - Gabzor89 vs JD.gcg",
+      "sha1": "873787ec8dff77126f53d6f3254d8e7c67befda4"
+    },
+    "jwM5LbwpR9": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/11 Seed 12 - TeddyJohnny vs JD.gcg",
+      "sha1": "663a32645c73a610e35b8f1bc8a6ca182be30fb2"
+    },
+    "jzgXfj5q6m": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/12 Seed 13 - BouncyBil vs JD.gcg",
+      "sha1": "00de5b3aa486dc7aeadcd942ad3545fb3cfc0c63"
+    },
+    "k2PzkWd9RhXRieRRhaoJor": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NSC '19/NSC '19 Rd 19 Matthew O'Connor.gcg"
+    },
+    "kHnrybXHFK": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/04 Seed 5 - DorcasA vs JD.gcg",
+      "sha1": "c943d4d6c64e433b1b12bda494b0939b757cf9bf"
+    },
+    "kNFbG4jsBYBdpGmrCGeahA": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 9 Conrad.gcg"
+    },
+    "kPXGXsftTY4pE2oyJYmL4H": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 19 Paul Gallen.gcg"
+    },
+    "kUJCrk2W8chiCi8cxwvW8g": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 13 Evans.gcg"
+    },
+    "kVVMdN3aJ8m7XGXL3Wzpvz": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/55_jul1_24.gcg"
+    },
+    "kWR3555zvWR2LYaDF5fMje": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 15 Chrys Placca.gcg"
+    },
+    "kamKxdR9B5J5xJkjfUfH8k": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 21 Jared Guan Hui.gcg"
+    },
+    "keRUP7mpfjnt2i3h2HWUGE": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/King's Cup '19/King's Cup '19 Rd 20 Worasit.gcg"
+    },
+    "khJBbecwLG4YyT8kC86zng": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 26 Deldar ANNO.gcg"
+    },
+    "khRW638oCUrGYVbRxoMiCq": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 13 Randi.gcg"
+    },
+    "kjuK7CWHqgTxWhAzPDW9vt": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/Austin '23/Austin '23 Rd 7 Sandy Nang.gcg"
+    },
+    "kpehYJAWpVkY6RUkXMktkG": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 28 Moiz Ullah Baig.gcg"
+    },
+    "kwcdsH4YXQadcNchYmg6R8": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 1 Alex Tan.gcg"
+    },
+    "mFKarTFDjWGFmmNF6dgrv7": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/45_may20_24.gcg"
+    },
+    "mSUYrkn7rR": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/08 Seed 9 - Dreamcatcher vs JD.gcg",
+      "sha1": "aa9bdb7d5bce42d08d4c9abebdcb34fdf0513dd4"
+    },
+    "mWh3idQoNjFVrQHdLT342f": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 20 Evan Berofsky.gcg"
+    },
+    "mcQxT5iKvWJu4zeigAC52q": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/6_nov14_22.gcg"
+    },
+    "mmqYfFwBKddP2dPwnPDGxE": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 22 Dave Wiegand ANNO.gcg"
+    },
+    "mofQEZx2UPp6hAJojtAupc": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 28 Dave Wiegand.gcg"
+    },
+    "mwnBwUjBPV6HhnofGSFJCm": {
+      "origin": "repo",
+      "path": "Tournament Games/2022/Hood River 2022/Hood River 2022 Rd 11 Jesse Matthews.gcg"
+    },
+    "mzirP998SLuFiSC748fCNm": {
+      "origin": "repo",
+      "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 1 Karen Richards.gcg"
+    },
+    "n5uJuUkNSydknDzsp7poP4": {
+      "origin": "repo",
+      "path": "Practice Games/James Curley/71_oct28_24.gcg"
+    },
+    "nMkoBRwjFhQK9trf38CJ7w": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Cape Town '16/Cape Town '16 Rd 32 Kay Faust.gcg"
+    },
+    "nQnYrebFCoPwN8DioCSVQ6": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 11 Neil Scott.gcg"
+    },
+    "nVEJo5Kxh86fXzbCDtK7MS": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 32 Richard Geria.gcg"
+    },
+    "nZhREVQCvw5krAypj9cBHC": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 15 Shan Abbasi.gcg"
+    },
+    "ndmbcsPK5jN42YuQfWyajk": {
+      "origin": "repo",
+      "path": "Tournament Games/2023/WESPAC '23/WESPAC '23 Rd 22 Wayne Kelly.gcg"
+    },
+    "ndunoavLYa": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/04 Seed 5 - adithyalankesh vs JD.gcg",
+      "sha1": "0f9390bcfe27780aac929feb6358094fa6cc19dc"
+    },
+    "ne6qw4xyKP2zxeqoiWZoLL": {
+      "origin": "woogles",
+      "path": "Practice Games/James Curley/87_apr4_26.gcg",
+      "sha1": "41877ebbff76f75180f4f8364a1ff61ee2e1f50c"
+    },
+    "ngvjf2uZTTMS5tjq64jfkd": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/WESPAC '19/WESPAC '19 Rd 9 BNJY.gcg"
+    },
+    "nrjDojcy3jUENWJHUXMCKS": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 5 Esther Perrins ANNO.gcg"
+    },
+    "nvTpvQgkJhHkHjSvM9vzAY": {
+      "origin": "repo",
+      "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 8 Alastair Richards ANNO.gcg"
+    },
+    "o7zQALZJKmNUDHZqsiK2Nc": {
+      "origin": "repo",
+      "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 5 Carol Johnsen.gcg"
+    },
+    "oB7hzqnQxWraVn5eLUtgQ2": {
+      "origin": "repo",
+      "path": "Tournament Games/2019/NOLA '19/NOLA '19 Rd 18 Evan Berofsky.gcg"
+    },
+    "oNPCpoeBrX": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 18/08 Seed 9 - ninjasloth vs JD.gcg",
+      "sha1": "96850cbd15504f4d9fdf011515af60f2e3e3184c"
+    },
+    "oUaxCAM9jCqCrSyoNiLcM2": {
+      "origin": "woogles",
+      "path": "Tournament Games/2026/Causeway 2026/03 Rd 4 JD vs Josh Watt.gcg",
+      "sha1": "92788c6354eb24484c4aba49c76a36f06a45eb41"
+    },
+    "ofWHTk9ryS": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/08 Seed 9 - Dreamcatcher vs JD.gcg",
+      "sha1": "052de9b2228ebba9f4530dc09070754585f0d0ac"
+    },
+    "ofZHDNPky4": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 19/01 Seed 2 - eideticeve vs JD.gcg",
+      "sha1": "f4baeb67ce1587e270caf2fef84460d1769cd529"
+    },
+    "pJkG25MsQJ": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/09 Seed 10 - Splashout vs JD.gcg",
+      "sha1": "085040689a01c293ca7ac6882a4f649cab77472c"
+    },
+    "pfnAjRe56v": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/11 Seed 12 - kathy741 vs JD.gcg",
+      "sha1": "3489164904f14cacb716c61807711eca0c16895f"
+    },
+    "qNyyTS7gta": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/09 Seed 10 - Kabashibi vs JD.gcg",
+      "sha1": "95b44a6aec384358996182e4e06de82990ab70bb"
+    },
+    "qWSGuy39Ex": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/12 Seed 13 - Catie vs JD.gcg",
+      "sha1": "fc8eb6b25a7d9a4a5beb0bf46c434bb35b47aef3"
+    },
+    "rrPKnaSiCG": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 21/13 Seed 14 - SallyD vs JD.gcg",
+      "sha1": "c51e0afdb956a2132c3d8d64ffc33c72820cedf3"
+    },
+    "seufJk2zKN": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/05 Seed 6 - ninjasloth vs JD.gcg",
+      "sha1": "dc0670fb8dffc959ba2429698cb760743bf89b86"
+    },
+    "t9RyRN9moZ": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/02 Seed 3 - auricle vs JD.gcg",
+      "sha1": "88283f0e1eb92f187b5ef3fca26f95ebc6bc4015"
+    },
+    "thohTdbfbx": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/07 Seed 8 - LoveLetters vs JD.gcg",
+      "sha1": "6df103a6dcb433d6851af0a09aa52a4cce04f1b4"
+    },
+    "vimBtsoVDc": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/05 Seed 6 - dang3rous vs JD.gcg",
+      "sha1": "bc6836a8a11c1ddd539c54d8eb631dcb5734ab87"
+    },
+    "vitB6GqvH5": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/06 Seed 7 - hiiamrayne vs JD.gcg",
+      "sha1": "a9ee74b60d0bf405c7b0823eca14c11745967f3e"
+    },
+    "vrvfZpciJG": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 24/13 Seed 14 - ZenHuman vs JD.gcg",
+      "sha1": "cf0d73d78a37e2398cfc39f74cf7799f00cba021"
+    },
+    "xcUFzpCprg": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/05 Seed 6 - CynicalAd vs JD.gcg",
+      "sha1": "b7224499fc14f44cf7b28b71ba1861eecda44fe3"
+    },
+    "xqMdduex4c": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/13 Seed 14 - Douglas2388 vs JD.gcg",
+      "sha1": "d79b6a94d3638915dbc395eefa586d2d9a1811f3"
+    },
+    "yQ4uRV3XeW": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 20/09 Seed 10 - Earwiggles vs JD.gcg",
+      "sha1": "a07ae0acccef04e9a31059dfc62a7e64887afc2a"
+    },
+    "yeAogkZvng": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 23/01 Seed 2 - auricle vs JD.gcg",
+      "sha1": "5913f18fb862211bef22dfc8e99efd74dd6bcf3f"
+    },
+    "zy5fNWZqXJ": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 22/06 Seed 7 - avianae vs JD.gcg",
+      "sha1": "607324cef8fdccf3d77d243e3da097dedcbfbbda"
+    }
+  }
+}
