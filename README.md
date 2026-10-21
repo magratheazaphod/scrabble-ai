@@ -10,7 +10,8 @@ running the daily work unattended.
 
 - **Tournament game archive** — `Tournament Games/<year>/<tournament>/` (2010–2025)
   and `Practice Games/James Curley/`, plus `board-pictures/` for scoresheets
-  awaiting reconstruction.
+  awaiting reconstruction. [`WESPA-COVERAGE.md`](WESPA-COVERAGE.md) shows which
+  WESPA-rated events have their games archived here.
 - **Uploading games to Woogles** — `.gcg` files upload directly via the Woogles
   API (`gcg-upload` skill); over-the-board games get reconstructed from
   scoresheet + board photos first, then uploaded the same way
