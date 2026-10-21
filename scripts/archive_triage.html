@@ -1,0 +1,233 @@
+<title>Archive Triage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: summary strip, then event list beside the selected event's rounds; stacks at phone width. */
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d2320; --muted: #66706b; --line: #e2e1da;
+  --accent: #8a5a2b;            /* tile wood */
+  --ok: #2f7d4f; --ok-bg: #e4f2e9;
+  --warn: #9a6a00; --warn-bg: #fbf0d6;
+  --bad: #b23a2e; --bad-bg: #fae4e1;
+  --none: #5f6670; --none-bg: #ebecee;
+  --display: "Fraunces", Georgia, serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #161a18; --panel: #1f2421; --ink: #e8ebe8; --muted: #9aa39e; --line: #313833;
+  --accent: #d19a5e; --ok: #6cc690; --ok-bg: #1f3428; --warn: #e5b54a; --warn-bg: #3a3017;
+  --bad: #ef8a7d; --bad-bg: #3d211e; --none: #a9b0b8; --none-bg: #2a2f33; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #161a18; --panel: #1f2421; --ink: #e8ebe8; --muted: #9aa39e; --line: #313833;
+  --accent: #d19a5e; --ok: #6cc690; --ok-bg: #1f3428; --warn: #e5b54a; --warn-bg: #3a3017;
+  --bad: #ef8a7d; --bad-bg: #3d211e; --none: #a9b0b8; --none-bg: #2a2f33; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--body); }
+.wrap { max-width: 1200px; margin: 0 auto; padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px; }
+h1 { font: 600 28px/1.15 var(--display); margin: 0; text-wrap: balance; }
+h2 { font: 600 20px/1.2 var(--display); margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); max-width: 70ch; margin: 4px 0 0; }
+a { color: var(--accent); }
+.num { font-variant-numeric: tabular-nums; font-family: var(--mono); }
+
+.summary { display: flex; flex-wrap: wrap; gap: 8px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; min-width: 0; }
+.stat b { display: block; font: 500 22px/1.1 var(--mono); }
+.stat span { color: var(--muted); font-size: 12px; }
+
+.main { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 760px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.events { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.events-head { padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.events-head label { color: var(--muted); font-size: 12px; display: flex; gap: 6px; align-items: center; }
+.ev { display: grid; gap: 4px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line);
+  padding: 10px 12px; color: inherit; font: inherit; cursor: pointer; }
+.ev:hover { background: var(--bg); }
+.ev[aria-current="true"] { background: var(--bg); box-shadow: inset 3px 0 0 var(--accent); }
+.ev:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ev-top { display: flex; justify-content: space-between; gap: 8px; }
+.ev-name { font-weight: 500; min-width: 0; }
+.ev-meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--none-bg); }
+.bar i { display: block; }
+
+.detail { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.chipbtn { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.chipbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+.pill { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.p-ok { color: var(--ok); background: var(--ok-bg); }
+.p-warn { color: var(--warn); background: var(--warn-bg); }
+.p-bad { color: var(--bad); background: var(--bad-bg); }
+.p-none { color: var(--none); background: var(--none-bg); }
+.why { color: var(--muted); font-size: 13px; margin-top: 4px; max-width: 60ch; }
+.file { font-family: var(--mono); font-size: 12px; color: var(--muted); word-break: break-all; }
+.delta { color: var(--warn); }
+.empty { color: var(--muted); padding: 12px 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Archive triage</h1>
+    <p class="sub">Every round of every WESPA-rated event, paired with its <span class="num">.gcg</span> in the archive, and what stands between each file and Woogles. Generated <span id="gen"></span> by <span class="num">scripts/wespa_coverage.py --page</span>.</p>
+  </header>
+
+  <section class="summary" id="summary" aria-label="Totals"></section>
+
+  <div class="legend">
+    <span><i style="background:var(--ok)"></i>On Woogles</span>
+    <span><i style="background:var(--accent)"></i>Ready to upload</span>
+    <span><i style="background:var(--bad)"></i>Blocked</span>
+    <span><i style="background:var(--none)"></i>No file</span>
+  </div>
+
+  <div class="main">
+    <nav class="events" aria-label="Events">
+      <div class="events-head">
+        <strong>Events</strong>
+        <label for="onlyProblems"><input type="checkbox" id="onlyProblems" checked> Only events with problems</label>
+      </div>
+      <div id="eventList"></div>
+    </nav>
+    <section class="detail" id="detail" aria-live="polite"></section>
+  </div>
+</div>
+
+<script id="data" type="application/json">__TRIAGE_DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// One state per round, in the order a person would act on them.
+function state(r) {
+  if (r.status === 'missing') return 'none';
+  if (r.upload === 'on_woogles') return 'ok';
+  if (r.upload === 'blocked') return 'bad';
+  return 'ready';
+}
+const LABEL = { ok: 'On Woogles', ready: 'Ready to upload', bad: 'Blocked', none: 'No file' };
+const PILL = { ok: 'p-ok', ready: 'p-warn', bad: 'p-bad', none: 'p-none' };
+const COLOR = { ok: 'var(--ok)', ready: 'var(--accent)', bad: 'var(--bad)', none: 'var(--none)' };
+
+function explain(reason) {
+  const [kind, ...rest] = reason.split(': ');
+  const detail = rest.join(': ');
+  if (kind === 'unterminated-game')
+    return 'The file stops before the game ends. Woogles would import it as an unfinished game, which blocks every later upload until it is deleted. It needs its last moves, or at least the end-of-game tiles line.';
+  if (kind === 'short rack')
+    return `Your rack here lists only the tiles you played (${detail}), not the full seven. BestBot would analyze it once, wrongly, and a finished analysis can never be redone. It needs your full rack, or the turn left unanalyzed.`;
+  if (kind === 'endgame-mismatch')
+    return `The final line's sign doesn't fit its rack (${detail}). Check the last line by hand.`;
+  if (kind === 'playthrough-conflict')
+    return `A play line conflicts with tiles already on the board (${detail}).`;
+  return reason;
+}
+
+function counts(ev) {
+  const c = { ok: 0, ready: 0, bad: 0, none: 0, differs: 0 };
+  for (const r of ev.rounds) { c[state(r)]++; if (r.status === 'score_differs') c.differs++; }
+  return c;
+}
+const hasProblem = (ev) => { const c = counts(ev); return c.bad + c.none + c.ready > 0 || ev.unpaired.length > 0; };
+
+function renderSummary() {
+  const t = { ok: 0, ready: 0, bad: 0, none: 0, differs: 0 };
+  for (const ev of DATA.events) { const c = counts(ev); for (const k in t) t[k] += c[k]; }
+  const total = t.ok + t.ready + t.bad + t.none;
+  $('#summary').innerHTML = [
+    [total, 'official rounds'], [t.ok, 'on Woogles'], [t.ready, 'ready to upload'],
+    [t.bad, 'blocked'], [t.none, 'no file'], [t.differs, 'score differs from submitted'],
+  ].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+  $('#gen').textContent = DATA.generated || '';
+}
+
+let current = null, filter = 'problems';
+
+function renderList() {
+  const only = $('#onlyProblems').checked;
+  const evs = DATA.events.filter(e => !only || hasProblem(e));
+  if (!evs.some(e => e.tourneyid === current)) current = evs[0]?.tourneyid ?? null;
+  $('#eventList').innerHTML = evs.map(ev => {
+    const c = counts(ev), n = ev.rounds.length || 1;
+    const seg = ['ok', 'ready', 'bad', 'none'].map(k => c[k] ? `<i style="width:${100 * c[k] / n}%;background:${COLOR[k]}"></i>` : '').join('');
+    return `<button class="ev" data-id="${ev.tourneyid}" aria-current="${ev.tourneyid === current}">
+      <span class="ev-top"><span class="ev-name">${esc(ev.name)}</span><span class="ev-meta num">${esc(ev.date)}</span></span>
+      <span class="bar" aria-hidden="true">${seg}</span>
+      <span class="ev-meta">${c.ok} on Woogles · ${c.ready} ready · ${c.bad} blocked · ${c.none} no file</span>
+    </button>`;
+  }).join('') || '<p class="empty" style="padding:12px">Nothing left to fix.</p>';
+  for (const b of document.querySelectorAll('.ev')) b.onclick = () => { current = +b.dataset.id; save(); renderList(); renderDetail(); };
+}
+
+function renderDetail() {
+  const ev = DATA.events.find(e => e.tourneyid === current);
+  if (!ev) { $('#detail').innerHTML = '<p class="empty">Pick an event.</p>'; return; }
+  const c = counts(ev);
+  const shown = { problems: r => state(r) !== 'ok', differs: r => r.status === 'score_differs', all: () => true };
+  const rows = ev.rounds.filter(shown[filter] || shown.problems);
+  const folders = ev.folders.map(f => `<span class="file">${esc(f)}/</span>`).join(' ');
+  const cols = ev.collections.map(c => `<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)} on Woogles</a>`).join('');
+  $('#detail').innerHTML = `
+    <div>
+      <h2>${esc(ev.name)}</h2>
+      <p class="sub"><span class="num">${esc(ev.date)}</span> · ${esc(ev.record)} · ${ev.rounds.length} rated rounds · ${c.ok} on Woogles, ${c.ready} ready, ${c.bad} blocked, ${c.none} with no file</p>
+    </div>
+    <div class="links"><a href="${esc(ev.wespa_url)}" target="_blank" rel="noopener">WESPA results</a>${cols}${folders ? '<span>' + folders + '</span>' : '<span class="why">No folder in the archive.</span>'}</div>
+    <div class="filters" role="group" aria-label="Show rounds">
+      ${[['problems', 'Needs attention'], ['differs', 'Score differs'], ['all', 'All rounds']].map(([k, l]) =>
+        `<button class="chipbtn" data-f="${k}" aria-pressed="${filter === k}">${l}</button>`).join('')}
+    </div>
+    <div class="tablewrap">${rows.length ? `
+      <table>
+        <thead><tr><th>Rd</th><th>Opponent</th><th>Submitted</th><th>File</th><th>State</th></tr></thead>
+        <tbody>${rows.map(rowHtml).join('')}</tbody>
+      </table>` : '<p class="empty">Nothing in this view.</p>'}</div>
+    ${ev.unpaired.length ? `
+      <div>
+        <h2 style="font-size:16px">Files not paired with any round</h2>
+        <p class="why">These sit in this event's folder but match no official round by number, opponent or score: a misnumbered round, a game from an unrated side event, or a casual game filed here.</p>
+        <div class="tablewrap"><table><thead><tr><th>File</th><th>Opponent</th><th>Score</th></tr></thead><tbody>
+        ${ev.unpaired.map(u => `<tr><td class="file">${esc(u.file)}</td><td>${esc(u.opponent ?? 'unreadable')}</td><td class="num">${u.file_score ? u.file_score.join('-') : '-'}</td></tr>`).join('')}
+        </tbody></table></div>
+      </div>` : ''}`;
+  for (const b of document.querySelectorAll('.chipbtn')) b.onclick = () => { filter = b.dataset.f; save(); renderDetail(); };
+}
+
+function rowHtml(r) {
+  const s = state(r);
+  const off = r.official.join('-');
+  const fileScore = r.file_score ? r.file_score.join('-') : '';
+  let notes = '';
+  if (s === 'none') notes = 'No file for this round in the archive.';
+  if (s === 'bad') notes = r.reasons.map(explain).map(t => `<div class="why">${esc(t)}</div>`).join('');
+  if (r.status === 'score_differs' && s !== 'none')
+    notes += `<div class="why">The file ends <span class="num delta">${fileScore}</span>; <span class="num">${off}</span> was submitted. Fine to upload: it gets a comment on the final turn, "Final score submitted as ${off}".</div>`;
+  return `<tr>
+    <td class="num">${r.round}</td>
+    <td>${esc(r.opponent)} <span class="pill ${r.result === 'W' ? 'p-ok' : 'p-none'}">${esc(r.result)}</span></td>
+    <td class="num">${off}</td>
+    <td>${r.file ? `<div class="file">${esc(r.file.split('/').pop())}</div>` : '<span class="why">-</span>'}</td>
+    <td><span class="pill ${PILL[s]}">${LABEL[s]}</span>${notes.startsWith('<') ? notes : notes ? `<div class="why">${esc(notes)}</div>` : ''}</td>
+  </tr>`;
+}
+
+function save() { try { localStorage.setItem('triage', JSON.stringify({ current, filter, only: $('#onlyProblems').checked })); } catch (e) {} }
+try { const s = JSON.parse(localStorage.getItem('triage') || '{}'); if (s.filter) filter = s.filter; if (s.current) current = s.current; if (s.only === false) $('#onlyProblems').checked = false; } catch (e) {}
+$('#onlyProblems').onchange = () => { save(); renderList(); renderDetail(); };
+renderSummary(); renderList(); renderDetail();
+</script>

@@ -90,6 +90,24 @@ def rpc(hdrs, service, body):
     return r.json()
 
 
+def post_comments(hdrs, args, game_id):
+    if args.comment:
+        rpc(hdrs, 'comments_service.GameCommentService/AddGameComment',
+            {'game_id': game_id, 'event_number': 0, 'comment': args.comment})
+        print('posted game comment (event 0)')
+    if args.submitted_score:
+        # Index the server's own event list, not the GCG's move lines: the
+        # server can hold events the file has no line for (an implied pass
+        # before the end-rack points), and the comment belongs on the last.
+        events = rpc(hdrs, 'game_service.GameMetadataService/GetGameHistory',
+                     {'game_id': game_id})['history']['events']
+        last = len(events) - 1
+        rpc(hdrs, 'comments_service.GameCommentService/AddGameComment',
+            {'game_id': game_id, 'event_number': last,
+             'comment': f'Final score submitted as {args.submitted_score}'})
+        print(f'posted submitted-score comment (event {last})')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('gcg')
@@ -99,6 +117,13 @@ def main():
     ap.add_argument('--create-collection', action='store_true')
     ap.add_argument('--chapter')
     ap.add_argument('--comment')
+    ap.add_argument('--submitted-score', metavar='JD-OPP',
+                    help='the official final score when it differs from the file\'s, Jesse\'s '
+                         'score first (e.g. 443-306): posts "Final score submitted as 443-306" '
+                         'on the final turn. A real-life scoring error is no reason not to upload.')
+    ap.add_argument('--game-id',
+                    help='an already-uploaded game: skip the import and only post the '
+                         '--comment / --submitted-score comments on it (gcg is then ignored)')
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--cleanup', action='store_true')
     ap.add_argument('--slot', type=int,
@@ -114,6 +139,13 @@ def main():
                     help='downgrade a verify_gcg replay failure to a warning — ONLY for '
                          'historical files with known, documented defects (e.g. game #90)')
     args = ap.parse_args()
+    if args.submitted_score and not re.fullmatch(r'\d+-\d+', args.submitted_score):
+        sys.exit('--submitted-score takes JD-OPP, e.g. 443-306')
+    if args.game_id:
+        load_env()
+        hdrs = {'Content-Type': 'application/json', 'X-Api-Key': os.environ['WOOGLES_API_KEY']}
+        post_comments(hdrs, args, args.game_id)
+        return
 
     if args.collection and not args.chapter:
         sys.exit('--collection requires --chapter')
@@ -271,11 +303,8 @@ def main():
                 {'collection_uuid': match['uuid'], 'game_ids': order})
             print(f'moved to slot {order.index(game_id) + 1}/{len(order)}')
 
-    # 6. comment
-    if args.comment:
-        rpc(hdrs, 'comments_service.GameCommentService/AddGameComment',
-            {'game_id': game_id, 'event_number': 0, 'comment': args.comment})
-        print('posted game comment (event 0)')
+    # 6. comments
+    post_comments(hdrs, args, game_id)
 
     if entry is not None:
         entry['status'] = 'complete'

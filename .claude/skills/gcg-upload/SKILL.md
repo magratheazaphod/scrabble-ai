@@ -101,6 +101,15 @@ review it. **Both channels are required:**
 Silent healing is not acceptable. If a comment can't be posted, say so explicitly
 in the summary.
 
+## When the file's score isn't the submitted score
+
+Common, and not a reason to hold a game back: the score submitted at the table
+was often a real-life scoring error. Upload it as-is with
+`--submitted-score JD-OPP` (official score, Jesse's first, from
+`wespa_tournaments.py --rounds`), which comments "Final score submitted as
+JD-OPP" on the final turn. For a game already on Woogles, add the comment with
+`woogles_upload.py - --lexicon X --game-id <id> --submitted-score JD-OPP`.
+
 ## When a round can't be uploaded
 
 If a file won't parse cleanly and you decide to skip that round rather than guess

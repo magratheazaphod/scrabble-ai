@@ -117,7 +117,7 @@ historical error in this repo came from.
 | `audit_woogles_consistency.py` | tracker ↔ live game ↔ repo file cross-check for OCR games |
 | `wespa_ratings.py` | WESPA OTB ratings/titles: `--refresh` the local cache, `--lookup` a name, `--suggest` unmatched opponents. Owns the transport to wespa.xerafin.net - nothing else opens a connection to that host |
 | `wespa_tournaments.py` | WESPA results database: identify which real tournament a collection is (by score fingerprint, never by name), its date, division, place and round-by-round scores. Fills `.github/event-dates.json` |
-| `wespa_coverage.py` | render `WESPA-COVERAGE.md`: per WESPA-rated event, how many rounds have a `.gcg` in the archive (matched by score, not folder name). Re-run after archiving a tournament |
+| `wespa_coverage.py` | render `WESPA-COVERAGE.md`: per WESPA-rated event, which official rounds have a `.gcg` (paired by filename round number + opponent, else score). `--page PATH` fills `scripts/archive_triage.html` into the archive-triage page: per round, on Woogles / ready / blocked (and why) / no file |
 | `sync_woogles_archive.py` | mirror every finished game in Jesse's Woogles collections into the `.gcg` archive (`Tournament Games/`, `Practice Games/James Curley/`, `Woogles League/`). Runs in `woogles-report.yml`. Pre-existing files stay canonical; files it created track later Woogles edits. State and per-collection folder overrides: `.github/woogles-archive.json` |
 | `otb_solver.py` | board/scoring/lexicon engine + OTB placement solver. Shared. |
 | `verify_gcg.py` | independent GCG replay verifier - the hard gate on **every** upload, not just OTB |
