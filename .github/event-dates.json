@@ -120,5 +120,10 @@
     "label": "Austin 2023",
     "coco_url": "https://www.cocoscrabble.org/tournaments/austin-2023",
     "note": "CoCo 2nd Annual Austin Tile X-Words, 1-2 Apr 2023. Fingerprint matches after fixing Rd 12 (nicknames were swapped): files give 10-4 +716 vs official 10-4 +688; the CoCo recap's own scores for Rd 10/11/12 differ from the GCGs by 10/5/10, which accounts for most of the gap. 'Dr Bing' is Dave Wiegand's nickname."
+  },
+  "Alchemist Cup 2018": {
+    "date": "2018-12-09",
+    "wespa_tourneyid": 719,
+    "wespa_name": "Alchemist Cup"
   }
 }
