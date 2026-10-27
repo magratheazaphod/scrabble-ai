@@ -48,6 +48,10 @@
       "folder": "Tournament Games/2022/Hood River 2022",
       "title": "Hood River 2022"
     },
+    "493b06f9-575a-48bb-964c-4a44120cd517": {
+      "folder": "Woogles League/Season 25",
+      "title": "Collins League - Season 25"
+    },
     "55b29df3-10fd-471b-9e87-135ed5bbb2f6": {
       "folder": "Practice Games/James Curley",
       "title": "James Curley practice games"
@@ -385,6 +389,11 @@
     "7WGzgSMn4xAuJDh2YJqnDA": {
       "origin": "repo",
       "path": "Tournament Games/2018/WSC '18/WSC '18 Rd 9 Mohamed Kamara.gcg"
+    },
+    "7b6RJSxHjF": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 25/01 Seed 12 - StylesRockman vs JD.gcg",
+      "sha1": "d01d572b0485a3a211b069921ec1eead60af862b"
     },
     "7gmvwAn5RvKnK7qLHLyYn9": {
       "origin": "repo",
