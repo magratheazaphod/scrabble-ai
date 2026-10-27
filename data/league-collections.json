@@ -238,6 +238,24 @@
   "title": "Collins League - Season 18",
   "username": "magrathean"
  },
+ "493b06f9-575a-48bb-964c-4a44120cd517": {
+  "division_id": "adee5d34-737a-4e23-bccf-c064bf390b86",
+  "division_number": 8,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "abc9e030-d643-44b7-8151-acebf26a4700",
+  "season_number": 25,
+  "seeds": {
+   "7b6RJSxHjF": {
+    "opponent": "StylesRockman",
+    "rating": 1641.3733361028637,
+    "seed": 12
+   }
+  },
+  "title": "Collins League - Season 25",
+  "username": "magrathean"
+ },
  "6f8e3ff7-89a7-4700-a9b8-a4cc5aef1354": {
   "division_id": "ea7863e8-8c19-4c45-95ac-9c41c2b40373",
   "division_number": 11,
