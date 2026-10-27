@@ -247,10 +247,15 @@
   "season_id": "abc9e030-d643-44b7-8151-acebf26a4700",
   "season_number": 25,
   "seeds": {
+   "5JNf3UAFex": {
+    "opponent": "monomandan",
+    "rating": 1652.8426970736846,
+    "seed": 10
+   },
    "7b6RJSxHjF": {
     "opponent": "StylesRockman",
-    "rating": 1641.3733361028637,
-    "seed": 12
+    "rating": 1623.1043404276647,
+    "seed": 13
    }
   },
   "title": "Collins League - Season 25",
