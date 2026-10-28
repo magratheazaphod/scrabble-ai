@@ -249,18 +249,23 @@
   "seeds": {
    "5JNf3UAFex": {
     "opponent": "monomandan",
-    "rating": 1673.4572335140706,
-    "seed": 4
+    "rating": 1662.7546638510316,
+    "seed": 6
    },
    "5ptag4EcpF": {
     "opponent": "CyberQuad",
-    "rating": 1649.4633806578563,
-    "seed": 9
+    "rating": 1662.1141170536653,
+    "seed": 8
    },
    "7b6RJSxHjF": {
     "opponent": "StylesRockman",
     "rating": 1627.1166458750306,
     "seed": 13
+   },
+   "cPm5H76bqU": {
+    "opponent": "hiiamrayne",
+    "rating": 1640.4544305036336,
+    "seed": 12
    },
    "utT7BJcBeb": {
     "opponent": "Gabzor89",
