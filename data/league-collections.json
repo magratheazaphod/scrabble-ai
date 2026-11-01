@@ -255,27 +255,32 @@
    "5ptag4EcpF": {
     "opponent": "CyberQuad",
     "rating": 1687.003328360011,
-    "seed": 6
+    "seed": 5
    },
    "7b6RJSxHjF": {
     "opponent": "StylesRockman",
-    "rating": 1646.9024348111207,
-    "seed": 10
+    "rating": 1636.8340692564257,
+    "seed": 11
    },
    "CFw9eKLDwz": {
     "opponent": "picopaco",
-    "rating": 1695.707214369088,
-    "seed": 5
+    "rating": 1684.0688802313693,
+    "seed": 6
    },
    "Tu47CncSac": {
     "opponent": "LadyK",
     "rating": 1641.8995826716096,
-    "seed": 11
+    "seed": 10
    },
    "XxnEhBcaAZ": {
     "opponent": "wajin",
     "rating": 1767.5817913868939,
     "seed": 3
+   },
+   "aUj836gE6r": {
+    "opponent": "DataMn",
+    "rating": 1648.5951846268438,
+    "seed": 9
    },
    "cPm5H76bqU": {
     "opponent": "hiiamrayne",
@@ -284,7 +289,7 @@
    },
    "j8DwSgypKN": {
     "opponent": "tocha",
-    "rating": 1710.310275867085,
+    "rating": 1703.304559975414,
     "seed": 4
    },
    "q86PhUruGg": {
@@ -299,8 +304,8 @@
    },
    "yTL5FncQe9": {
     "opponent": "BingoLittle",
-    "rating": 1619.7632044459385,
-    "seed": 14
+    "rating": 1631.3850196875678,
+    "seed": 13
    }
   },
   "title": "Collins League - Season 25",
