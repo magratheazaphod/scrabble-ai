@@ -34,6 +34,16 @@ on:
 permissions:
   contents: write
 
+# Runs in the same lane go one at a time; a later run waits rather than
+# racing. Without this, the 10:30 CST safety-net dispatch could start while a
+# late-queued cron run was still mid-flight, read the not-yet-updated
+# last-report-sent marker, and send the daily email a second time (2026-11-05,
+# 2026-11-10). One-off sends get their own lane, keyed on their inputs, so a
+# queued cron run can never cancel one (GitHub keeps one pending run per group).
+concurrency:
+  group: woogles-report-${{ github.event.inputs.target_username || '' }}-${{ github.event.inputs.target_collection_uuid || '' }}
+  cancel-in-progress: false
+
 jobs:
   report:
     runs-on: ubuntu-latest
@@ -133,7 +143,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .github/report-state.json
           git diff --cached --quiet || git commit -m "Update report state ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
-          git push origin HEAD:master
+          # Another workflow (or a manual push) may have moved master since checkout.
+          for i in 1 2 3; do
+            git push origin HEAD:master && break
+            [ "$i" = 3 ] && exit 1
+            sleep $((i * 5)); git pull --rebase origin master
+          done
 
       # Games are annotated on Woogles first now, so pull every finished game in
       # Jesse's collections down into the .gcg archive (state and the
@@ -224,7 +239,17 @@ jobs:
               if [ -f "/tmp/$f" ]; then cp "/tmp/$f" "data/$f"; git add -f "data/$f"; fi
             done
           fi
-          git diff --cached --quiet && echo "Nothing changed — nothing to record." || (git commit -m "Update snapshot / rate-limit / report-sent markers ($(date -u +%Y-%m-%dT%H:%M:%SZ))" && git push origin woogles-data)
+          if git diff --cached --quiet; then
+            echo "Nothing changed - nothing to record."
+          else
+            git commit -m "Update snapshot / rate-limit / report-sent markers ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+            # woogles-snapshot.yml and one-off runs push this branch too.
+            for i in 1 2 3; do
+              git push origin woogles-data && break
+              [ "$i" = 3 ] && exit 1
+              sleep $((i * 5)); git pull --rebase origin woogles-data
+            done
+          fi
 
       # Last on purpose: a failure here turns the workflow red (the alert)
       # without blocking the report/marker steps above. Scope: ONLY games the

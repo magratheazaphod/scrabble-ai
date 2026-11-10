@@ -24,7 +24,16 @@ LAST_SENT=$("$GIT" show origin/woogles-data:data/last-report-sent.txt 2>/dev/nul
 
 echo "$(date): today=$TODAY last-sent=$LAST_SENT"
 
-if [ "$LAST_SENT" != "$TODAY" ]; then
+# A late-queued scheduled run may still be on its way to sending; don't pile
+# a second run on top of it (the workflow's concurrency group would make it
+# wait and then no-op, but there's no point starting it). If the lookup
+# itself fails, fall through and dispatch - a duplicate beats a missed day.
+ACTIVE=$("$GH" run list --workflow woogles-report.yml --repo "$REPO" --limit 10 \
+    --json status --jq '[.[] | select(.status != "completed")] | length' || echo 0)
+
+if [ "$LAST_SENT" != "$TODAY" ] && [ "$ACTIVE" != "0" ]; then
+    echo "$(date): no report recorded for $TODAY yet, but $ACTIVE run(s) already queued/in progress - not dispatching"
+elif [ "$LAST_SENT" != "$TODAY" ]; then
     echo "$(date): no report recorded for $TODAY yet — triggering workflow_dispatch"
     "$GH" workflow run woogles-report.yml --repo "$REPO"
 else
