@@ -565,6 +565,24 @@
   "title": "Collins League - Season 19",
   "username": "magrathean"
  },
+ "a7aeecfe-a923-4537-8218-49f1f98c038d": {
+  "division_id": "40ff11ea-1a96-4235-95cb-ac8f1bcaf754",
+  "division_number": 8,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "1645f4b4-5e95-44c8-bb90-da6f620c942c",
+  "season_number": 26,
+  "seeds": {
+   "TfZSCm5KiF": {
+    "opponent": "monomandan",
+    "rating": 1667.240798523354,
+    "seed": 7
+   }
+  },
+  "title": "Collins League - Season 26",
+  "username": "magrathean"
+ },
  "c29206c8-3491-4297-87d4-a3fab33e7d10": {
   "division_id": "32c90411-1c9b-4b2c-a7fb-470b0440ccf3",
   "division_number": 9,
