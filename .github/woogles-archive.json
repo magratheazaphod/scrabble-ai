@@ -96,6 +96,10 @@
       "folder": "Tournament Games/2018/WSC '18",
       "title": "2018 World Scrabble Championship"
     },
+    "a7aeecfe-a923-4537-8218-49f1f98c038d": {
+      "folder": "Woogles League/Season 26",
+      "title": "Collins League - Season 26"
+    },
     "b2aa32e7-ab1d-45c2-8d59-362eeec37cb1": {
       "folder": "Tournament Games/2019/NSC '19",
       "title": "NSC 2019"
@@ -1359,6 +1363,11 @@
     "TdAidnmz2dLMKRweD2fz3q": {
       "origin": "repo",
       "path": "Tournament Games/2016/Causeway '16/Causeway '16 Rd 32 Nigel Richards.gcg"
+    },
+    "TfZSCm5KiF": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 26/01 Seed 7 - monomandan vs JD.gcg",
+      "sha1": "1f13deb17014015bbb8f9c459b55e301d622cad3"
     },
     "TfuEZaz2AQ6iwaLvLAhdyu": {
       "origin": "repo",
