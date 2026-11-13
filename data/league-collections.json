@@ -576,8 +576,8 @@
   "seeds": {
    "6icMuTKU5r": {
     "opponent": "StylesRockman",
-    "rating": 1643.7213929830746,
-    "seed": 11
+    "rating": 1652.8536404973331,
+    "seed": 10
    },
    "PjKD3TbY6j": {
     "opponent": "tocha",
@@ -589,9 +589,14 @@
     "rating": 1667.240798523354,
     "seed": 7
    },
+   "wnX6izzAJi": {
+    "opponent": "LoveLetters",
+    "rating": 1584.7146212425293,
+    "seed": 14
+   },
    "zVhQr3a8Tr": {
     "opponent": "moonfish",
-    "rating": 1682.6802300241038,
+    "rating": 1673.2864104640867,
     "seed": 6
    }
   },
