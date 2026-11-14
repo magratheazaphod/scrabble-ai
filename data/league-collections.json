@@ -576,18 +576,18 @@
   "seeds": {
    "6icMuTKU5r": {
     "opponent": "StylesRockman",
-    "rating": 1676.1279924791654,
-    "seed": 6
+    "rating": 1668.3494943263643,
+    "seed": 8
    },
    "PjKD3TbY6j": {
     "opponent": "tocha",
-    "rating": 1713.1633951822507,
+    "rating": 1705.332117440749,
     "seed": 5
    },
    "TfZSCm5KiF": {
     "opponent": "monomandan",
     "rating": 1675.6798888953717,
-    "seed": 7
+    "seed": 6
    },
    "YeeqqFe2Wc": {
     "opponent": "rrobinsky",
@@ -598,6 +598,11 @@
     "opponent": "Michel",
     "rating": 1659.1088835739183,
     "seed": 10
+   },
+   "a4fsEXnHbT": {
+    "opponent": "MattL",
+    "rating": 1805.0859661991008,
+    "seed": 3
    },
    "avw4UmauYL": {
     "opponent": "LadyK",
@@ -617,7 +622,7 @@
    "zVhQr3a8Tr": {
     "opponent": "moonfish",
     "rating": 1673.2864104640867,
-    "seed": 8
+    "seed": 7
    }
   },
   "title": "Collins League - Season 26",
