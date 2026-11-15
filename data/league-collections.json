@@ -576,7 +576,7 @@
   "seeds": {
    "6icMuTKU5r": {
     "opponent": "StylesRockman",
-    "rating": 1668.3494943263643,
+    "rating": 1668.3205172842158,
     "seed": 8
    },
    "PjKD3TbY6j": {
@@ -591,13 +591,13 @@
    },
    "YeeqqFe2Wc": {
     "opponent": "rrobinsky",
-    "rating": 1947.6500813268362,
+    "rating": 1934.178009429189,
     "seed": 1
    },
    "ZCuBHwvHpJ": {
     "opponent": "Michel",
     "rating": 1659.1088835739183,
-    "seed": 10
+    "seed": 11
    },
    "a4fsEXnHbT": {
     "opponent": "MattL",
@@ -608,6 +608,16 @@
     "opponent": "LadyK",
     "rating": 1664.2006281160834,
     "seed": 9
+   },
+   "dB2wR6TkQc": {
+    "opponent": "DataMn",
+    "rating": 1660.7870591972062,
+    "seed": 10
+   },
+   "uqSxDxGyZ5": {
+    "opponent": "K2O",
+    "rating": 1615.2613816797511,
+    "seed": 12
    },
    "vCLzdZtabX": {
     "opponent": "AMSams",
