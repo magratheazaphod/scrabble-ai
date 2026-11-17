@@ -576,12 +576,12 @@
   "seeds": {
    "6icMuTKU5r": {
     "opponent": "StylesRockman",
-    "rating": 1670.5406686437964,
+    "rating": 1667.9477435915057,
     "seed": 8
    },
    "PjKD3TbY6j": {
     "opponent": "tocha",
-    "rating": 1697.9042921097553,
+    "rating": 1710.5458860782137,
     "seed": 5
    },
    "TfZSCm5KiF": {
@@ -603,6 +603,11 @@
     "opponent": "MattL",
     "rating": 1805.0859661991008,
     "seed": 3
+   },
+   "a9QSpZj4HL": {
+    "opponent": "BingoLittle",
+    "rating": 1607.3966394994197,
+    "seed": 12
    },
    "avw4UmauYL": {
     "opponent": "LadyK",
