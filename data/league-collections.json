@@ -576,8 +576,8 @@
   "seeds": {
    "6icMuTKU5r": {
     "opponent": "StylesRockman",
-    "rating": 1661.9738877403486,
-    "seed": 9
+    "rating": 1670.5406686437964,
+    "seed": 8
    },
    "PjKD3TbY6j": {
     "opponent": "tocha",
@@ -597,7 +597,7 @@
    "ZCuBHwvHpJ": {
     "opponent": "Michel",
     "rating": 1659.1088835739183,
-    "seed": 10
+    "seed": 11
    },
    "a4fsEXnHbT": {
     "opponent": "MattL",
@@ -607,17 +607,17 @@
    "avw4UmauYL": {
     "opponent": "LadyK",
     "rating": 1664.2006281160834,
-    "seed": 8
+    "seed": 10
    },
    "dB2wR6TkQc": {
     "opponent": "DataMn",
-    "rating": 1658.550823062849,
-    "seed": 11
+    "rating": 1666.8312918493205,
+    "seed": 9
    },
    "uqSxDxGyZ5": {
     "opponent": "K2O",
-    "rating": 1615.2613816797511,
-    "seed": 12
+    "rating": 1606.8527515861563,
+    "seed": 13
    },
    "vCLzdZtabX": {
     "opponent": "AMSams",
@@ -631,7 +631,7 @@
    },
    "zVhQr3a8Tr": {
     "opponent": "moonfish",
-    "rating": 1685.7365046170491,
+    "rating": 1695.3959712887854,
     "seed": 6
    }
   },
