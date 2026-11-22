@@ -321,6 +321,24 @@
   "title": "Collins League - Season 25",
   "username": "magrathean"
  },
+ "679edabf-a64d-46b1-bfcf-58ce82ea4f65": {
+  "division_id": "5bd9e6b0-a41a-4f51-ae4b-294054c30dcf",
+  "division_number": 7,
+  "league_name": "Collins",
+  "league_slug": "csw",
+  "rating_key": "CSW19.classic.corres",
+  "season_id": "172b4776-f530-4179-96ed-c143e53f993d",
+  "season_number": 27,
+  "seeds": {
+   "nYdhZ4Spdg": {
+    "opponent": "Charlie_T",
+    "rating": 1730.6443860826976,
+    "seed": 7
+   }
+  },
+  "title": "Collins League - Season 27",
+  "username": "magrathean"
+ },
  "6f8e3ff7-89a7-4700-a9b8-a4cc5aef1354": {
   "division_id": "ea7863e8-8c19-4c45-95ac-9c41c2b40373",
   "division_number": 11,
