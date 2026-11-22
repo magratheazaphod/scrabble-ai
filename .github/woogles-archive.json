@@ -64,6 +64,10 @@
       "folder": "Tournament Games/2023/Austin '23",
       "title": "Austin '23"
     },
+    "679edabf-a64d-46b1-bfcf-58ce82ea4f65": {
+      "folder": "Woogles League/Season 27",
+      "title": "Collins League - Season 27"
+    },
     "6f8e3ff7-89a7-4700-a9b8-a4cc5aef1354": {
       "folder": "Woogles League/Season 21",
       "title": "Collins League - Season 21"
@@ -2623,6 +2627,11 @@
     "nVEJo5Kxh86fXzbCDtK7MS": {
       "origin": "repo",
       "path": "Tournament Games/2017/WESPAC '17/WESPAC '17 Rd 32 Richard Geria.gcg"
+    },
+    "nYdhZ4Spdg": {
+      "origin": "woogles",
+      "path": "Woogles League/Season 27/01 Seed 7 - Charlie_T vs JD.gcg",
+      "sha1": "11c730a38f8de36ec8aa55b5fb02680a8fc567b8"
     },
     "nZhREVQCvw5krAypj9cBHC": {
       "origin": "repo",
