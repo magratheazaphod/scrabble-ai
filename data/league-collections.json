@@ -330,15 +330,25 @@
   "season_id": "172b4776-f530-4179-96ed-c143e53f993d",
   "season_number": 27,
   "seeds": {
+   "Wg4HZn2oaT": {
+    "opponent": "MattL",
+    "rating": 1761.0586958957913,
+    "seed": 3
+   },
+   "jNJCo5aTfY": {
+    "opponent": "LAKRAM",
+    "rating": 1654.0321242344182,
+    "seed": 11
+   },
    "nE5jjEn7qo": {
     "opponent": "tocha",
-    "rating": 1745.6900497996812,
+    "rating": 1737.5615582597839,
     "seed": 6
    },
    "nYdhZ4Spdg": {
     "opponent": "Charlie_T",
     "rating": 1719.6704072979842,
-    "seed": 8
+    "seed": 7
    }
   },
   "title": "Collins League - Season 27",
