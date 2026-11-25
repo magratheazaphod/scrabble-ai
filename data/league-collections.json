@@ -330,24 +330,39 @@
   "season_id": "172b4776-f530-4179-96ed-c143e53f993d",
   "season_number": 27,
   "seeds": {
+   "FD4wQboxFK": {
+    "opponent": "skybluesteve",
+    "rating": 1617.8842514342584,
+    "seed": 13
+   },
    "Wg4HZn2oaT": {
     "opponent": "MattL",
-    "rating": 1767.2710946160166,
+    "rating": 1764.0454950423918,
     "seed": 3
    },
    "jNJCo5aTfY": {
     "opponent": "LAKRAM",
-    "rating": 1654.0321242344182,
+    "rating": 1653.3922861863052,
     "seed": 11
+   },
+   "mMjr3PZPAo": {
+    "opponent": "rhachillas",
+    "rating": 1589.8804526621839,
+    "seed": 15
    },
    "nE5jjEn7qo": {
     "opponent": "tocha",
     "rating": 1747.5035832687597,
-    "seed": 5
+    "seed": 6
    },
    "nYdhZ4Spdg": {
     "opponent": "Charlie_T",
     "rating": 1719.6704072979842,
+    "seed": 7
+   },
+   "yNagucLWNY": {
+    "opponent": "Rasho",
+    "rating": 1717.498925965451,
     "seed": 8
    }
   },
