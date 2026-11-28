@@ -330,6 +330,11 @@
   "season_id": "172b4776-f530-4179-96ed-c143e53f993d",
   "season_number": 27,
   "seeds": {
+   "3bvAdKsdq4": {
+    "opponent": "IOMG",
+    "rating": 1647.3527423848636,
+    "seed": 11
+   },
    "FD4wQboxFK": {
     "opponent": "skybluesteve",
     "rating": 1627.6451579044628,
@@ -337,8 +342,8 @@
    },
    "FHoYbmtky7": {
     "opponent": "ahmadthegreat",
-    "rating": 1719.7234962987545,
-    "seed": 7
+    "rating": 1737.0622103901628,
+    "seed": 6
    },
    "Wg4HZn2oaT": {
     "opponent": "MattL",
@@ -348,7 +353,7 @@
    "jNJCo5aTfY": {
     "opponent": "LAKRAM",
     "rating": 1653.3922861863052,
-    "seed": 12
+    "seed": 10
    },
    "jzFLTVaS8q": {
     "opponent": "wogscrab",
@@ -363,21 +368,21 @@
    "nE5jjEn7qo": {
     "opponent": "tocha",
     "rating": 1727.123876997978,
-    "seed": 6
+    "seed": 7
    },
    "nYdhZ4Spdg": {
     "opponent": "Charlie_T",
-    "rating": 1731.123262392457,
+    "rating": 1738.5099544065652,
     "seed": 5
    },
    "rx2kXvBAfj": {
     "opponent": "pommie",
-    "rating": 1660.7302543666465,
+    "rating": 1669.9315881129642,
     "seed": 9
    },
    "yNagucLWNY": {
     "opponent": "Rasho",
-    "rating": 1716.4834122428329,
+    "rating": 1709.952903042756,
     "seed": 8
    }
   },
