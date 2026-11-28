@@ -332,8 +332,13 @@
   "seeds": {
    "3bvAdKsdq4": {
     "opponent": "IOMG",
-    "rating": 1647.3527423848636,
-    "seed": 11
+    "rating": 1655.993880707738,
+    "seed": 10
+   },
+   "7HcVmMCzsh": {
+    "opponent": "rrobinsky",
+    "rating": 1836.8461120730713,
+    "seed": 2
    },
    "FD4wQboxFK": {
     "opponent": "skybluesteve",
@@ -342,27 +347,32 @@
    },
    "FHoYbmtky7": {
     "opponent": "ahmadthegreat",
-    "rating": 1737.0622103901628,
-    "seed": 6
+    "rating": 1748.8376462208366,
+    "seed": 5
    },
    "Wg4HZn2oaT": {
     "opponent": "MattL",
     "rating": 1773.56725755583,
     "seed": 3
    },
+   "j4zcuBaTsB": {
+    "opponent": "wajin",
+    "rating": 1752.6218272157803,
+    "seed": 4
+   },
    "jNJCo5aTfY": {
     "opponent": "LAKRAM",
     "rating": 1653.3922861863052,
-    "seed": 10
+    "seed": 11
    },
    "jzFLTVaS8q": {
     "opponent": "wogscrab",
-    "rating": 1582.5247609497749,
+    "rating": 1586.2042713312908,
     "seed": 15
    },
    "mMjr3PZPAo": {
     "opponent": "rhachillas",
-    "rating": 1603.8167690022747,
+    "rating": 1600.327811970092,
     "seed": 14
    },
    "nE5jjEn7qo": {
@@ -373,7 +383,7 @@
    "nYdhZ4Spdg": {
     "opponent": "Charlie_T",
     "rating": 1738.5099544065652,
-    "seed": 5
+    "seed": 6
    },
    "rx2kXvBAfj": {
     "opponent": "pommie",
@@ -382,7 +392,7 @@
    },
    "yNagucLWNY": {
     "opponent": "Rasho",
-    "rating": 1709.952903042756,
+    "rating": 1722.7803890984362,
     "seed": 8
    }
   },
